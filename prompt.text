@@ -1,0 +1,20 @@
+Problem Being Solved
+Saat ini pembagian kelas di sekolah masih dilakukan secara manual oleh guru, termasuk proses ekstraksi nilai dari file eRaport. Aplikasi yang pernah dibuat sebelumnya baru sebatas tampilan HTML untuk menampilkan dan menghitung nilai siswa, tanpa otomasi sistem secara menyeluruh. Sistem yang akan dibangun bertujuan mempersingkat proses tersebut sehingga baik guru maupun siswa dapat menghemat waktu.
+Project Goal
+Membangun sistem yang berjalan secara otomatis end-to-end — mulai dari siswa memilih kelas, guru menginput nilai, hingga guru dan siswa memperoleh hasil yang transparan, baik dari sisi nilai yang digunakan maupun proses perhitungan yang dilakukan pihak sekolah.
+Target Users
+●        Guru — bertindak sebagai main controller; seluruh data yang masuk maupun yang ditampilkan sepenuhnya dikelola oleh guru terkait.
+●        Siswa — pengguna utama aplikasi; memilih kelas yang akan diambil serta melihat hasil dan jadwal terkait.
+2. Scope
+In Scope
+●        Login pengguna (siswa & guru)
+●        Pemilihan kelas oleh siswa (maksimal 3 pilihan)
+●        Melihat hasil pemilihan/pembagian kelas
+●        Jadwal proses pemilihan kelas
+●        Ekstraksi nilai dari data mentah (eRaport)
+●        Konfigurasi mata pelajaran yang digunakan untuk perhitungan
+●        Pengaturan persentase/bobot nilai per kelas
+●        Pengaturan mata pelajaran yang tersedia untuk tiap kelas
+●        Pengaturan kuota tiap kelas
+Out of Scope
+●        Kustomisasi akun siswa (foto profil, preferensi tampilan, dll.)
