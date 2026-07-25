@@ -28,3 +28,5 @@ Homestead.yaml
 Thumbs.db
 database/*.sqlite
 git-commit/
+PRD.md
+prd.md
