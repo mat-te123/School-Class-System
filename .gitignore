@@ -30,6 +30,3 @@ database/*.sqlite
 git-commit/
 PRD.md
 prd.md
-database_schema.drawio
-database_schema.xml
-prompt.text
