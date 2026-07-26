@@ -7,24 +7,35 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class Siswa extends Authenticatable
 {
     use HasFactory, HasUuids, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Nama tabel database yang digunakan oleh model ini.
+     *
+     * @var string
+     */
+    protected $table = 'siswa';
+
+    /**
+     * Atribut yang dapat diisi secara massal (mass assignable).
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'username',
-        'password',
-        'role',
+        'nisn',
+        'nis',
+        'nama_lengkap',
+        'kelas_asal',
+        'jenis_kelamin',
+        'tanggal_lahir',
         'is_active',
+        'password',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Atribut yang disembunyikan untuk serialisasi.
      *
      * @var array<int, string>
      */
@@ -34,15 +45,16 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Casting atribut model.
      *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
-            'password' => 'hashed',
+            'tanggal_lahir' => 'date',
             'is_active' => 'boolean',
+            'password' => 'hashed',
         ];
     }
 }

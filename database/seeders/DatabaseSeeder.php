@@ -14,7 +14,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             PeriodePendaftaranSeeder::class,
-            MasterMataPelajaranSeeder::class,
             PaketMenuPilihanSeeder::class,
         ]);
     }

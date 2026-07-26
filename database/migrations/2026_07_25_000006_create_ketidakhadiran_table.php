@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('ketidakhadiran', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('siswa_id')->constrained('siswa')->onDelete('cascade');
+            $table->foreignUuid('siswa_id')->unique()->constrained('siswa')->onDelete('cascade');
             $table->integer('sakit')->default(0);
             $table->integer('izin')->default(0);
             $table->integer('alpa')->default(0);

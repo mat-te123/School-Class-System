@@ -13,13 +13,16 @@ return new class extends Migration
     {
         Schema::create('siswa', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('users_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('nisn', 10)->unique();
             $table->string('nis', 10)->unique();
             $table->string('nama_lengkap', 150);
             $table->string('kelas_asal', 10);
-            $table->enum('jenis_kelamin', ['L', 'P'])->default('L');
-            $table->timestamp('created_at')->useCurrent();
+            $table->enum('jenis_kelamin', ['L', 'P'])->nullable();
+            $table->date('tanggal_lahir')->nullable();
+            $table->boolean('is_active')->default(false);
+            $table->string('password')->nullable();
+            $table->rememberToken();
+            $table->timestamps();
         });
     }
 

@@ -15,3 +15,16 @@ services:
       - .:/var/www/html
       - ./Caddyfile:/etc/caddy/Caddyfile
     tty: true
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: school_class_system_queue
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - app
+
