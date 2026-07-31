@@ -26,4 +26,14 @@ class MasterMataPelajaran extends Model
         'is_tiebreaker_default' => 'boolean',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Relasi ke kriteria bobot menu.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function kriteriaBobots(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(KriteriaBobotMenu::class, 'master_mata_pelajaran_id');
+    }
 }
