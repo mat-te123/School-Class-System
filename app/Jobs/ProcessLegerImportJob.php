@@ -15,15 +15,24 @@ class ProcessLegerImportJob implements ShouldQueue
     use InteractsWithQueue, Queueable, SerializesModels;
 
     protected string $filePath;
+    protected ?string $uploadedBy;
+    protected ?string $kelasAsalId;
+    protected ?string $angkatan;
 
     /**
      * Create a new job instance.
      *
      * @param string $filePath Path file XLSX yang tersimpan sementara di storage.
+     * @param string|null $uploadedBy ID user pengunggah dari session.
+     * @param string|null $kelasAsalId ID kelas asal dari form request.
+     * @param string|null $angkatan Angkatan dari form request (misal: 2024/2025).
      */
-    public function __construct(string $filePath)
+    public function __construct(string $filePath, ?string $uploadedBy = null, ?string $kelasAsalId = null, ?string $angkatan = null)
     {
-        $this->filePath = $filePath;
+        $this->filePath    = $filePath;
+        $this->uploadedBy  = $uploadedBy;
+        $this->kelasAsalId = $kelasAsalId;
+        $this->angkatan    = $angkatan;
     }
 
     /**
@@ -34,7 +43,7 @@ class ProcessLegerImportJob implements ShouldQueue
         Log::info("Memulai background job pengimporan Leger XLSX: {$this->filePath}");
 
         try {
-            $result = $importService->importFromXlsx($this->filePath);
+            $result = $importService->importFromXlsx($this->filePath, $this->uploadedBy, $this->kelasAsalId, $this->angkatan);
 
             Log::info("Berhasil mengimpor Leger XLSX via background job.", $result);
         } catch (Exception $e) {
@@ -42,6 +51,7 @@ class ProcessLegerImportJob implements ShouldQueue
                 'file' => $this->filePath,
                 'trace' => $e->getTraceAsString(),
             ]);
+            throw $e;
         } finally {
             // Hapus file sementara setelah pemrosesan selesai
             if (file_exists($this->filePath)) {

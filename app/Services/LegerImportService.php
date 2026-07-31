@@ -18,11 +18,16 @@ class LegerImportService
      * Mengekstrak file XLSX Leger dan mengimpor seluruh data ke database secara instan (< 0.5 detik).
      *
      * @param string $filePath Path lengkap file XLSX di disk.
+     * @param string|null $uploadedBy ID user pengunggah.
+     * @param string|null $kelasAsalId ID kelas asal dari form request.
+     * @param string|null $angkatanFromForm Angkatan dari form request (digunakan untuk riwayat_upload_leger).
      * @return array Ringkasan hasil impor.
      * @throws Exception
      */
-    public function importFromXlsx(string $filePath): array
+    public function importFromXlsx(string $filePath, ?string $uploadedBy = null, ?string $kelasAsalId = null, ?string $angkatanFromForm = null): array
     {
+        $uploadedBy = $uploadedBy ?? \Illuminate\Support\Facades\Auth::id();
+
         if (!file_exists($filePath)) {
             throw new Exception("File XLSX tidak ditemukan pada path: {$filePath}");
         }
@@ -34,8 +39,39 @@ class LegerImportService
             throw new Exception("Gagal membaca struktur atau data dari file XLSX.");
         }
 
-        // 2. Ekstrak Metadata (Tahun Ajaran, Semester, Kelas)
+        // 2. Ekstrak Metadata (Tahun Ajaran, Semester, Kelas) dari header Excel
         $metadata = $this->extractMetadata($rawRows);
+
+        // Penentuan Model Kelas Asal (dari parameter kelas_asal_id, atau fallback ke metadata Excel)
+        $kelasAsalModel = null;
+        if (!empty($kelasAsalId)) {
+            $kelasAsalModel = \App\Models\KelasAsal::where('id', $kelasAsalId)
+                ->orWhere('nama_kelas', $kelasAsalId)
+                ->first();
+        }
+
+        if (!$kelasAsalModel) {
+            $kelasNama = $metadata['kelas_asal'] ?? 'X A';
+            $kelasAsalModel = \App\Models\KelasAsal::firstOrCreate(
+                ['nama_kelas' => $kelasNama],
+                ['id' => (string) Str::uuid(), 'tingkat' => 'X', 'kapasitas' => 36, 'is_active' => true]
+            );
+        } else {
+            $kelasNama = $kelasAsalModel->nama_kelas;
+        }
+
+        // Angkatan untuk riwayat_upload_leger: prioritaskan dari form, fallback ke metadata Excel
+        $angkatan = !empty($angkatanFromForm) ? $angkatanFromForm : ($metadata['tahun_ajaran'] ?? '2024/2025');
+
+        // 2b. Cek Batasan 1 Kelas & Angkatan Hanya Boleh 1 File Excel Leger
+        $existingUpload = \App\Models\RiwayatUploadLeger::where('nama_kelas', $kelasNama)
+            ->where('angkatan', $angkatan)
+            ->where('status', 'completed')
+            ->first();
+
+        if ($existingUpload) {
+            throw new Exception("File Leger Excel untuk Kelas '{$kelasNama}' Angkatan '{$angkatan}' sudah pernah diunggah ({$existingUpload->file_name}). Satu kelas dan angkatan hanya diizinkan mengunggah 1 file Excel.");
+        }
 
         // 3. Ekstrak Header Mata Pelajaran dan Posisi Kolom
         $columnsMap = $this->extractColumnsMap($rawRows);
@@ -44,7 +80,7 @@ class LegerImportService
         $importedNilaiCount = 0;
 
         // 4. Proses Impor Data secara Teroptimasi Maksimal (< 0.5s) dalam DB Transaction
-        DB::transaction(function () use ($rawRows, $metadata, $columnsMap, &$importedSiswaCount, &$importedNilaiCount) {
+        DB::transaction(function () use ($rawRows, $metadata, $columnsMap, &$importedSiswaCount, &$importedNilaiCount, $kelasNama, $angkatan, $filePath, $uploadedBy, $kelasAsalModel) {
             // A. Batch Pre-fetch & Bulk Insert Master Mata Pelajaran Unik (1 Query)
             $allKodes = [];
             $allMapelData = [];
@@ -136,7 +172,8 @@ class LegerImportService
                     'nisn' => $nisn,
                     'nis' => $data['nis'],
                     'nama_lengkap' => $data['nama_lengkap'],
-                    'kelas_asal' => $metadata['kelas_asal'],
+                    'kelas_asal_id' => $kelasAsalModel->id,
+                    'kelas_asal' => $kelasNama,
                     'is_active' => false,
                 ];
 
@@ -200,7 +237,7 @@ class LegerImportService
             }
 
             // D. Eksekusi Bulk Upsert & Bulk Insert
-            Siswa::upsert($siswaUpserts, ['nisn'], ['nis', 'nama_lengkap', 'kelas_asal', 'is_active']);
+            Siswa::upsert($siswaUpserts, ['nisn'], ['nis', 'nama_lengkap', 'kelas_asal_id', 'kelas_asal', 'is_active']);
             $importedSiswaCount = count($siswaUpserts);
 
             NilaiLegerSiswa::upsert(
@@ -225,6 +262,25 @@ class LegerImportService
                     Ketidakhadiran::insert($ketidakhadiranInserts);
                 }
             }
+
+            // Catat riwayat upload leger ke database
+            \App\Models\RiwayatUploadLeger::updateOrInsert(
+                [
+                    'nama_kelas' => $kelasNama,
+                    'angkatan' => $angkatan,
+                ],
+                [
+                    'id' => (string) Str::uuid(),
+                    'kelas_asal_id' => $kelasAsalModel->id,
+                    'file_name' => basename($filePath),
+                    'file_path' => $filePath,
+                    'jumlah_siswa' => $importedSiswaCount,
+                    'status' => 'completed',
+                    'uploaded_by' => $uploadedBy,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
         });
 
         return [
