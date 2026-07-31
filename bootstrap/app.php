@@ -13,11 +13,22 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->validateCsrfTokens(except: [
+            'login',
+            'login/*',
+            'logout',
+            'logout/*',
+            'register/*',
             'leger/*',
+            'kelas-asal',
+            'kelas-asal/*',
+            'paket-menu-pilihan',
+            'paket-menu-pilihan/*',
+            'kriteria-bobot-menu',
+            'kriteria-bobot-menu/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*'),
+            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
     })->create();
