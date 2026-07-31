@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('nisn', 10)->unique();
             $table->string('nis', 10)->unique();
             $table->string('nama_lengkap', 150);
-            $table->string('kelas_asal', 10);
+            $table->foreignUuid('kelas_asal_id')->nullable()->constrained('kelas_asal')->nullOnDelete();
+            $table->string('kelas_asal', 50)->nullable();
             $table->enum('jenis_kelamin', ['L', 'P'])->nullable();
             $table->date('tanggal_lahir')->nullable();
             $table->boolean('is_active')->default(false);

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 class Siswa extends Authenticatable
 {
     use HasFactory, HasUuids, Notifiable;
@@ -27,9 +29,11 @@ class Siswa extends Authenticatable
         'nisn',
         'nis',
         'nama_lengkap',
+        'kelas_asal_id',
         'kelas_asal',
         'jenis_kelamin',
         'tanggal_lahir',
+        'angkatan',
         'is_active',
         'password',
     ];
@@ -56,5 +60,15 @@ class Siswa extends Authenticatable
             'is_active' => 'boolean',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Relasi ke model KelasAsal.
+     *
+     * @return BelongsTo
+     */
+    public function kelasAsalRelation(): BelongsTo
+    {
+        return $this->belongsTo(KelasAsal::class, 'kelas_asal_id');
     }
 }
