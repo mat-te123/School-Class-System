@@ -14,12 +14,16 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $adminRole = DB::table('roles')->where('name', 'admin')->first();
+        $guruRole = DB::table('roles')->where('name', 'guru_bk')->first();
+
         // 1. Seed Admin
         $adminId = (string) Str::uuid();
         DB::table('users')->updateOrInsert(
             ['username' => 'admin'],
             [
                 'id' => $adminId,
+                'role_id' => $adminRole?->id,
                 'password' => Hash::make('password'),
                 'role' => 'admin',
                 'is_active' => true,
@@ -34,6 +38,7 @@ class UserSeeder extends Seeder
             ['username' => 'guru_bk'],
             [
                 'id' => $guruId,
+                'role_id' => $guruRole?->id,
                 'password' => Hash::make('password'),
                 'role' => 'guru_bk',
                 'is_active' => true,

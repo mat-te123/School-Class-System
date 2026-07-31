@@ -15,7 +15,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('username', 50)->unique();
             $table->string('password');
-            $table->enum('role', ['admin', 'guru_bk'])->default('guru_bk');
+            $table->foreignUuid('role_id')->nullable()->constrained('roles')->nullOnDelete();
+            $table->enum('role', ['admin', 'guru_bk', 'siswa'])->default('guru_bk');
             $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamps();
