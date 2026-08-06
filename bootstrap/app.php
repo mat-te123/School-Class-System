@@ -12,6 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'auth.any' => \App\Http\Middleware\EnsureAnyAuthenticated::class,
+        ]);
+
         $middleware->validateCsrfTokens(except: [
             'login',
             'login/*',
@@ -25,6 +29,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'paket-menu-pilihan/*',
             'kriteria-bobot-menu',
             'kriteria-bobot-menu/*',
+            'master-mata-pelajaran',
+            'master-mata-pelajaran/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

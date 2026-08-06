@@ -52,11 +52,6 @@ class ProcessLegerImportJob implements ShouldQueue
                 'trace' => $e->getTraceAsString(),
             ]);
             throw $e;
-        } finally {
-            // Hapus file sementara setelah pemrosesan selesai
-            if (file_exists($this->filePath)) {
-                @unlink($this->filePath);
-            }
         }
     }
 }

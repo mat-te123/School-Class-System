@@ -18,7 +18,8 @@ return new class extends Migration
             $table->enum('kelompok_mapel', ['umum', 'pilihan', 'muatan_lokal'])->default('umum');
             $table->boolean('is_tiebreaker_default')->default(false);
             $table->boolean('is_active')->default(true);
-            $table->timestamp('created_at')->useCurrent();
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 

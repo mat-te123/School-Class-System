@@ -25,11 +25,29 @@ class RiwayatUploadLeger extends Model
         'uploaded_by',
     ];
 
+    protected $appends = [
+        'file_url',
+    ];
+
     protected function casts(): array
     {
         return [
             'jumlah_siswa' => 'integer',
         ];
+    }
+
+    /**
+     * Accessor untuk mendapatkan URL publik/API lengkap untuk mengunduh file berbasis APP_URL.
+     *
+     * @return string|null
+     */
+    public function getFileUrlAttribute(): ?string
+    {
+        if (empty($this->file_name)) {
+            return null;
+        }
+
+        return url('/leger/download/' . $this->file_name);
     }
 
     /**

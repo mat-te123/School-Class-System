@@ -3,6 +3,7 @@
 use App\Http\Controllers\KelasAsalController;
 use App\Http\Controllers\KriteriaBobotMenuController;
 use App\Http\Controllers\LegerImportController;
+use App\Http\Controllers\MasterMataPelajaranController;
 use App\Http\Controllers\PaketMenuPilihanController;
 use App\Http\Controllers\SiswaAuthController;
 use App\Http\Controllers\UserAuthController;
@@ -36,19 +37,27 @@ Route::middleware(['auth:siswa'])->group(function () {
     Route::get('/siswa/profile', [SiswaAuthController::class, 'profile'])->name('siswa.profile');
 });
 
-// Route Import Leger XLSX & Tracking Riwayat
-Route::get('/leger/history', [LegerImportController::class, 'history'])->name('leger.history');
+// Route yang wajib login (bisa dari Siswa maupun Admin / Guru BK)
+Route::middleware(['auth.any'])->group(function () {
+    // Route Paket Menu Pilihan
+    Route::get('/paket-menu-pilihan', [PaketMenuPilihanController::class, 'index'])->name('paket-menu.index');
+    Route::get('/paket-menu-pilihan/{identifier}', [PaketMenuPilihanController::class, 'show'])->name('paket-menu.show');
 
-// Route Paket Menu Pilihan
-Route::get('/paket-menu-pilihan', [PaketMenuPilihanController::class, 'index'])->name('paket-menu.index');
-Route::get('/paket-menu-pilihan/{identifier}', [PaketMenuPilihanController::class, 'show'])->name('paket-menu.show');
+    // Route Kelas Asal (khusus Kelas X)
+    Route::get('/kelas-asal', [KelasAsalController::class, 'index'])->name('kelas-asal.index');
+    Route::get('/kelas-asal/{identifier}', [KelasAsalController::class, 'show'])->name('kelas-asal.show');
 
-// Route Kelas Asal (khusus Kelas X)
-Route::get('/kelas-asal', [KelasAsalController::class, 'index'])->name('kelas-asal.index');
-Route::get('/kelas-asal/{identifier}', [KelasAsalController::class, 'show'])->name('kelas-asal.show');
+    // Route Kriteria Bobot Menu
+    Route::get('/kriteria-bobot-menu', [KriteriaBobotMenuController::class, 'index'])->name('kriteria-bobot.index');
 
-// Route Kriteria Bobot Menu
-Route::get('/kriteria-bobot-menu', [KriteriaBobotMenuController::class, 'index'])->name('kriteria-bobot.index');
+    // Route Master Mata Pelajaran (Read Only untuk Siswa & Admin)
+    Route::get('/master-mata-pelajaran', [MasterMataPelajaranController::class, 'index'])->name('master-mapel.index');
+    Route::get('/master-mata-pelajaran/{id}', [MasterMataPelajaranController::class, 'show'])->name('master-mapel.show');
+
+    // Route Tracking Riwayat & Download File Leger
+    Route::get('/leger/history', [LegerImportController::class, 'history'])->name('leger.history');
+    Route::get('/leger/download/{filename}', [LegerImportController::class, 'download'])->name('leger.download');
+});
 
 Route::middleware(['auth:web'])->group(function () {
     // Leger Import - hanya admin (dicek di controller)
@@ -63,6 +72,12 @@ Route::middleware(['auth:web'])->group(function () {
     Route::delete('/paket-menu-pilihan/{identifier}', [PaketMenuPilihanController::class, 'destroy'])->name('paket-menu.destroy');
 
     Route::post('/kriteria-bobot-menu', [KriteriaBobotMenuController::class, 'store'])->name('kriteria-bobot.store');
+    Route::put('/kriteria-bobot-menu/{id}', [KriteriaBobotMenuController::class, 'update'])->name('kriteria-bobot.update');
     Route::delete('/kriteria-bobot-menu/{id}', [KriteriaBobotMenuController::class, 'destroy'])->name('kriteria-bobot.destroy');
+
+    // Master Mata Pelajaran (Write Operations - khusus Admin/Guru BK)
+    Route::post('/master-mata-pelajaran', [MasterMataPelajaranController::class, 'store'])->name('master-mapel.store');
+    Route::put('/master-mata-pelajaran/{id}', [MasterMataPelajaranController::class, 'update'])->name('master-mapel.update');
+    Route::delete('/master-mata-pelajaran/{id}', [MasterMataPelajaranController::class, 'destroy'])->name('master-mapel.destroy');
 });
 

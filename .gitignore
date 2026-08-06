@@ -30,3 +30,8 @@ database/*.sqlite
 git-commit/
 PRD.md
 prd.md
+
+# Excel Leger Files
+*.xlsx
+*.xls
+Leger_*.xlsx

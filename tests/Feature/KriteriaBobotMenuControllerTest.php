@@ -16,6 +16,14 @@ class KriteriaBobotMenuControllerTest extends TestCase
 
     public function test_can_get_kriteria_bobot_menu(): void
     {
+        $user = User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'test_user_kriteria',
+            'password' => 'password123',
+            'role' => 'guru_bk',
+            'is_active' => true,
+        ]);
+
         $paket = PaketMenuPilihan::create([
             'kode_menu' => 1,
             'nama_menu' => 'Menu 1 (P1)',
@@ -35,7 +43,7 @@ class KriteriaBobotMenuControllerTest extends TestCase
             'bobot_persen' => 75.50,
         ]);
 
-        $response = $this->getJson('/kriteria-bobot-menu?paket_menu_pilihan_id=' . $paket->id);
+        $response = $this->actingAs($user, 'web')->getJson('/kriteria-bobot-menu?paket_menu_pilihan_id=' . $paket->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -217,6 +225,107 @@ class KriteriaBobotMenuControllerTest extends TestCase
 
         $this->assertDatabaseMissing('kriteria_bobot_menu', [
             'id' => $bobot->id,
+        ]);
+    }
+
+    public function test_admin_can_update_kriteria_bobot(): void
+    {
+        $admin = User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'admin_bobot4',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'nama_menu' => 'Menu 6',
+            'rumpun' => 'sosial',
+        ]);
+
+        $mapel = MasterMataPelajaran::create([
+            'kode_mapel' => 'SOS',
+            'nama_mapel' => 'Sosiologi',
+        ]);
+
+        $bobot = KriteriaBobotMenu::create([
+            'paket_menu_pilihan_id' => $paket->id,
+            'master_mata_pelajaran_id' => $mapel->id,
+            'bobot_persen' => 50.00,
+        ]);
+
+        $response = $this->actingAs($admin, 'web')->putJson('/kriteria-bobot-menu/' . $bobot->id, [
+            'bobot_persen' => 75.00,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Berhasil memperbarui kriteria bobot menu.',
+                'data' => [
+                    'id' => $bobot->id,
+                    'bobot_persen' => 75,
+                ],
+            ]);
+
+        $this->assertDatabaseHas('kriteria_bobot_menu', [
+            'id' => $bobot->id,
+            'bobot_persen' => 75.00,
+        ]);
+    }
+
+    public function test_admin_can_update_kriteria_bobot_bulk_array_by_paket_menu_id(): void
+    {
+        $admin = User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'admin_bobot5',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'nama_menu' => 'Menu 7 (P7)',
+            'rumpun' => 'eksakta',
+        ]);
+
+        $mapel1 = MasterMataPelajaran::create([
+            'kode_mapel' => 'MAPEL_1',
+            'nama_mapel' => 'Mapel 1',
+        ]);
+
+        $mapel2 = MasterMataPelajaran::create([
+            'kode_mapel' => 'MAPEL_2',
+            'nama_mapel' => 'Mapel 2',
+        ]);
+
+        $response = $this->actingAs($admin, 'web')->putJson('/kriteria-bobot-menu/' . $paket->id, [
+            [
+                'master_mata_pelajaran_id' => $mapel1->id,
+                'bobot_persen' => 50.00,
+            ],
+            [
+                'master_mata_pelajaran_id' => $mapel2->id,
+                'bobot_persen' => 60.00,
+            ],
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'total' => 2,
+            ]);
+
+        $this->assertDatabaseHas('kriteria_bobot_menu', [
+            'paket_menu_pilihan_id' => $paket->id,
+            'master_mata_pelajaran_id' => $mapel1->id,
+            'bobot_persen' => 50.00,
+        ]);
+
+        $this->assertDatabaseHas('kriteria_bobot_menu', [
+            'paket_menu_pilihan_id' => $paket->id,
+            'master_mata_pelajaran_id' => $mapel2->id,
+            'bobot_persen' => 60.00,
         ]);
     }
 }

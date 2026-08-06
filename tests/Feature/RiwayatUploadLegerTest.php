@@ -34,8 +34,16 @@ class RiwayatUploadLegerTest extends TestCase
             'status' => 'completed',
         ]);
 
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'test_user_riwayat',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
         // 2. Ambil endpoint history
-        $response = $this->getJson('/leger/history?nama_kelas=X A&angkatan=2024/2025');
+        $response = $this->actingAs($user, 'web')->getJson('/leger/history?nama_kelas=X A&angkatan=2024/2025');
 
         $response->assertStatus(200)
             ->assertJson([

@@ -120,8 +120,74 @@ class KelasAsalController extends Controller
             ], 403);
         }
 
+        $namaKelas = trim($request->input('nama_kelas', ''));
+        $action    = $request->input('action');
+        $isRestore   = $action === 'restore' || $request->boolean('restore');
+        $isOverwrite = $action === 'overwrite' || $action === 'replace' || $request->boolean('overwrite');
+
+        // Cek apakah ada data kelas dengan nama yang sama yang telah di-soft delete
+        $trashed = KelasAsal::onlyTrashed()->where('nama_kelas', $namaKelas)->first();
+
+        if ($trashed) {
+            // Opsi 1: Restore dan update data yang ada
+            if ($isRestore) {
+                $trashed->restore();
+                $trashed->update([
+                    'tingkat'   => 'X',
+                    'kapasitas' => $request->input('kapasitas', $trashed->kapasitas),
+                    'is_active' => filter_var($request->input('is_active', true), FILTER_VALIDATE_BOOLEAN),
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Kelas '{$trashed->nama_kelas}' yang sebelumnya terhapus berhasil dipulihkan dan diperbarui.",
+                    'data'    => $trashed,
+                ], 200);
+            }
+
+            // Opsi 3: Menimpa data baru (Force delete data lama & buat record baru dengan UUID baru)
+            if ($isOverwrite) {
+                $trashed->forceDelete();
+
+                $validated = $request->validate([
+                    'nama_kelas' => ['required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('kelas_asal', 'nama_kelas')->whereNull('deleted_at')],
+                    'kapasitas'  => ['nullable', 'integer', 'min:1'],
+                    'is_active'  => ['nullable', 'boolean'],
+                ]);
+
+                $kelas = KelasAsal::create([
+                    'nama_kelas' => $validated['nama_kelas'],
+                    'tingkat'   => 'X',
+                    'kapasitas' => $validated['kapasitas'] ?? 36,
+                    'is_active' => $validated['is_active'] ?? true,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Kelas '{$kelas->nama_kelas}' lama telah dihapus permanen dan data kelas baru berhasil dibuat.",
+                    'data'    => $kelas,
+                ], 201);
+            }
+
+            // Jika belum ada parameter action/restore/overwrite, kembalikan 409 Conflict dengan pilihan opsi
+            return response()->json([
+                'success'    => false,
+                'is_trashed' => true,
+                'message'    => "Kelas dengan nama '{$namaKelas}' pernah dihapus sebelumnya. Apakah Anda ingin memulihkan (restore) atau menimpa dengan data baru (overwrite)?",
+                'trashed_data' => [
+                    'id'         => $trashed->id,
+                    'nama_kelas' => $trashed->nama_kelas,
+                    'deleted_at' => $trashed->deleted_at,
+                ],
+                'options' => [
+                    'restore'   => 'Gunakan payload JSON {"action": "restore"} atau query parameter ?restore=1 untuk memulihkan dan memperbarui data lama.',
+                    'overwrite' => 'Gunakan payload JSON {"action": "overwrite"} atau query parameter ?overwrite=1 untuk menghapus permanen data lama dan membuat data baru.',
+                ],
+            ], 409);
+        }
+
         $validated = $request->validate([
-            'nama_kelas' => ['required', 'string', 'max:50', 'unique:kelas_asal,nama_kelas'],
+            'nama_kelas' => ['required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('kelas_asal', 'nama_kelas')->whereNull('deleted_at')],
             'kapasitas' => ['nullable', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
         ], [
@@ -185,7 +251,7 @@ class KelasAsalController extends Controller
         }
 
         $validated = $request->validate([
-            'nama_kelas' => ['sometimes', 'required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('kelas_asal', 'nama_kelas')->ignore($kelas->id)],
+            'nama_kelas' => ['sometimes', 'required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('kelas_asal', 'nama_kelas')->ignore($kelas->id)->whereNull('deleted_at')],
             'kapasitas' => ['sometimes', 'required', 'integer', 'min:1'],
             'is_active' => ['sometimes', 'boolean'],
         ], [

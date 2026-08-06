@@ -133,6 +133,120 @@ class KriteriaBobotMenuController extends Controller
     }
 
     /**
+     * Memperbarui bobot persen kriteria (PUT /kriteria-bobot-menu/{identifier}).
+     * Identifier dapat berupa paket_menu_pilihan_id atau ID kriteria bobot.
+     * Payload dapat berupa array kriteria langsung [ { master_mata_pelajaran_id, bobot_persen }, ... ], { kriteria: [...] }, atau { bobot_persen }.
+     *
+     * @param Request $request
+     * @param string $identifier
+     * @return JsonResponse
+     */
+    public function update(Request $request, string $identifier): JsonResponse
+    {
+        $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated / Belum login.',
+            ], 401);
+        }
+
+        if ($user->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Hanya Admin yang dapat mengubah kriteria bobot menu.',
+            ], 403);
+        }
+
+        // Cek apakah $identifier merupakan ID dari PaketMenuPilihan
+        $paketMenu = PaketMenuPilihan::find($identifier);
+
+        // Periksa apakah request body merupakan array list langsung [ {...}, {...} ] atau objek { "kriteria": [...] }
+        $itemsToUpdate = null;
+        $jsonContent = $request->json()->all();
+
+        if (is_array($jsonContent) && array_is_list($jsonContent)) {
+            $itemsToUpdate = $jsonContent;
+        } elseif ($request->has('kriteria') && is_array($request->kriteria)) {
+            $itemsToUpdate = $request->kriteria;
+        }
+
+        if ($itemsToUpdate !== null) {
+            $paketId = $paketMenu ? $paketMenu->id : $request->input('paket_menu_pilihan_id', $identifier);
+
+            if (!PaketMenuPilihan::where('id', $paketId)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Paket Menu Pilihan tidak ditemukan.',
+                ], 404);
+            }
+
+            $request->merge(['kriteria' => $itemsToUpdate]);
+            $validated = $request->validate([
+                'kriteria' => ['required', 'array', 'min:1'],
+                'kriteria.*.master_mata_pelajaran_id' => ['required', 'uuid', 'exists:master_mata_pelajaran,id'],
+                'kriteria.*.bobot_persen' => ['required', 'numeric', 'min:0', 'max:100'],
+            ], [
+                'kriteria.*.master_mata_pelajaran_id.required' => 'Mata pelajaran wajib dipilih.',
+                'kriteria.*.master_mata_pelajaran_id.exists' => 'Mata pelajaran tidak ditemukan.',
+                'kriteria.*.bobot_persen.required' => 'Bobot persen wajib diisi.',
+                'kriteria.*.bobot_persen.numeric' => 'Bobot persen harus berupa angka.',
+            ]);
+
+            $savedItems = [];
+            foreach ($validated['kriteria'] as $item) {
+                $bobot = KriteriaBobotMenu::updateOrCreate(
+                    [
+                        'paket_menu_pilihan_id' => $paketId,
+                        'master_mata_pelajaran_id' => $item['master_mata_pelajaran_id'],
+                    ],
+                    [
+                        'bobot_persen' => $item['bobot_persen'],
+                    ]
+                );
+                $savedItems[] = $bobot->load(['paketMenuPilihan', 'masterMataPelajaran']);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil memperbarui kriteria bobot menu.',
+                'total' => count($savedItems),
+                'data' => $savedItems,
+            ]);
+        }
+
+        // Jika single item request berdasarkan ID KriteriaBobotMenu
+        $bobot = KriteriaBobotMenu::find($identifier);
+
+        if (!$bobot) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kriteria bobot menu atau paket menu pilihan tidak ditemukan.',
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'bobot_persen' => ['required', 'numeric', 'min:0', 'max:100'],
+        ], [
+            'bobot_persen.required' => 'Bobot persen wajib diisi.',
+            'bobot_persen.numeric' => 'Bobot persen harus berupa angka.',
+            'bobot_persen.min' => 'Bobot persen minimal 0.',
+            'bobot_persen.max' => 'Bobot persen maksimal 100.',
+        ]);
+
+        $bobot->update([
+            'bobot_persen' => $validated['bobot_persen'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil memperbarui kriteria bobot menu.',
+            'data' => $bobot->load(['paketMenuPilihan', 'masterMataPelajaran']),
+        ]);
+    }
+
+    /**
      * Menghapus kriteria bobot menu (Khusus Role Admin).
      *
      * @param Request $request

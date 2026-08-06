@@ -295,4 +295,24 @@ class LegerImportControllerTest extends TestCase
 
         Queue::assertNotPushed(ProcessLegerImportJob::class);
     }
+
+    /**
+     * Test 6: Dapat mengunduh file XLSX Leger yang tersimpan di server.
+     */
+    public function test_can_download_uploaded_leger_file(): void
+    {
+        $filename = 'test_download_sample.xlsx';
+        $path = storage_path('app/public/leger_imports/' . $filename);
+        if (!file_exists(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+        file_put_contents($path, 'dummy excel content');
+
+        $response = $this->actingAs($this->admin, 'web')->get('/leger/download/' . $filename);
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        @unlink($path);
+    }
 }

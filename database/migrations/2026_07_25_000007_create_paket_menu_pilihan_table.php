@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('paket_menu_pilihan', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->integer('kode_menu')->unique();
-            $table->string('nama_menu', 50);
+            $table->string('nama_menu', 50)->unique();
             $table->enum('rumpun', ['eksakta', 'sosial']);
             $table->integer('kuota_kapasitas')->default(36);
             $table->integer('kuota_terisi')->default(0);
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 

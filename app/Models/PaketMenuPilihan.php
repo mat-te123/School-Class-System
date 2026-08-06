@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PaketMenuPilihan extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, SoftDeletes;
 
     /**
      * Nama tabel database yang digunakan oleh model ini.
@@ -22,7 +23,7 @@ class PaketMenuPilihan extends Model
      *
      * @var bool
      */
-    public $timestamps = false;
+    public $timestamps = true;
 
     /**
      * Atribut yang dapat diisi secara massal (mass assignable).
@@ -30,7 +31,6 @@ class PaketMenuPilihan extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'kode_menu',
         'nama_menu',
         'rumpun',
         'kuota_kapasitas',
@@ -46,7 +46,6 @@ class PaketMenuPilihan extends Model
     protected function casts(): array
     {
         return [
-            'kode_menu' => 'integer',
             'kuota_kapasitas' => 'integer',
             'kuota_terisi' => 'integer',
             'is_active' => 'boolean',

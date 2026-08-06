@@ -125,11 +125,11 @@ class LegerImportController extends Controller
             // 7. Opsi: Jika meminta respon langsung / sync
             if ($request->boolean('sync', false)) {
                 $result = $this->importService->importFromXlsx($fullPath, $userId, $kelasAsalId, $angkatan);
-                @unlink($fullPath);
 
                 return response()->json([
                     'success' => true,
                     'message' => 'File XLSX Leger berhasil diimpor ke database secara langsung (sync).',
+                    'file_url' => url('/leger/download/' . $fileName),
                     'summary' => $result,
                 ]);
             }
@@ -142,6 +142,7 @@ class LegerImportController extends Controller
                 'message'   => 'File XLSX Leger berhasil diterima dan sedang diproses di background queue (Asynchronous).',
                 'status'    => 'queued',
                 'file_name' => $fileName,
+                'file_url'  => url('/leger/download/' . $fileName),
                 'kelas'     => $kelasNama,
                 'angkatan'  => $angkatan,
             ], 202);
@@ -151,6 +152,37 @@ class LegerImportController extends Controller
                 'message' => 'Gagal mengunggah file XLSX: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Mengunduh file XLSX Leger berdasarkan nama file.
+     *
+     * @param string $filename
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|JsonResponse
+     */
+    public function download(string $filename)
+    {
+        $filename = basename($filename);
+
+        $possiblePaths = [
+            storage_path('app/public/leger_imports/' . $filename),
+            storage_path('app/private/leger_imports/' . $filename),
+            storage_path('app/leger_imports/' . $filename),
+            storage_path('app/' . $filename),
+        ];
+
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path)) {
+                return response()->download($path, $filename, [
+                    'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'File XLSX Leger tidak ditemukan pada server.',
+        ], 404);
     }
 
     /**

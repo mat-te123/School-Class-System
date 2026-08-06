@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('tingkat', 10)->default('X');
             $table->integer('kapasitas')->default(36);
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
             $table->timestamps();
         });
     }
