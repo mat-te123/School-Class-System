@@ -14,8 +14,10 @@ Sistem Manajemen Klasifikasi & Pemilihan Paket Menu Kelas (School Class System) 
   - [3. Kelas Asal (Kelas X)](#3-kelas-asal-kelas-x)
   - [4. Paket Menu Pilihan](#4-paket-menu-pilihan)
   - [5. Master Mata Pelajaran](#5-master-mata-pelajaran)
-  - [6. Kriteria Bobot Menu](#6-kriteria-bobot-menu)
-  - [7. Import Leger XLSX & Riwayat](#7-import-leger-xlsx--riwayat)
+   - [6. Kriteria Bobot Menu](#6-kriteria-bobot-menu)
+   - [7. Import Leger XLSX & Riwayat](#7-import-leger-xlsx--riwayat)
+   - [8. Data Siswa](#8-data-siswa)
+   - [9. Periode Penjurusan](#9-periode-penjurusan)
 
 ---
 
@@ -436,3 +438,76 @@ Jika `kode_mapel` pernah dihapus (*soft deleted*), server akan mengembalikan res
 * **Endpoint**: `GET /leger/download/{filename}`
 * **Access**: `auth.any`
 * Memungkinkan pengguna mengunduh berkas `.xlsx` hasil upload langsung dari server.
+
+---
+
+### 8. Data Siswa
+
+Seluruh endpoint di bawah memerlukan `auth:web` dan hanya ditujukan untuk admin.
+
+#### A. Daftar Siswa
+* **Endpoint**: `GET /siswa`
+* Mengembalikan daftar siswa aktif beserta relasi kelas asal. Siswa dengan `deleted_at` terisi tidak disertakan.
+
+#### B. Detail Siswa
+* **Endpoint**: `GET /siswa/{id}`
+
+#### C. Tambah Siswa
+* **Endpoint**: `POST /siswa`
+* **Payload Request**:
+```json
+{
+  "nisn": "0012345678",
+  "nis": "1234567890",
+  "nama_lengkap": "Budi Santoso",
+  "kelas_asal_id": "uuid-kelas-asal",
+  "jenis_kelamin": "L",
+  "tanggal_lahir": "2008-05-20",
+  "angkatan": "2024",
+  "is_active": true,
+  "password": "password123"
+}
+```
+
+#### D. Ubah Siswa
+* **Endpoint**: `PUT /siswa/{id}`
+* Semua field pada endpoint tambah bersifat opsional saat update.
+
+#### E. Hapus Siswa
+* **Endpoint**: `DELETE /siswa/{id}`
+* Menggunakan **Soft Deletes**. Record tidak dihapus permanen; `deleted_at` diisi dan data tidak lagi tampil pada query normal.
+
+---
+
+### 9. Periode Penjurusan
+
+#### A. Daftar Periode
+* **Endpoint**: `GET /periode-penjurusan`
+* **Access**: `auth.any`
+
+#### B. Detail Periode
+* **Endpoint**: `GET /periode-penjurusan/{id}`
+* **Access**: `auth.any`
+
+#### C. Buat Periode
+* **Endpoint**: `POST /periode-penjurusan`
+* **Access**: `auth:web` (Admin)
+
+#### D. Ubah Periode dan Jadwal Pengisian Minat
+* **Endpoint**: `PUT /periode-penjurusan/{id}`
+* **Access**: `auth:web` (Admin)
+* Field wajib saat membuat periode: `nama_periode`, `tahun_ajaran`, `tanggal_buka`, `tanggal_tutup`.
+* `tanggal_buka` adalah tanggal mulai pengisian minat; `tanggal_tutup` adalah tanggal berakhirnya.
+* `tanggal_tutup` wajib setelah `tanggal_buka`.
+* Field opsional: `gelombang`, `max_pilihan_siswa`, `status_pengumuman` (`AKTIF`/`NON-AKTIF`), `is_active`.
+* Default pembuatan: `gelombang: "Utama"`, `max_pilihan_siswa: 3`, `status_pengumuman: "NON-AKTIF"`, `is_active: true`.
+
+* **Payload Request**:
+```json
+{
+  "nama_periode": "Penjurusan 2026/2027",
+  "tahun_ajaran": "2026/2027",
+  "tanggal_buka": "2026-08-11 08:00:00",
+  "tanggal_tutup": "2026-08-20 23:59:59"
+}
+```

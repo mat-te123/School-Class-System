@@ -4,8 +4,11 @@ use App\Http\Controllers\KelasAsalController;
 use App\Http\Controllers\KriteriaBobotMenuController;
 use App\Http\Controllers\LegerImportController;
 use App\Http\Controllers\MasterMataPelajaranController;
+use App\Http\Controllers\NilaiSiswaController;
 use App\Http\Controllers\PaketMenuPilihanController;
+use App\Http\Controllers\PeriodePenjurusanController;
 use App\Http\Controllers\SiswaAuthController;
+use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\UserAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,18 +53,34 @@ Route::middleware(['auth.any'])->group(function () {
     // Route Kriteria Bobot Menu
     Route::get('/kriteria-bobot-menu', [KriteriaBobotMenuController::class, 'index'])->name('kriteria-bobot.index');
 
+    // Route Siswa (Read Only untuk admin & mungkin siswa? Oh wait, Siswa is admin only for CRUD)
+    // We will place GET /siswa in auth:web below instead.
+
     // Route Master Mata Pelajaran (Read Only untuk Siswa & Admin)
     Route::get('/master-mata-pelajaran', [MasterMataPelajaranController::class, 'index'])->name('master-mapel.index');
     Route::get('/master-mata-pelajaran/{id}', [MasterMataPelajaranController::class, 'show'])->name('master-mapel.show');
 
+    // Route Nilai Siswa (FR-14: lihat data nilai)
+    Route::get('/nilai-siswa', [NilaiSiswaController::class, 'index'])->name('nilai-siswa.index');
+
     // Route Tracking Riwayat & Download File Leger
     Route::get('/leger/history', [LegerImportController::class, 'history'])->name('leger.history');
     Route::get('/leger/download/{filename}', [LegerImportController::class, 'download'])->name('leger.download');
+
+    Route::get('/periode-penjurusan', [PeriodePenjurusanController::class, 'index'])->name('periode-penjurusan.index');
+    Route::get('/periode-penjurusan/{id}', [PeriodePenjurusanController::class, 'show'])->name('periode-penjurusan.show');
 });
 
 Route::middleware(['auth:web'])->group(function () {
     // Leger Import - hanya admin (dicek di controller)
     Route::post('/leger/import', [LegerImportController::class, 'import'])->name('leger.import');
+
+    // Nilai Siswa - FR-13 impor nilai per mapel, FR-14 perbaiki nilai (admin only, dicek di controller)
+    Route::post('/nilai-siswa/import-mapel', [NilaiSiswaController::class, 'importMapel'])->name('nilai-siswa.import-mapel');
+    Route::put('/nilai-siswa/{id}', [NilaiSiswaController::class, 'update'])->name('nilai-siswa.update');
+
+    Route::post('/periode-penjurusan', [PeriodePenjurusanController::class, 'store'])->name('periode-penjurusan.store');
+    Route::put('/periode-penjurusan/{id}', [PeriodePenjurusanController::class, 'update'])->name('periode-penjurusan.update');
 
     Route::post('/kelas-asal', [KelasAsalController::class, 'store'])->name('kelas-asal.store');
     Route::put('/kelas-asal/{id}', [KelasAsalController::class, 'update'])->name('kelas-asal.update');
@@ -79,5 +98,12 @@ Route::middleware(['auth:web'])->group(function () {
     Route::post('/master-mata-pelajaran', [MasterMataPelajaranController::class, 'store'])->name('master-mapel.store');
     Route::put('/master-mata-pelajaran/{id}', [MasterMataPelajaranController::class, 'update'])->name('master-mapel.update');
     Route::delete('/master-mata-pelajaran/{id}', [MasterMataPelajaranController::class, 'destroy'])->name('master-mapel.destroy');
+
+    // Siswa CRUD (Khusus Admin)
+    Route::get('/siswa', [SiswaController::class, 'index'])->name('siswa.index');
+    Route::get('/siswa/{id}', [SiswaController::class, 'show'])->name('siswa.show');
+    Route::post('/siswa', [SiswaController::class, 'store'])->name('siswa.store');
+    Route::put('/siswa/{id}', [SiswaController::class, 'update'])->name('siswa.update');
+    Route::delete('/siswa/{id}', [SiswaController::class, 'destroy'])->name('siswa.destroy');
 });
 

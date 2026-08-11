@@ -8,10 +8,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Siswa extends Authenticatable
 {
-    use HasFactory, HasUuids, Notifiable;
+    use HasFactory, HasUuids, Notifiable, SoftDeletes;
 
     /**
      * Nama tabel database yang digunakan oleh model ini.
