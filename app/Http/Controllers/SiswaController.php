@@ -29,13 +29,10 @@ class SiswaController extends Controller
             'jenis_kelamin' => 'nullable|in:L,P',
             'tanggal_lahir' => 'nullable|date',
             'angkatan' => 'nullable|string|max:4',
-            'is_active' => 'boolean',
-            'password' => 'nullable|string|min:8'
         ]);
 
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        }
+        // is_active selalu false saat pembuatan (default)
+        $validated['is_active'] = false;
 
         $siswa = Siswa::create($validated);
 

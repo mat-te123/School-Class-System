@@ -17,14 +17,7 @@ class SiswaAuthController extends Controller
      */
     public function showLoginForm()
     {
-        if (view()->exists('siswa.login')) {
-            return view('siswa.login');
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Silakan gunakan HTTP POST ke /login/siswa dengan payload JSON {"nisn": "...", "password": "..."}.',
-        ]);
+        return view('siswa.login');
     }
 
     /**

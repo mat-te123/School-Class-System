@@ -6,6 +6,7 @@ use App\Http\Controllers\LegerImportController;
 use App\Http\Controllers\MasterMataPelajaranController;
 use App\Http\Controllers\NilaiSiswaController;
 use App\Http\Controllers\PaketMenuPilihanController;
+use App\Http\Controllers\PendaftaranPilihanController;
 use App\Http\Controllers\PeriodePenjurusanController;
 use App\Http\Controllers\SiswaAuthController;
 use App\Http\Controllers\SiswaController;
@@ -38,6 +39,18 @@ Route::post('/logout/siswa', [SiswaAuthController::class, 'logout'])->name('sisw
 // Route Profil Siswa (butuh login)
 Route::middleware(['auth:siswa'])->group(function () {
     Route::get('/siswa/profile', [SiswaAuthController::class, 'profile'])->name('siswa.profile');
+    Route::get('/siswa/nilai', [NilaiSiswaController::class, 'indexSiswa'])->name('siswa.nilai.index');
+    Route::get('/siswa/paket-menu-aktif', [PaketMenuPilihanController::class, 'indexSiswa'])->name('siswa.paket-menu-aktif.index');
+    Route::get('/siswa/paket-menu-aktif/{identifier}', [PaketMenuPilihanController::class, 'showSiswa'])->name('siswa.paket-menu-aktif.show');
+
+    // FR-52: Pendaftaran pilihan paket prioritas siswa
+    Route::get('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'indexSiswa'])->name('siswa.pendaftaran-pilihan.index');
+    Route::post('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'storeSiswa'])->name('siswa.pendaftaran-pilihan.store');
+
+    // Dashboard siswa (render Blade view)
+    Route::get('/siswa/dashboard', function () {
+        return view('siswa.dashboard');
+    })->name('siswa.dashboard');
 });
 
 // Route yang wajib login (bisa dari Siswa maupun Admin / Guru BK)

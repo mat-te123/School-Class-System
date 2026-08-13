@@ -31,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'kriteria-bobot-menu/*',
             'master-mata-pelajaran',
             'master-mata-pelajaran/*',
+            'siswa',
+            'siswa/*',
+            'periode-penjurusan',
+            'periode-penjurusan/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

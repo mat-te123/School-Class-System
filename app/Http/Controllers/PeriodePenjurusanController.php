@@ -70,6 +70,12 @@ class PeriodePenjurusanController extends Controller
             'max_pilihan_siswa' => ['nullable', 'integer', 'min:1'],
             'tanggal_buka' => [$periode ? 'sometimes' : 'required', 'date'],
             'tanggal_tutup' => [$periode ? 'sometimes' : 'required', 'date', Rule::when($tanggalBuka, 'after:' . $tanggalBuka)],
+            'tanggal_mulai_pertukaran' => ['nullable', 'date'],
+            'tanggal_selesai_pertukaran' => [
+                'nullable',
+                'date',
+                Rule::when(request('tanggal_mulai_pertukaran', $periode?->tanggal_mulai_pertukaran), 'after:' . (request('tanggal_mulai_pertukaran', $periode?->tanggal_mulai_pertukaran) ?? ''))
+            ],
             'status_pengumuman' => ['nullable', 'in:AKTIF,NON-AKTIF'],
             'is_active' => ['nullable', 'boolean'],
         ];

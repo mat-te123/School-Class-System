@@ -193,6 +193,15 @@ class LegerImportController extends Controller
      */
     public function history(Request $request): JsonResponse
     {
+        $user = \Illuminate\Support\Facades\Auth::guard('web')->user() ?? \Illuminate\Support\Facades\Auth::user();
+        
+        if (!$user || $user->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Hanya admin yang dapat melihat riwayat Leger.',
+            ], 403);
+        }
+
         $query = \App\Models\RiwayatUploadLeger::with(['kelasAsal', 'uploader']);
 
         if ($request->has('nama_kelas') && !empty($request->nama_kelas)) {
