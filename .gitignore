@@ -35,3 +35,6 @@ prd.md
 *.xlsx
 *.xls
 Leger_*.xlsx
+
+# Documentation
+/docs/
