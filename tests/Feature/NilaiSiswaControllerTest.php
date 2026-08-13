@@ -70,10 +70,10 @@ class NilaiSiswaControllerTest extends TestCase
             ],
         ]);
 
-        $response->assertStatus(200)
-            ->assertJson(['success' => true, 'imported' => 1]);
+        $response->assertStatus(202)
+            ->assertJson(['success' => true, 'status' => 'queued']);
 
-        $this->assertCount(1, $response->json('skipped'));
+        $this->assertEquals(1, $response->json('skipped_validation'));
 
         $leger = NilaiLegerSiswa::where('siswa_id', $this->siswa->id)->firstOrFail();
         $this->assertEquals(88.0, $leger->rata_keseluruhan);
@@ -92,10 +92,10 @@ class NilaiSiswaControllerTest extends TestCase
             'rows' => [['nisn' => '1234567890', 'nilai' => 60]],
         ];
 
-        $this->actingAs($this->admin, 'web')->postJson('/nilai-siswa/import-mapel', $payload)->assertOk();
+        $this->actingAs($this->admin, 'web')->postJson('/nilai-siswa/import-mapel', $payload)->assertStatus(202);
 
         $payload['rows'][0]['nilai'] = 95;
-        $this->actingAs($this->admin, 'web')->postJson('/nilai-siswa/import-mapel', $payload)->assertOk();
+        $this->actingAs($this->admin, 'web')->postJson('/nilai-siswa/import-mapel', $payload)->assertStatus(202);
 
         $this->assertEquals(1, DetailNilaiSiswa::count());
         $this->assertEquals(95.0, DetailNilaiSiswa::first()->nilai_angka);
@@ -202,6 +202,35 @@ class NilaiSiswaControllerTest extends TestCase
         $this->actingAs($guru, 'web')
             ->putJson('/nilai-siswa/' . $detail->id, ['nilai_angka' => 90])
             ->assertStatus(403);
+    }
+
+    /** FR-49: Siswa dapat melihat nilai mereka sendiri */
+    public function test_siswa_can_view_their_own_nilai(): void
+    {
+        $this->seedNilai(85);
+
+        $response = $this->actingAs($this->siswa, 'siswa')->getJson('/siswa/nilai');
+
+        $response->assertOk()
+            ->assertJson(['success' => true]);
+        
+        $this->assertCount(1, $response->json('data'));
+        $this->assertEquals(85.0, $response->json('data.0.nilai_angka'));
+        $this->assertEquals($this->siswa->nisn, $response->json('data.0.leger.siswa.nisn'));
+    }
+
+    /** FR-49: User belum login ditolak dari endpoint nilai siswa */
+    public function test_unauthenticated_cannot_view_siswa_nilai(): void
+    {
+        $this->getJson('/siswa/nilai')->assertStatus(401);
+    }
+
+    /** FR-49: Admin tidak bisa akses endpoint siswa */
+    public function test_admin_cannot_view_via_siswa_endpoint(): void
+    {
+        $this->actingAs($this->admin, 'web')
+            ->getJson('/siswa/nilai')
+            ->assertStatus(401); // Karena middleware auth:siswa tidak menemukan session guard siswa
     }
 
     private function seedNilai(float $nilai): DetailNilaiSiswa

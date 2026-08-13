@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Jobs\BulkImportDetailNilaiSiswaJob;
 
 /**
  * FR-13: Impor nilai siswa untuk mata pelajaran tertentu.
@@ -69,6 +70,39 @@ class NilaiSiswaController extends Controller
     }
 
     /**
+     * FR-49: Siswa dapat melihat nilai mata pelajaran mereka sendiri.
+     */
+    public function indexSiswa(Request $request): JsonResponse
+    {
+        // Pastikan siswa login via auth:siswa guard
+        $siswa = Auth::guard('siswa')->user();
+        if (!$siswa) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.',
+            ], 403);
+        }
+
+        $query = DetailNilaiSiswa::with([
+            'mataPelajaran:id,kode_mapel,nama_mapel',
+            'leger.siswa:id,nisn,nis,nama_lengkap',
+            'leger:id,siswa_id,tahun_ajaran,semester,rata_keseluruhan',
+        ])
+        ->whereHas('leger', function ($q) use ($siswa) {
+            $q->where('siswa_id', $siswa->id);
+        })
+        ->orderBy('master_mata_pelajaran_id');
+
+        $data = $query->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil mengambil daftar nilai siswa.',
+            'data'    => $data,
+        ]);
+    }
+
+    /**
      * FR-14: Perbaiki satu nilai mata pelajaran siswa.
      */
     public function update(Request $request, string $id): JsonResponse
@@ -100,7 +134,7 @@ class NilaiSiswaController extends Controller
     }
 
     /**
-     * FR-13: Impor nilai siswa untuk satu mata pelajaran tertentu (bulk).
+     * FR-13: Impor nilai siswa untuk satu mata pelajaran tertentu (bulk)
      *
      * Payload: mapel_id, tahun_ajaran, semester, rows: [{nisn, nilai}, ...]
      */
@@ -114,63 +148,36 @@ class NilaiSiswaController extends Controller
             'mapel_id'     => 'required|uuid|exists:master_mata_pelajaran,id',
             'tahun_ajaran' => 'required|string|max:10',
             'semester'     => 'required|string|max:10',
-            'rows'                => 'required|array|min:1',
-            'rows.*.nisn'         => 'required|string|max:20',
-            'rows.*.nilai'        => 'required|numeric|min:0|max:100',
+            'rows'                 => 'required|array|min:1',
+            'rows.*.nisn'          => 'required|string|max:20',
+            'rows.*.nilai'         => 'required|numeric|min:0|max:100',
         ]);
 
         $mapel = MasterMataPelajaran::findOrFail($validated['mapel_id']);
 
-        $nisnList = array_column($validated['rows'], 'nisn');
-        $siswaMap = Siswa::whereIn('nisn', $nisnList)->get()->keyBy('nisn');
+        // Validate NISNs exist before dispatching job
+        $siswaList = Siswa::whereIn('nisn', array_column($validated['rows'], 'nisn'))->pluck('nisn');
+        $validRows = array_filter($validated['rows'], fn($row) => $siswaList->contains($row['nisn']));
+        $invalidRows = array_filter($validated['rows'], fn($row) => !$siswaList->contains($row['nisn']));
 
-        $imported = 0;
-        $skipped  = [];
-        $legerIds = [];
+        $expectedImported = count($validRows);
+        $skippedCount = count($invalidRows);
 
-        DB::transaction(function () use ($validated, $mapel, $siswaMap, &$imported, &$skipped, &$legerIds) {
-            foreach ($validated['rows'] as $row) {
-                $siswa = $siswaMap->get($row['nisn']);
-                if (!$siswa) {
-                    $skipped[] = ['nisn' => $row['nisn'], 'reason' => 'Siswa dengan NISN tersebut tidak ditemukan.'];
-                    continue;
-                }
-
-                $leger = NilaiLegerSiswa::firstOrCreate(
-                    [
-                        'siswa_id'     => $siswa->id,
-                        'tahun_ajaran' => $validated['tahun_ajaran'],
-                        'semester'     => $validated['semester'],
-                    ],
-                    ['id' => (string) Str::uuid()]
-                );
-
-                DetailNilaiSiswa::updateOrCreate(
-                    [
-                        'nilai_leger_siswa_id'     => $leger->id,
-                        'master_mata_pelajaran_id' => $mapel->id,
-                    ],
-                    [
-                        'nilai_angka' => $row['nilai'],
-                        'predikat'    => $this->calculatePredikat((float) $row['nilai']),
-                    ]
-                );
-
-                $legerIds[$leger->id] = true;
-                $imported++;
-            }
-
-            foreach (array_keys($legerIds) as $legerId) {
-                $this->recalculateLeger($legerId);
-            }
-        });
+        // Dispatch bulk import job
+        BulkImportDetailNilaiSiswaJob::dispatch(
+            $validated['mapel_id'],
+            $validated['tahun_ajaran'],
+            $validated['semester'],
+            $validRows
+        );
 
         return response()->json([
-            'success'  => true,
-            'message'  => "Berhasil mengimpor nilai mata pelajaran '{$mapel->nama_mapel}'.",
-            'imported' => $imported,
-            'skipped'  => $skipped,
-        ], $imported > 0 ? 200 : 422);
+            'success'                => true,
+            'message'                => "Impor nilai '{$mapel->nama_mapel}' sedang diproses di background.",
+            'expected_imported'      => $expectedImported,
+            'skipped_validation'     => $skippedCount,
+            'status'                 => 'queued',
+        ], 202);
     }
 
     /**
