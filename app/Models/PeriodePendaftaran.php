@@ -21,6 +21,8 @@ class PeriodePendaftaran extends Model
         'max_pilihan_siswa',
         'tanggal_buka',
         'tanggal_tutup',
+        'tanggal_mulai_pertukaran',
+        'tanggal_selesai_pertukaran',
         'status_pengumuman',
         'is_active',
     ];
@@ -31,6 +33,8 @@ class PeriodePendaftaran extends Model
             'max_pilihan_siswa' => 'integer',
             'tanggal_buka' => 'datetime',
             'tanggal_tutup' => 'datetime',
+            'tanggal_mulai_pertukaran' => 'datetime',
+            'tanggal_selesai_pertukaran' => 'datetime',
             'is_active' => 'boolean',
         ];
     }
