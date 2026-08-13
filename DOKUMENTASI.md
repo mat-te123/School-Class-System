@@ -14,10 +14,11 @@ Sistem Manajemen Klasifikasi & Pemilihan Paket Menu Kelas (School Class System) 
   - [3. Kelas Asal (Kelas X)](#3-kelas-asal-kelas-x)
   - [4. Paket Menu Pilihan](#4-paket-menu-pilihan)
   - [5. Master Mata Pelajaran](#5-master-mata-pelajaran)
-   - [6. Kriteria Bobot Menu](#6-kriteria-bobot-menu)
-   - [7. Import Leger XLSX & Riwayat](#7-import-leger-xlsx--riwayat)
-   - [8. Data Siswa](#8-data-siswa)
-   - [9. Periode Penjurusan](#9-periode-penjurusan)
+  - [6. Kriteria Bobot Menu](#6-kriteria-bobot-menu)
+  - [7. Import Leger XLSX & Riwayat](#7-import-leger-xlsx--riwayat)
+  - [8. Data Siswa](#8-data-siswa)
+  - [9. Periode Penjurusan (FR-9, FR-10, FR-11)](#9-periode-penjurusan-fr-9-fr-10-fr-11)
+  - [10. Fitur Khusus Siswa (FR-49, FR-50, FR-51)](#10-fitur-khusus-siswa-fr-49-fr-50-fr-51)
 
 ---
 
@@ -493,21 +494,279 @@ Seluruh endpoint di bawah memerlukan `auth:web` dan hanya ditujukan untuk admin.
 * **Endpoint**: `POST /periode-penjurusan`
 * **Access**: `auth:web` (Admin)
 
-#### D. Ubah Periode dan Jadwal Pengisian Minat
+#### D. Ubah Periode, Jadwal Pengisian Minat & Jadwal Pertukaran
 * **Endpoint**: `PUT /periode-penjurusan/{id}`
 * **Access**: `auth:web` (Admin)
-* Field wajib saat membuat periode: `nama_periode`, `tahun_ajaran`, `tanggal_buka`, `tanggal_tutup`.
-* `tanggal_buka` adalah tanggal mulai pengisian minat; `tanggal_tutup` adalah tanggal berakhirnya.
-* `tanggal_tutup` wajib setelah `tanggal_buka`.
-* Field opsional: `gelombang`, `max_pilihan_siswa`, `status_pengumuman` (`AKTIF`/`NON-AKTIF`), `is_active`.
+
+##### Jadwal Pengisian Minat (FR-9):
+| Field | Tipe | Keterangan |
+|-------|------|------------|
+| `tanggal_buka` | `datetime` | Tanggal mulai pengisian minat oleh siswa |
+| `tanggal_tutup` | `datetime` | Tanggal berakhir pengisian minat; wajib setelah `tanggal_buka` |
+
+##### Jadwal Pengajuan Pertukaran Kelas/Paket (FR-10 & FR-11):
+| Field | Tipe | Keterangan |
+|-------|------|------------|
+| `tanggal_mulai_pertukaran` | `datetime` (nullable) | Tanggal mulai pengajuan pertukaran kelas/paket oleh siswa |
+| `tanggal_selesai_pertukaran` | `datetime` (nullable) | Tanggal berakhir pengajuan pertukaran; wajib setelah `tanggal_mulai_pertukaran` |
+
+> [!IMPORTANT]
+> - `tanggal_buka` dan `tanggal_tutup` wajib diisi saat membuat periode baru.
+> - `tanggal_mulai_pertukaran` dan `tanggal_selesai_pertukaran` bersifat opsional; jika diisi, `tanggal_selesai_pertukaran` wajib setelah `tanggal_mulai_pertukaran`.
+
+* Field opsional lainnya: `gelombang`, `max_pilihan_siswa`, `status_pengumuman` (`AKTIF`/`NON-AKTIF`), `is_active`.
 * Default pembuatan: `gelombang: "Utama"`, `max_pilihan_siswa: 3`, `status_pengumuman: "NON-AKTIF"`, `is_active: true`.
 
-* **Payload Request**:
+* **Payload Request Lengkap**:
 ```json
 {
   "nama_periode": "Penjurusan 2026/2027",
   "tahun_ajaran": "2026/2027",
   "tanggal_buka": "2026-08-11 08:00:00",
-  "tanggal_tutup": "2026-08-20 23:59:59"
+  "tanggal_tutup": "2026-08-20 23:59:59",
+  "tanggal_mulai_pertukaran": "2026-08-25 08:00:00",
+  "tanggal_selesai_pertukaran": "2026-08-30 23:59:59"
 }
 ```
+
+---
+
+### 10. Fitur Khusus Siswa (FR-49, FR-50, FR-51)
+
+Endpoint khusus untuk siswa yang sudah terautentikasi (guard `siswa`). Semua endpoint di bawah menggunakan middleware `auth:siswa`.
+
+> [!IMPORTANT]
+> - Seluruh endpoint di bab ini **wajib login siswa** (`auth:siswa`).
+> - Data otomatis difilter berdasarkan **sesi siswa yang sedang login** (tidak bisa melihat data siswa lain).
+> - `FR-49`, `FR-50`, dan `FR-51` adalah fitur *student-facing interface*.
+
+---
+
+#### A. Siswa Melihat Nilai Mata Pelajaran (FR-49)
+
+* **Endpoint**: `GET /siswa/nilai`
+* **Access**: `auth:siswa`
+* **Deskripsi**: Mengambil daftar nilai mata pelajaran milik siswa yang sedang login.
+
+* **Response Status**: `200 OK`
+```json
+{
+  "success": true,
+  "message": "Berhasil mengambil daftar nilai siswa.",
+  "data": [
+    {
+      "id": "uuid-detail-nilai",
+      "nilai_leger_siswa_id": "uuid-leger",
+      "master_mata_pelajaran_id": "uuid-mapel",
+      "nilai_angka": 85.5,
+      "predikat": "B",
+      "mata_pelajaran": {
+        "id": "uuid-mapel",
+        "kode_mapel": "MAT_W",
+        "nama_mapel": "Matematika Wajib"
+      },
+      "leger": {
+        "id": "uuid-leger",
+        "siswa_id": "uuid-siswa",
+        "tahun_ajaran": "2024/2025",
+        "semester": "Genap",
+        "rata_keseluruhan": 85.5
+      }
+    }
+  ]
+}
+```
+
+> [!NOTE]
+> - Response **tidak menggunakan paginasi**. Seluruh nilai mata pelajaran milik siswa yang sedang login dikembalikan sekaligus dalam array `data`.
+> - Data otomatis difilter berdasarkan `siswa_id` dari session (`Auth::guard('siswa')`), bukan dari input user.
+
+---
+
+#### B. Siswa Melihat Daftar Paket Aktif Periode Berjalan (FR-50)
+
+* **Endpoint**: `GET /siswa/paket-menu-aktif`
+* **Access**: `auth:siswa`
+* **Deskripsi**: Menampilkan daftar paket menu pilihan yang **aktif** dan **memiliki minimal 1 kriteria bobot**, pada periode pendaftaran yang sedang berjalan.
+
+* **Query Parameters** *(opsional)*:
+  * `with_criteria`: `true` (default) / `false`. Jika `false`, field `kriteria_bobot` dihilangkan dari response untuk performa lebih cepat.
+
+* **Kriteria "Periode Berjalan"**:
+  * `is_active = true`
+  * `status_pengumuman = "AKTIF"`
+  * `tanggal_buka <= sekarang`
+  * `tanggal_tutup >= sekarang`
+
+* **Response Status**: `200 OK`
+```json
+{
+  "success": true,
+  "message": "Berhasil mengambil daftar paket menu aktif.",
+  "meta": {
+    "active_periods": [
+      {
+        "id": "uuid-periode",
+        "nama_periode": "2024/2025 - Gelombang Utama",
+        "tahun_ajaran": "2024/2025",
+        "gelombang": "Utama",
+        "tanggal_buka": "2024-07-01",
+        "tanggal_tutup": "2024-08-31",
+        "status_pengumuman": "AKTIF"
+      }
+    ],
+    "total_paket": 2,
+    "last_updated": "2024-08-12T10:00:00+00:00"
+  },
+  "data": [
+    {
+      "id": "uuid-paket",
+      "nama_menu": "Rumpun SAINS",
+      "rumpun": "eksakta",
+      "kuota_kapasitas": 36,
+      "kuota_terisi": 23,
+      "kuota_tersisa": 13,
+      "is_active": true,
+      "kriteria_bobot": [
+        {
+          "id": "uuid-kriteria",
+          "master_mata_pelajaran_id": "uuid-mapel",
+          "nama_mapel": "Matematika",
+          "kode_mapel": "MAT_W",
+          "bobot_persen": 40.0
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+#### C. Siswa Melihat Detail Paket Lengkap (FR-51)
+
+* **Endpoint**: `GET /siswa/paket-menu-aktif/{identifier}`
+* **Access**: `auth:siswa`
+* **Deskripsi**: Menampilkan detail lengkap satu paket menu pilihan aktif, termasuk daftar kriteria bobot dan informasi periode aktif berjalan.
+
+* **Path Parameter**:
+  * `identifier`: UUID `id` atau `nama_menu` dari paket menu.
+
+* **Catatan**:
+  * Hanya paket menu dengan `is_active = true` yang dapat diakses. Jika tidak aktif/tidak ditemukan, mengembalikan `404 Not Found`.
+
+* **Response Status**: `200 OK`
+```json
+{
+  "success": true,
+  "message": "Berhasil mengambil detail Paket Menu Pilihan.",
+  "data": {
+    "id": "uuid-paket",
+    "nama_menu": "Rumpun SAINS",
+    "rumpun": "eksakta",
+    "kuota_kapasitas": 36,
+    "kuota_terisi": 15,
+    "kuota_tersisa": 21,
+    "is_active": true,
+    "kriteria_bobot": [
+      {
+        "id": "uuid-kriteria",
+        "master_mata_pelajaran_id": "uuid-mapel",
+        "nama_mapel": "Matematika",
+        "kode_mapel": "MAT_W",
+        "kelompok_mapel": "umum",
+        "bobot_persen": 40.0
+      }
+    ],
+    "periode_aktif": {
+      "id": "uuid-periode",
+      "nama_periode": "2024/2025 - Gelombang Utama",
+      "tahun_ajaran": "2024/2025",
+      "gelombang": "Utama",
+      "tanggal_buka": "2024-07-01",
+      "tanggal_tutup": "2024-08-31",
+      "status_pengumuman": "AKTIF",
+      "max_pilihan_siswa": 3
+    }
+  }
+}
+```
+
+---
+
+#### D. Siswa Memilih 3 Paket Prioritas (FR-52)
+
+* **Endpoint**: `POST /siswa/pendaftaran-pilihan`
+* **Access**: `auth:siswa`
+* **Deskripsi**: Mengirimkan 3 paket menu pilihan prioritas siswa (Prioritas 1, Prioritas 2, dan Prioritas 3) pada periode pendaftaran berjalan.
+
+* **Request Body**:
+```json
+{
+  "pilihan": [
+    "uuid-paket-prioritas-1",
+    "uuid-paket-prioritas-2",
+    "uuid-paket-prioritas-3"
+  ]
+}
+```
+
+* **Aturan Validasi**:
+  1. Siswa **wajib memilih 3 paket** (sesuai `max_pilihan_siswa` di periode berjalan).
+  2. Ketiga paket **tidak boleh duplikat / sama**.
+  3. Semua paket yang dipilih harus berstatus **`is_active = true`**.
+  4. Halaman pendaftaran **harus dalam rentang `tanggal_buka` s/d `tanggal_tutup`** periode yang berstatus `is_active = true`.
+  5. Siswa hanya diperbolehkan **submit 1 kali** untuk setiap periode pendaftaran (`409 Conflict` jika sudah pernah submit).
+
+* **Response Status**: `201 Created`
+```json
+{
+  "success": true,
+  "message": "Berhasil menyimpan 3 paket menu pilihan prioritas Anda.",
+  "data": {
+    "id": "uuid-pendaftaran",
+    "siswa_id": "uuid-siswa",
+    "periode_pendaftaran_id": "uuid-periode",
+    "tanggal_submit": "2026-08-12T18:40:00.000000Z",
+    "detail_pendaftaran": [
+      {
+        "id": "uuid-detail-1",
+        "pendaftaran_pilihan_id": "uuid-pendaftaran",
+        "paket_menu_pilihan_id": "uuid-paket-prioritas-1",
+        "urutan_pilihan": 1,
+        "paket_menu_pilihan": {
+          "id": "uuid-paket-prioritas-1",
+          "nama_menu": "Rumpun SAINS 1",
+          "rumpun": "eksakta"
+        }
+      },
+      {
+        "id": "uuid-detail-2",
+        "pendaftaran_pilihan_id": "uuid-pendaftaran",
+        "paket_menu_pilihan_id": "uuid-paket-prioritas-2",
+        "urutan_pilihan": 2,
+        "paket_menu_pilihan": {
+          "id": "uuid-paket-prioritas-2",
+          "nama_menu": "Rumpun SOSIAL 1",
+          "rumpun": "sosial"
+        }
+      },
+      {
+        "id": "uuid-detail-3",
+        "pendaftaran_pilihan_id": "uuid-pendaftaran",
+        "paket_menu_pilihan_id": "uuid-paket-prioritas-3",
+        "urutan_pilihan": 3,
+        "paket_menu_pilihan": {
+          "id": "uuid-paket-prioritas-3",
+          "nama_menu": "Rumpun SAINS 2",
+          "rumpun": "eksakta"
+        }
+      }
+    ]
+  }
+}
+```
+
+* **Endpoint Status Pilihan Siswa**: `GET /siswa/pendaftaran-pilihan`
+  - Mengambil data pendaftaran pilihan siswa yang sedang login pada periode aktif saat ini.
+

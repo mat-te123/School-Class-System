@@ -204,3 +204,11 @@ docker compose exec app php artisan queue:failed
 # Menjalankan ulang job yang gagal
 docker compose exec app php artisan queue:retry all
 ```
+# 1. Hapus semua tabel
+docker compose exec app php artisan db:wipe
+
+# 2. Jalankan migration
+docker compose exec app php artisan migrate
+
+# 3. Jalankan seeder
+docker compose exec app php artisan db:seed
