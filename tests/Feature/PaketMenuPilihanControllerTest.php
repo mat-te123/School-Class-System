@@ -355,4 +355,160 @@ class PaketMenuPilihanControllerTest extends TestCase
         $this->assertDatabaseMissing('paket_menu_pilihan', ['id' => $oldId]);
         $this->assertDatabaseHas('paket_menu_pilihan', ['id' => $newId, 'nama_menu' => 'Menu 12 Lama']);
     }
+
+    /**
+     * FR-50: Test siswa melihat daftar paket aktif periode berjalan.
+     */
+    public function test_siswa_can_view_active_paket_menu_for_current_periode(): void
+    {
+        $siswa = \App\Models\Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '5566778899',
+            'nis' => '12347',
+            'nama_lengkap' => 'Siswa FR50',
+            'password' => 'password123',
+            'is_active' => true,
+        ]);
+
+        // Buat periode aktif
+        \App\Models\PeriodePendaftaran::create([
+            'nama_periode' => 'Periode Aktif Test',
+            'tahun_ajaran' => '2024/2025',
+            'tanggal_buka' => now()->subDay(),
+            'tanggal_tutup' => now()->addDays(7),
+            'status_pengumuman' => 'AKTIF',
+            'is_active' => true,
+        ]);
+
+        // Buat paket menu yang aktif
+        $paket1 = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Paket Aktif 1',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'is_active' => true,
+        ]);
+
+        $mapel = \App\Models\MasterMataPelajaran::create([
+            'id' => (string) Str::uuid(),
+            'kode_mapel' => 'test_mapel',
+            'nama_mapel' => 'Mapel Test',
+            'kelompok_mapel' => 'umum',
+            'is_active' => true,
+        ]);
+
+        // Tambahkan kriteria (syarat tampil di endpoint siswa)
+        \App\Models\KriteriaBobotMenu::create([
+            'id' => (string) Str::uuid(),
+            'paket_menu_pilihan_id' => $paket1->id,
+            'master_mata_pelajaran_id' => $mapel->id,
+            'bobot_persen' => 100,
+        ]);
+
+        // Paket 2 (tidak punya kriteria, harusnya tidak muncul)
+        PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Paket Tanpa Kriteria',
+            'rumpun' => 'sosial',
+            'kuota_kapasitas' => 36,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($siswa, 'siswa')->getJson('/siswa/paket-menu-aktif');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'meta' => [
+                    'total_paket' => 1,
+                ]
+            ])
+            ->assertJsonPath('data.0.nama_menu', 'Paket Aktif 1')
+            ->assertJsonPath('data.0.kriteria_bobot.0.nama_mapel', 'Mapel Test');
+    }
+
+    public function test_unauthenticated_cannot_access_siswa_paket_menu(): void
+    {
+        $this->getJson('/siswa/paket-menu-aktif')->assertStatus(401);
+    }
+
+    /**
+     * FR-51: Test siswa melihat detail paket lengkap.
+     */
+    public function test_siswa_can_view_detail_paket_menu_aktif(): void
+    {
+        $siswa = \App\Models\Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '5566778891',
+            'nis' => '12348',
+            'nama_lengkap' => 'Siswa FR51',
+            'password' => 'password123',
+            'is_active' => true,
+        ]);
+
+        \App\Models\PeriodePendaftaran::create([
+            'nama_periode' => 'Periode Aktif Test 2',
+            'tahun_ajaran' => '2024/2025',
+            'tanggal_buka' => now()->subDay(),
+            'tanggal_tutup' => now()->addDays(7),
+            'status_pengumuman' => 'AKTIF',
+            'is_active' => true,
+        ]);
+
+        $paket1 = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Paket Lengkap 1',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'is_active' => true,
+        ]);
+
+        $mapel = \App\Models\MasterMataPelajaran::create([
+            'id' => (string) Str::uuid(),
+            'kode_mapel' => 'test_mapel_2',
+            'nama_mapel' => 'Mapel Test 2',
+            'kelompok_mapel' => 'umum',
+            'is_active' => true,
+        ]);
+
+        \App\Models\KriteriaBobotMenu::create([
+            'id' => (string) Str::uuid(),
+            'paket_menu_pilihan_id' => $paket1->id,
+            'master_mata_pelajaran_id' => $mapel->id,
+            'bobot_persen' => 100,
+        ]);
+
+        $response = $this->actingAs($siswa, 'siswa')->getJson('/siswa/paket-menu-aktif/' . $paket1->id);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+            ])
+            ->assertJsonPath('data.nama_menu', 'Paket Lengkap 1')
+            ->assertJsonPath('data.periode_aktif.status_pengumuman', 'AKTIF')
+            ->assertJsonPath('data.kriteria_bobot.0.nama_mapel', 'Mapel Test 2');
+    }
+
+    public function test_siswa_cannot_view_inactive_paket_detail(): void
+    {
+        $siswa = \App\Models\Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '5566778892',
+            'nis' => '12349',
+            'nama_lengkap' => 'Siswa FR51 Inactive',
+            'password' => 'password123',
+            'is_active' => true,
+        ]);
+
+        $paketInactive = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Paket Tidak Aktif',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'is_active' => false,
+        ]);
+
+        $response = $this->actingAs($siswa, 'siswa')->getJson('/siswa/paket-menu-aktif/' . $paketInactive->id);
+        $response->assertStatus(404);
+    }
 }

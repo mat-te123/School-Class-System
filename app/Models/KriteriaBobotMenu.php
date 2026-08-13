@@ -36,12 +36,17 @@ class KriteriaBobotMenu extends Model
     }
 
     /**
-     * Relasi ke model MasterMataPelajaran.
+     * Relasi ke model MasterMataPelajaran (alias: mataPelajaran).
      *
      * @return BelongsTo
      */
     public function masterMataPelajaran(): BelongsTo
     {
         return $this->belongsTo(MasterMataPelajaran::class, 'master_mata_pelajaran_id');
+    }
+
+    public function mataPelajaran(): BelongsTo
+    {
+        return $this->masterMataPelajaran();
     }
 }
