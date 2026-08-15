@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Hash;
 
 class SiswaController extends Controller
 {
@@ -66,12 +65,8 @@ class SiswaController extends Controller
             'tanggal_lahir' => 'nullable|date',
             'angkatan' => 'nullable|string|max:4',
             'is_active' => 'boolean',
-            'password' => 'nullable|string|min:8'
         ]);
 
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        }
 
         $siswa->update($validated);
 
