@@ -151,6 +151,9 @@ class PendaftaranPilihanController extends Controller
                     'paket_menu_pilihan_id' => $paketId,
                     'urutan_pilihan' => $index + 1,
                 ]);
+
+                // Increment kuota_terisi pada paket menu pilihan yang dipilih
+                PaketMenuPilihan::where('id', $paketId)->increment('kuota_terisi');
             }
 
             return $pendaftaranRecord;
