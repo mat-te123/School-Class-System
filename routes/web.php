@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\KelasAsalController;
 use App\Http\Controllers\KriteriaBobotMenuController;
+use App\Http\Controllers\LaporanPesanController;
 use App\Http\Controllers\LegerImportController;
 use App\Http\Controllers\MasterMataPelajaranController;
 use App\Http\Controllers\NilaiSiswaController;
@@ -118,5 +119,23 @@ Route::middleware(['auth:web'])->group(function () {
     Route::post('/siswa', [SiswaController::class, 'store'])->name('siswa.store');
     Route::put('/siswa/{id}', [SiswaController::class, 'update'])->name('siswa.update');
     Route::delete('/siswa/{id}', [SiswaController::class, 'destroy'])->name('siswa.destroy');
+});
+
+// ===== Route Laporan Pesan (Report) =====
+// Publik / Guest: kirim laporan (bisa juga dipakai siswa & admin yang login)
+Route::post('/laporan-pesan', [LaporanPesanController::class, 'store'])->name('laporan-pesan.store');
+
+// Siswa (login): lihat laporan milik sendiri
+Route::middleware(['auth:siswa'])->group(function () {
+    Route::get('/siswa/laporan-pesan', [LaporanPesanController::class, 'indexSiswa'])->name('laporan-pesan.siswa.index');
+    Route::get('/siswa/laporan-pesan/{id}', [LaporanPesanController::class, 'show'])->name('laporan-pesan.siswa.show');
+});
+
+// Admin / Guru BK (login): kelola seluruh laporan
+Route::middleware(['auth:web'])->group(function () {
+    Route::get('/laporan-pesan', [LaporanPesanController::class, 'index'])->name('laporan-pesan.index');
+    Route::get('/laporan-pesan/{id}', [LaporanPesanController::class, 'show'])->name('laporan-pesan.show');
+    Route::put('/laporan-pesan/{id}/status', [LaporanPesanController::class, 'updateStatus'])->name('laporan-pesan.update-status');
+    Route::delete('/laporan-pesan/{id}', [LaporanPesanController::class, 'destroy'])->name('laporan-pesan.destroy');
 });
 
