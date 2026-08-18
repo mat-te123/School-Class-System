@@ -20,10 +20,17 @@ class PendaftaranPilihan extends Model
         'siswa_id',
         'periode_pendaftaran_id',
         'tanggal_submit',
+        'status',
+        'catatan_penolakan',
+        'dokumen_wali_path',
+        'ditinjau_oleh',
+        'tanggal_tinjauan',
     ];
 
     protected $casts = [
         'tanggal_submit' => 'datetime',
+        'status' => 'string',
+        'tanggal_tinjauan' => 'datetime',
     ];
 
     public function siswa(): BelongsTo
@@ -39,5 +46,10 @@ class PendaftaranPilihan extends Model
     public function detailPendaftaran(): HasMany
     {
         return $this->hasMany(DetailPendaftaranPilihan::class, 'pendaftaran_pilihan_id')->orderBy('urutan_pilihan', 'asc');
+    }
+
+    public function peninjau(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'ditinjau_oleh');
     }
 }
