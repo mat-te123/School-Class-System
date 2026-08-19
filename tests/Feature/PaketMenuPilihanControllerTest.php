@@ -511,4 +511,77 @@ class PaketMenuPilihanControllerTest extends TestCase
         $response = $this->actingAs($siswa, 'siswa')->getJson('/siswa/paket-menu-aktif/' . $paketInactive->id);
         $response->assertStatus(404);
     }
+
+    /** Request browser reguler merender view paket-menu-pilihan.show */
+    public function test_user_can_view_paket_menu_show_blade(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'test_user_paket_show',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Menu Blade (P9)',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 30,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')->get('/paket-menu-pilihan/' . $paket->id);
+
+        $response->assertOk();
+        $response->assertViewIs('paket-menu-pilihan.show');
+        $response->assertViewHas('paketMenu');
+    }
+
+    /** Request browser reguler merender view paket-menu-pilihan.index-siswa */
+    public function test_siswa_can_view_paket_menu_aktif_blade(): void
+    {
+        $siswa = \App\Models\Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '8888888888',
+            'nis' => '8888',
+            'nama_lengkap' => 'Siswa Blade',
+            'password' => 'password123',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($siswa, 'siswa')->get('/siswa/paket-menu-aktif');
+
+        $response->assertOk();
+        $response->assertViewIs('paket-menu-pilihan.index-siswa');
+        $response->assertViewHas('formattedMenus');
+        $response->assertViewHas('activePeriods');
+    }
+
+    /** Request browser reguler merender view paket-menu-pilihan.show-siswa */
+    public function test_siswa_can_view_paket_menu_aktif_detail_blade(): void
+    {
+        $siswa = \App\Models\Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '7777777777',
+            'nis' => '7777',
+            'nama_lengkap' => 'Siswa Detail Blade',
+            'password' => 'password123',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Menu Detail Blade (P8)',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 30,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($siswa, 'siswa')->get('/siswa/paket-menu-aktif/' . $paket->id);
+
+        $response->assertOk();
+        $response->assertViewIs('paket-menu-pilihan.show-siswa');
+        $response->assertViewHas('paketMenu');
+    }
 }

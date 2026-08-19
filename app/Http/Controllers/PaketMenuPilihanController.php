@@ -76,15 +76,18 @@ class PaketMenuPilihanController extends Controller
     /**
      * FR-50: Siswa melihat daftar paket menu aktif periode berjalan.
      */
-    public function indexSiswa(Request $request): JsonResponse
+    public function indexSiswa(Request $request)
     {
         // 1. Verifikasi siswa login
         $siswa = Auth::guard('siswa')->user();
         if (!$siswa) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.');
         }
 
         // 2. Cari periode aktif yang sedang berjalan
@@ -133,38 +136,45 @@ class PaketMenuPilihanController extends Controller
             return $item;
         });
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil daftar paket menu aktif.',
-            'meta' => [
-                'active_periods' => $activePeriods->map(fn($p) => [
-                    'id' => $p->id,
-                    'nama_periode' => $p->nama_periode,
-                    'tahun_ajaran' => $p->tahun_ajaran,
-                    'gelombang' => $p->gelombang,
-                    'tanggal_buka' => is_string($p->tanggal_buka) ? $p->tanggal_buka : null,
-                    'tanggal_tutup' => is_string($p->tanggal_tutup) ? $p->tanggal_tutup : null,
-                    'status_pengumuman' => $p->status_pengumuman,
-                ]),
-                'total_paket' => $formattedMenus->count(),
-                'last_updated' => now()->toIso8601String(),
-            ],
-            'data' => $formattedMenus,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil daftar paket menu aktif.',
+                'meta' => [
+                    'active_periods' => $activePeriods->map(fn($p) => [
+                        'id' => $p->id,
+                        'nama_periode' => $p->nama_periode,
+                        'tahun_ajaran' => $p->tahun_ajaran,
+                        'gelombang' => $p->gelombang,
+                        'tanggal_buka' => is_string($p->tanggal_buka) ? $p->tanggal_buka : null,
+                        'tanggal_tutup' => is_string($p->tanggal_tutup) ? $p->tanggal_tutup : null,
+                        'status_pengumuman' => $p->status_pengumuman,
+                    ]),
+                    'total_paket' => $formattedMenus->count(),
+                    'last_updated' => now()->toIso8601String(),
+                ],
+                'data' => $formattedMenus,
+            ]);
+        }
+
+        return view('paket-menu-pilihan.index-siswa', compact('formattedMenus', 'activePeriods'));
     }
 
     /**
      * FR-51: Siswa melihat detail paket menu lengkap (termasuk kriteria bobot & informasi periode).
      */
-    public function showSiswa(string $identifier): JsonResponse
+    public function showSiswa(Request $request, string $identifier)
     {
         // 1. Verifikasi siswa login
         $siswa = Auth::guard('siswa')->user();
         if (!$siswa) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.');
         }
 
         // 2. Cari paket menu aktif (hanya yang aktif)
@@ -176,10 +186,13 @@ class PaketMenuPilihanController extends Controller
             ->first();
 
         if (!$paketMenu) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Paket Menu Pilihan tidak ditemukan atau tidak aktif.',
-            ], 404);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Paket Menu Pilihan tidak ditemukan atau tidak aktif.',
+                ], 404);
+            }
+            abort(404, 'Paket Menu Pilihan tidak ditemukan atau tidak aktif.');
         }
 
         // 3. Ambil informasi periode aktif berjalan
@@ -191,39 +204,43 @@ class PaketMenuPilihanController extends Controller
             ->orderByDesc('created_at')
             ->first(['id', 'nama_periode', 'tahun_ajaran', 'gelombang', 'tanggal_buka', 'tanggal_tutup', 'status_pengumuman', 'max_pilihan_siswa']);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil detail Paket Menu Pilihan.',
-            'data' => [
-                'id' => $paketMenu->id,
-                'nama_menu' => $paketMenu->nama_menu,
-                'rumpun' => $paketMenu->rumpun,
-                'kuota_kapasitas' => $paketMenu->kuota_kapasitas,
-                'kuota_terisi' => $paketMenu->kuota_terisi,
-                'kuota_tersisa' => $paketMenu->kuota_tersisa,
-                'is_active' => $paketMenu->is_active,
-                'kriteria_bobot' => $paketMenu->kriteriaBobots->map(function ($kb) {
-                    return [
-                        'id' => $kb->id,
-                        'master_mata_pelajaran_id' => $kb->master_mata_pelajaran_id,
-                        'nama_mapel' => $kb->mataPelajaran ? $kb->mataPelajaran->nama_mapel : 'N/A',
-                        'kode_mapel' => $kb->mataPelajaran ? $kb->mataPelajaran->kode_mapel : 'N/A',
-                        'kelompok_mapel' => $kb->mataPelajaran ? $kb->mataPelajaran->kelompok_mapel : 'N/A',
-                        'bobot_persen' => round($kb->bobot_persen, 2),
-                    ];
-                }),
-                'periode_aktif' => $activePeriod ? [
-                    'id' => $activePeriod->id,
-                    'nama_periode' => $activePeriod->nama_periode,
-                    'tahun_ajaran' => $activePeriod->tahun_ajaran,
-                    'gelombang' => $activePeriod->gelombang,
-                    'tanggal_buka' => is_string($activePeriod->tanggal_buka) ? $activePeriod->tanggal_buka : null,
-                    'tanggal_tutup' => is_string($activePeriod->tanggal_tutup) ? $activePeriod->tanggal_tutup : null,
-                    'status_pengumuman' => $activePeriod->status_pengumuman,
-                    'max_pilihan_siswa' => $activePeriod->max_pilihan_siswa,
-                ] : null,
-            ],
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil detail Paket Menu Pilihan.',
+                'data' => [
+                    'id' => $paketMenu->id,
+                    'nama_menu' => $paketMenu->nama_menu,
+                    'rumpun' => $paketMenu->rumpun,
+                    'kuota_kapasitas' => $paketMenu->kuota_kapasitas,
+                    'kuota_terisi' => $paketMenu->kuota_terisi,
+                    'kuota_tersisa' => $paketMenu->kuota_tersisa,
+                    'is_active' => $paketMenu->is_active,
+                    'kriteria_bobot' => $paketMenu->kriteriaBobots->map(function ($kb) {
+                        return [
+                            'id' => $kb->id,
+                            'master_mata_pelajaran_id' => $kb->master_mata_pelajaran_id,
+                            'nama_mapel' => $kb->mataPelajaran ? $kb->mataPelajaran->nama_mapel : 'N/A',
+                            'kode_mapel' => $kb->mataPelajaran ? $kb->mataPelajaran->kode_mapel : 'N/A',
+                            'kelompok_mapel' => $kb->mataPelajaran ? $kb->mataPelajaran->kelompok_mapel : 'N/A',
+                            'bobot_persen' => round($kb->bobot_persen, 2),
+                        ];
+                    }),
+                    'periode_aktif' => $activePeriod ? [
+                        'id' => $activePeriod->id,
+                        'nama_periode' => $activePeriod->nama_periode,
+                        'tahun_ajaran' => $activePeriod->tahun_ajaran,
+                        'gelombang' => $activePeriod->gelombang,
+                        'tanggal_buka' => is_string($activePeriod->tanggal_buka) ? $activePeriod->tanggal_buka : null,
+                        'tanggal_tutup' => is_string($activePeriod->tanggal_tutup) ? $activePeriod->tanggal_tutup : null,
+                        'status_pengumuman' => $activePeriod->status_pengumuman,
+                        'max_pilihan_siswa' => $activePeriod->max_pilihan_siswa,
+                    ] : null,
+                ],
+            ]);
+        }
+
+        return view('paket-menu-pilihan.show-siswa', compact('paketMenu', 'activePeriod'));
     }
 
     /**
@@ -232,32 +249,39 @@ class PaketMenuPilihanController extends Controller
      * @param string $identifier (UUID id atau nama_menu)
      * @return JsonResponse
      */
-    public function show(string $identifier): JsonResponse
+    public function show(Request $request, string $identifier)
     {
         $paketMenu = PaketMenuPilihan::where('id', $identifier)
             ->orWhere('nama_menu', $identifier)
             ->first();
 
         if (!$paketMenu) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Paket Menu Pilihan tidak ditemukan.',
-            ], 404);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Paket Menu Pilihan tidak ditemukan.',
+                ], 404);
+            }
+            abort(404, 'Paket Menu Pilihan tidak ditemukan.');
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil detail Paket Menu Pilihan.',
-            'data' => [
-                'id' => $paketMenu->id,
-                'nama_menu' => $paketMenu->nama_menu,
-                'rumpun' => $paketMenu->rumpun,
-                'kuota_kapasitas' => $paketMenu->kuota_kapasitas,
-                'kuota_terisi' => $paketMenu->kuota_terisi,
-                'kuota_tersisa' => $paketMenu->kuota_tersisa,
-                'is_active' => $paketMenu->is_active,
-            ],
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil detail Paket Menu Pilihan.',
+                'data' => [
+                    'id' => $paketMenu->id,
+                    'nama_menu' => $paketMenu->nama_menu,
+                    'rumpun' => $paketMenu->rumpun,
+                    'kuota_kapasitas' => $paketMenu->kuota_kapasitas,
+                    'kuota_terisi' => $paketMenu->kuota_terisi,
+                    'kuota_tersisa' => $paketMenu->kuota_tersisa,
+                    'is_active' => $paketMenu->is_active,
+                ],
+            ]);
+        }
+
+        return view('paket-menu-pilihan.show', compact('paketMenu'));
     }
 
     /**
