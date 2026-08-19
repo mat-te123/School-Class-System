@@ -56,9 +56,9 @@ class KelasAsalController extends Controller
      * Mengambil detail satu Kelas X berdasarkan ID (UUID) atau nama_kelas.
      *
      * @param string $identifier (UUID id atau nama_kelas)
-     * @return JsonResponse
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\View\View
      */
-    public function show(string $identifier): JsonResponse
+    public function show(string $identifier)
     {
         $kelas = KelasAsal::where('tingkat', 'X')
             ->where(function ($q) use ($identifier) {
@@ -71,25 +71,34 @@ class KelasAsalController extends Controller
             ->first();
 
         if (!$kelas) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data Kelas X tidak ditemukan.',
-            ], 404);
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data Kelas X tidak ditemukan.',
+                ], 404);
+            }
+            abort(404, 'Data Kelas X tidak ditemukan.');
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil detail Kelas X.',
-            'data' => [
-                'id' => $kelas->id,
-                'nama_kelas' => $kelas->nama_kelas,
-                'tingkat' => $kelas->tingkat,
-                'kapasitas' => $kelas->kapasitas,
-                'total_siswa' => $kelas->siswas->count(),
-                'is_active' => $kelas->is_active,
-                'siswas' => $kelas->siswas,
-            ],
-        ]);
+        $data = [
+            'id' => $kelas->id,
+            'nama_kelas' => $kelas->nama_kelas,
+            'tingkat' => $kelas->tingkat,
+            'kapasitas' => $kelas->kapasitas,
+            'total_siswa' => $kelas->siswas->count(),
+            'is_active' => $kelas->is_active,
+            'siswas' => $kelas->siswas,
+        ];
+
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil detail Kelas X.',
+                'data' => $data,
+            ]);
+        }
+
+        return view('kelas-asal.show', compact('data'));
     }
 
     /**
