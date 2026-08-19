@@ -50,11 +50,10 @@ class KelasAsalControllerTest extends TestCase
         $response = $this->actingAs($user, 'web')->getJson('/kelas-asal');
 
         $response->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-                'total' => 2,
-            ])
-            ->assertJsonCount(2, 'data');
+            ->assertJson(['success' => true])
+            ->assertJsonCount(2, 'data.data');
+
+        $this->assertEquals(2, $response->json('data.total'));
     }
 
     public function test_can_get_detail_kelas_x_by_id_or_nama(): void
@@ -327,5 +326,88 @@ class KelasAsalControllerTest extends TestCase
         $this->assertNotEquals($oldId, $newId);
         $this->assertDatabaseMissing('kelas_asal', ['id' => $oldId]);
         $this->assertDatabaseHas('kelas_asal', ['id' => $newId, 'nama_kelas' => 'X F']);
+    }
+
+    /** Paginasi server-side: per_page & meta paginator benar */
+    public function test_admin_can_get_paginated_kelas_json(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'admin_paginate_kelas',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        for ($i = 1; $i <= 8; $i++) {
+            KelasAsal::create([
+                'id' => (string) Str::uuid(),
+                'nama_kelas' => "X {$i}",
+                'tingkat' => 'X',
+                'kapasitas' => 36,
+                'is_active' => true,
+            ]);
+        }
+
+        $response = $this->actingAs($user, 'web')->getJson('/kelas-asal?per_page=3&page=1');
+
+        $response->assertStatus(200)
+            ->assertJson(['success' => true])
+            ->assertJsonCount(3, 'data.data');
+
+        $this->assertEquals(8, $response->json('data.total'));
+        $this->assertEquals(3, $response->json('data.per_page'));
+        $this->assertEquals(3, $response->json('data.last_page'));
+    }
+
+    /** Pencarian berdasarkan substring nama_kelas */
+    public function test_admin_can_search_kelas_by_nama(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'admin_search_kelas',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'X A',
+            'tingkat' => 'X',
+            'kapasitas' => 36,
+            'is_active' => true,
+        ]);
+        KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'XI IPA 1',
+            'tingkat' => 'XI',
+            'kapasitas' => 36,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')->getJson('/kelas-asal?search=X A');
+
+        $response->assertStatus(200)->assertJson(['success' => true]);
+        $this->assertEquals(1, $response->json('data.total'));
+        $this->assertEquals('X A', $response->json('data.data.0.nama_kelas'));
+    }
+
+    /** Request browser reguler merender view kelas-asal.index */
+    public function test_authenticated_user_can_view_kelas_index_blade(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'user_view_kelas',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')->get('/kelas-asal');
+
+        $response->assertStatus(200);
+        $response->assertViewIs('kelas-asal.index');
+        $response->assertViewHas('kelases');
     }
 }
