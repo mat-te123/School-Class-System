@@ -24,15 +24,18 @@ class LegerImportController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function import(Request $request): JsonResponse
+    public function import(Request $request)
     {
         // Hanya admin yang boleh upload file Leger Excel
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
         if (!$user || $user->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Hanya admin yang dapat mengunggah file Leger Excel.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Hanya admin yang dapat mengunggah file Leger Excel.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Hanya admin yang dapat mengunggah file Leger Excel.');
         }
 
         // 1. Deteksi file yang diunggah
@@ -43,25 +46,31 @@ class LegerImportController extends Controller
 
         // 2. Jika tidak ada file
         if (!$uploadedFile) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi file gagal.',
-                'errors' => [
-                    'file' => ['File XLSX Leger wajib diunggah pada field "file".'],
-                ],
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi file gagal.',
+                    'errors' => [
+                        'file' => ['File XLSX Leger wajib diunggah pada field "file".'],
+                    ],
+                ], 422);
+            }
+            abort(422, 'Validasi file gagal. File XLSX Leger wajib diunggah.');
         }
 
         // 3. Validasi ekstensi
         $extension = strtolower($uploadedFile->getClientOriginalExtension());
         if (!in_array($extension, ['xlsx', 'xls'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi file gagal.',
-                'errors' => [
-                    'file' => ['Format file harus berupa .xlsx atau .xls'],
-                ],
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi file gagal.',
+                    'errors' => [
+                        'file' => ['Format file harus berupa .xlsx atau .xls'],
+                    ],
+                ], 422);
+            }
+            abort(422, 'Validasi file gagal. Format file harus berupa .xlsx atau .xls');
         }
 
         // 4. Validasi kelas_asal_id dan angkatan wajib diisi dari form data
@@ -86,11 +95,14 @@ class LegerImportController extends Controller
         }
 
         if (!empty($validationErrors)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal.',
-                'errors'  => $validationErrors,
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal.',
+                    'errors'  => $validationErrors,
+                ], 422);
+            }
+            abort(422, 'Validasi gagal. Field kelas_asal_id dan angkatan wajib diisi.');
         }
 
         // Ambil nama kelas dari model yang sudah ditemukan
@@ -103,10 +115,13 @@ class LegerImportController extends Controller
             ->first();
 
         if ($duplicate) {
-            return response()->json([
-                'success' => false,
-                'message' => "File Leger untuk Kelas '{$kelasNama}' Angkatan '{$angkatan}' sudah pernah diunggah ({$duplicate->file_name}). Satu kelas dan angkatan hanya diizinkan 1 file Excel.",
-            ], 409);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "File Leger untuk Kelas '{$kelasNama}' Angkatan '{$angkatan}' sudah pernah diunggah ({$duplicate->file_name}). Satu kelas dan angkatan hanya diizinkan 1 file Excel.",
+                ], 409);
+            }
+            abort(409, "File Leger untuk Kelas '{$kelasNama}' Angkatan '{$angkatan}' sudah pernah diunggah.");
         }
 
         try {
@@ -126,7 +141,7 @@ class LegerImportController extends Controller
             if ($request->boolean('sync', false)) {
                 $result = $this->importService->importFromXlsx($fullPath, $userId, $kelasAsalId, $angkatan);
 
-                return response()->json([
+                return $this->handleWriteResponse($request, [
                     'success' => true,
                     'message' => 'File XLSX Leger berhasil diimpor ke database secara langsung (sync).',
                     'file_url' => url('/leger/download/' . $fileName),
@@ -137,7 +152,7 @@ class LegerImportController extends Controller
             // 8. Asynchronous Mode (Background Queue Job) - Respon Instan (< 50ms)
             ProcessLegerImportJob::dispatch($fullPath, $userId, $kelasAsalId, $angkatan);
 
-            return response()->json([
+            return $this->handleWriteResponse($request, [
                 'success'   => true,
                 'message'   => 'File XLSX Leger berhasil diterima dan sedang diproses di background queue (Asynchronous).',
                 'status'    => 'queued',
@@ -147,10 +162,13 @@ class LegerImportController extends Controller
                 'angkatan'  => $angkatan,
             ], 202);
         } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengunggah file XLSX: ' . $e->getMessage(),
-            ], 500);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal mengunggah file XLSX: ' . $e->getMessage(),
+                ], 500);
+            }
+            abort(500, 'Gagal mengunggah file XLSX: ' . $e->getMessage());
         }
     }
 

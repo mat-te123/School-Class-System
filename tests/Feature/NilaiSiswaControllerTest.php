@@ -263,4 +263,38 @@ class NilaiSiswaControllerTest extends TestCase
             'predikat' => 'C',
         ]);
     }
+
+    /** Request browser non-JSON redirect setelah update */
+    public function test_browser_update_redirects_back_with_success_flash(): void
+    {
+        $detail = $this->seedNilai(75);
+
+        $response = $this->actingAs($this->admin, 'web')
+            ->from('/nilai-siswa')
+            ->put('/nilai-siswa/' . $detail->id, [
+                'nilai_angka' => 90.0,
+            ]);
+
+        $response->assertRedirect('/nilai-siswa');
+        $response->assertSessionHas('success', 'Berhasil memperbaiki nilai siswa.');
+        $this->assertEquals(90.0, $detail->fresh()->nilai_angka);
+    }
+
+    /** Request browser non-JSON redirect setelah importMapel */
+    public function test_browser_import_mapel_redirects_back_with_success_flash(): void
+    {
+        $response = $this->actingAs($this->admin, 'web')
+            ->from('/nilai-siswa')
+            ->post('/nilai-siswa/import-mapel', [
+                'mapel_id' => $this->mapel->id,
+                'tahun_ajaran' => '2024/2025',
+                'semester' => 'Genap',
+                'rows' => [
+                    ['nisn' => '1234567890', 'nilai' => 85.0],
+                ],
+            ]);
+
+        $response->assertRedirect('/nilai-siswa');
+        $response->assertSessionHas('success', "Impor nilai '{$this->mapel->nama_mapel}' sedang diproses di background.");
+    }
 }

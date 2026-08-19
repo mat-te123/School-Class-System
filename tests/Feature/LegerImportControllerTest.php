@@ -315,4 +315,32 @@ class LegerImportControllerTest extends TestCase
 
         @unlink($path);
     }
+
+    /** Request browser non-JSON redirect setelah import */
+    public function test_browser_import_redirects_back_with_success_flash(): void
+    {
+        Queue::fake();
+
+        $kelas = \App\Models\KelasAsal::create([
+            'id'        => (string) Str::uuid(),
+            'nama_kelas'=> 'X B',
+            'tingkat'   => 'X',
+            'kapasitas' => 36,
+            'is_active' => true,
+        ]);
+
+        $file = UploadedFile::fake()->create('Leger_B.xlsx', 10, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        $response = $this->actingAs($this->admin, 'web')
+            ->from('/leger/history')
+            ->post('/leger/import', [
+                'file'          => $file,
+                'kelas_asal_id' => $kelas->id,
+                'angkatan'      => '2024/2025',
+            ]);
+
+        $response->assertRedirect('/leger/history');
+        $response->assertSessionHas('success', 'File XLSX Leger berhasil diterima dan sedang diproses di background queue (Asynchronous).');
+        Queue::assertPushed(ProcessLegerImportJob::class);
+    }
 }
