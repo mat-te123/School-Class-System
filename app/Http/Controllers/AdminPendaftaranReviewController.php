@@ -80,7 +80,7 @@ class AdminPendaftaranReviewController extends Controller
     /**
      * FR-42: Admin menyetujui pengajuan.
      */
-    public function approve(string $id): JsonResponse
+    public function approve(string $id, Request $request)
     {
         $pendaftaran = PendaftaranPilihan::findOrFail($id);
 
@@ -91,7 +91,7 @@ class AdminPendaftaranReviewController extends Controller
             'tanggal_tinjauan' => now(),
         ]);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Pengajuan pilihan paket berhasil disetujui.',
             'data' => $pendaftaran->fresh(),
@@ -101,7 +101,7 @@ class AdminPendaftaranReviewController extends Controller
     /**
      * FR-43: Admin menolak pengajuan dengan catatan penolakan.
      */
-    public function reject(string $id, Request $request): JsonResponse
+    public function reject(Request $request, string $id)
     {
         $validated = $request->validate([
             'catatan_penolakan' => 'required|string|max:1000',
@@ -116,7 +116,7 @@ class AdminPendaftaranReviewController extends Controller
             'tanggal_tinjauan' => now(),
         ]);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Pengajuan pilihan paket berhasil ditolak.',
             'data' => $pendaftaran->fresh(),
