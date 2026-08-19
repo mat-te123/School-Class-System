@@ -328,4 +328,133 @@ class KriteriaBobotMenuControllerTest extends TestCase
             'bobot_persen' => 60.00,
         ]);
     }
+
+    /** Request browser non-JSON redirect setelah store */
+    public function test_browser_store_redirects_back_with_success_flash(): void
+    {
+        $admin = User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'admin_kriteria_redirect',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Menu Redirect',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'is_active' => true,
+        ]);
+
+        $mapel = MasterMataPelajaran::create([
+            'id' => (string) Str::uuid(),
+            'kode_mapel' => 'REDIRECT_1',
+            'nama_mapel' => 'Mapel Redirect',
+            'kelompok_mapel' => 'umum',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($admin, 'web')
+            ->from('/kriteria-bobot-menu')
+            ->post('/kriteria-bobot-menu', [
+                'paket_menu_pilihan_id' => $paket->id,
+                'master_mata_pelajaran_id' => $mapel->id,
+                'bobot_persen' => 70.0,
+            ]);
+
+        $response->assertRedirect('/kriteria-bobot-menu');
+        $response->assertSessionHas('success', 'Berhasil menyimpan kriteria bobot menu.');
+        $this->assertDatabaseHas('kriteria_bobot_menu', [
+            'paket_menu_pilihan_id' => $paket->id,
+            'master_mata_pelajaran_id' => $mapel->id,
+        ]);
+    }
+
+    /** Request browser non-JSON redirect setelah update */
+    public function test_browser_update_redirects_back_with_success_flash(): void
+    {
+        $admin = User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'admin_kriteria_update_redirect',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Menu Update Redirect',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'is_active' => true,
+        ]);
+
+        $mapel = MasterMataPelajaran::create([
+            'id' => (string) Str::uuid(),
+            'kode_mapel' => 'REDIRECT_2',
+            'nama_mapel' => 'Mapel Update Redirect',
+            'kelompok_mapel' => 'umum',
+            'is_active' => true,
+        ]);
+
+        $bobot = KriteriaBobotMenu::create([
+            'paket_menu_pilihan_id' => $paket->id,
+            'master_mata_pelajaran_id' => $mapel->id,
+            'bobot_persen' => 50.0,
+        ]);
+
+        $response = $this->actingAs($admin, 'web')
+            ->from('/kriteria-bobot-menu')
+            ->put('/kriteria-bobot-menu/' . $bobot->id, [
+                'bobot_persen' => 80.0,
+            ]);
+
+        $response->assertRedirect('/kriteria-bobot-menu');
+        $response->assertSessionHas('success', 'Berhasil memperbarui kriteria bobot menu.');
+        $this->assertDatabaseHas('kriteria_bobot_menu', ['id' => $bobot->id, 'bobot_persen' => 80.0]);
+    }
+
+    /** Request browser non-JSON redirect setelah destroy */
+    public function test_browser_destroy_redirects_back_with_success_flash(): void
+    {
+        $admin = User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'admin_kriteria_destroy_redirect',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Menu Destroy Redirect',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'is_active' => true,
+        ]);
+
+        $mapel = MasterMataPelajaran::create([
+            'id' => (string) Str::uuid(),
+            'kode_mapel' => 'REDIRECT_3',
+            'nama_mapel' => 'Mapel Destroy Redirect',
+            'kelompok_mapel' => 'umum',
+            'is_active' => true,
+        ]);
+
+        $bobot = KriteriaBobotMenu::create([
+            'paket_menu_pilihan_id' => $paket->id,
+            'master_mata_pelajaran_id' => $mapel->id,
+            'bobot_persen' => 50.0,
+        ]);
+
+        $response = $this->actingAs($admin, 'web')
+            ->from('/kriteria-bobot-menu')
+            ->delete('/kriteria-bobot-menu/' . $bobot->id);
+
+        $response->assertRedirect('/kriteria-bobot-menu');
+        $response->assertSessionHas('success', 'Berhasil menghapus kriteria bobot menu.');
+        $this->assertDatabaseMissing('kriteria_bobot_menu', ['id' => $bobot->id]);
+    }
 }

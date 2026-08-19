@@ -52,22 +52,28 @@ class KriteriaBobotMenuController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated / Belum login.',
-            ], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Belum login.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Belum login.');
         }
 
         if ($user->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Hanya Admin yang dapat menentukan kriteria bobot menu.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Hanya Admin yang dapat menentukan kriteria bobot menu.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Hanya Admin yang dapat menentukan kriteria bobot menu.');
         }
 
         // Jika request memiliki array 'kriteria'
@@ -100,7 +106,7 @@ class KriteriaBobotMenuController extends Controller
                 $savedItems[] = $bobot->load(['paketMenuPilihan', 'masterMataPelajaran']);
             }
 
-            return response()->json([
+            return $this->handleWriteResponse($request, [
                 'success' => true,
                 'message' => 'Berhasil menyimpan kriteria bobot menu.',
                 'total' => count($savedItems),
@@ -132,7 +138,7 @@ class KriteriaBobotMenuController extends Controller
             ]
         );
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil menyimpan kriteria bobot menu.',
             'data' => $bobot->load(['paketMenuPilihan', 'masterMataPelajaran']),
@@ -148,22 +154,28 @@ class KriteriaBobotMenuController extends Controller
      * @param string $identifier
      * @return JsonResponse
      */
-    public function update(Request $request, string $identifier): JsonResponse
+    public function update(Request $request, string $identifier)
     {
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated / Belum login.',
-            ], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Belum login.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Belum login.');
         }
 
         if ($user->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Hanya Admin yang dapat mengubah kriteria bobot menu.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Hanya Admin yang dapat mengubah kriteria bobot menu.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Hanya Admin yang dapat mengubah kriteria bobot menu.');
         }
 
         // Cek apakah $identifier merupakan ID dari PaketMenuPilihan
@@ -179,14 +191,17 @@ class KriteriaBobotMenuController extends Controller
             $itemsToUpdate = $request->kriteria;
         }
 
-        if ($itemsToUpdate !== null) {
+        if ($itemsToUpdate !== null && count($itemsToUpdate) > 0) {
             $paketId = $paketMenu ? $paketMenu->id : $request->input('paket_menu_pilihan_id', $identifier);
 
             if (!PaketMenuPilihan::where('id', $paketId)->exists()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Paket Menu Pilihan tidak ditemukan.',
-                ], 404);
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Paket Menu Pilihan tidak ditemukan.',
+                    ], 404);
+                }
+                abort(404, 'Paket Menu Pilihan tidak ditemukan.');
             }
 
             $request->merge(['kriteria' => $itemsToUpdate]);
@@ -215,7 +230,7 @@ class KriteriaBobotMenuController extends Controller
                 $savedItems[] = $bobot->load(['paketMenuPilihan', 'masterMataPelajaran']);
             }
 
-            return response()->json([
+            return $this->handleWriteResponse($request, [
                 'success' => true,
                 'message' => 'Berhasil memperbarui kriteria bobot menu.',
                 'total' => count($savedItems),
@@ -227,10 +242,13 @@ class KriteriaBobotMenuController extends Controller
         $bobot = KriteriaBobotMenu::find($identifier);
 
         if (!$bobot) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kriteria bobot menu atau paket menu pilihan tidak ditemukan.',
-            ], 404);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kriteria bobot menu atau paket menu pilihan tidak ditemukan.',
+                ], 404);
+            }
+            abort(404, 'Kriteria bobot menu atau paket menu pilihan tidak ditemukan.');
         }
 
         $validated = $request->validate([
@@ -246,7 +264,7 @@ class KriteriaBobotMenuController extends Controller
             'bobot_persen' => $validated['bobot_persen'],
         ]);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil memperbarui kriteria bobot menu.',
             'data' => $bobot->load(['paketMenuPilihan', 'masterMataPelajaran']),
@@ -260,36 +278,45 @@ class KriteriaBobotMenuController extends Controller
      * @param string $id
      * @return JsonResponse
      */
-    public function destroy(Request $request, string $id): JsonResponse
+    public function destroy(Request $request, string $id)
     {
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated / Belum login.',
-            ], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Belum login.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Belum login.');
         }
 
         if ($user->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Hanya Admin yang dapat menghapus kriteria bobot menu.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Hanya Admin yang dapat menghapus kriteria bobot menu.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Hanya Admin yang dapat menghapus kriteria bobot menu.');
         }
 
         $bobot = KriteriaBobotMenu::find($id);
 
         if (!$bobot) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kriteria bobot menu tidak ditemukan.',
-            ], 404);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kriteria bobot menu tidak ditemukan.',
+                ], 404);
+            }
+            abort(404, 'Kriteria bobot menu tidak ditemukan.');
         }
 
         $bobot->delete();
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil menghapus kriteria bobot menu.',
         ]);
