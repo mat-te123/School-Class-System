@@ -189,9 +189,9 @@ class LegerImportController extends Controller
      * Mengambil riwayat dan tracking unggah file Leger Excel berdasarkan kelas dan angkatan.
      *
      * @param Request $request
-     * @return JsonResponse
+     * @return JsonResponse|\Illuminate\View\View
      */
-    public function history(Request $request): JsonResponse
+    public function history(Request $request)
     {
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user() ?? \Illuminate\Support\Facades\Auth::user();
         
@@ -202,23 +202,28 @@ class LegerImportController extends Controller
             ], 403);
         }
 
+        $validated = $request->validate([
+            'nama_kelas' => 'nullable|string|max:50',
+            'angkatan'   => 'nullable|string|max:10',
+            'per_page'   => 'nullable|integer|min:1|max:100',
+        ]);
+
         $query = \App\Models\RiwayatUploadLeger::with(['kelasAsal', 'uploader']);
 
-        if ($request->has('nama_kelas') && !empty($request->nama_kelas)) {
-            $query->where('nama_kelas', $request->nama_kelas);
+        if (!empty($validated['nama_kelas'])) {
+            $query->where('nama_kelas', $validated['nama_kelas']);
         }
 
-        if ($request->has('angkatan') && !empty($request->angkatan)) {
-            $query->where('angkatan', $request->angkatan);
+        if (!empty($validated['angkatan'])) {
+            $query->where('angkatan', $validated['angkatan']);
         }
 
-        $history = $query->orderBy('created_at', 'desc')->get();
+        $history = $query->orderBy('created_at', 'desc')->paginate((int) $request->input('per_page', 10));
 
         return response()->json([
             'success' => true,
             'message' => 'Berhasil mengambil riwayat unggah file Leger Excel.',
-            'total' => $history->count(),
-            'data' => $history,
+            'data'    => $history,
         ]);
     }
 }

@@ -46,12 +46,12 @@ class RiwayatUploadLegerTest extends TestCase
         $response = $this->actingAs($user, 'web')->getJson('/leger/history?nama_kelas=X A&angkatan=2024/2025');
 
         $response->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-                'total' => 1,
-            ])
-            ->assertJsonPath('data.0.nama_kelas', 'X A')
-            ->assertJsonPath('data.0.angkatan', '2024/2025');
+            ->assertJson(['success' => true])
+            ->assertJsonCount(1, 'data.data');
+
+        $this->assertEquals(1, $response->json('data.total'));
+        $response->assertJsonPath('data.data.0.nama_kelas', 'X A')
+            ->assertJsonPath('data.data.0.angkatan', '2024/2025');
     }
 
     /**
