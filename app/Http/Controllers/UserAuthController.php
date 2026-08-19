@@ -124,32 +124,39 @@ class UserAuthController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function me(Request $request): JsonResponse
+    public function me(Request $request)
     {
         $user = Auth::guard('web')->user();
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated / Belum login.',
-            ], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Belum login.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Belum login.');
         }
 
         // Load relasi roleRelation jika belum di-load
         $user->load('roleRelation');
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'user' => [
-                    'id' => $user->id,
-                    'username' => $user->username,
-                    'role' => $user->role,
-                    'role_detail' => $user->roleRelation,
-                    'is_active' => $user->is_active,
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'user' => [
+                        'id' => $user->id,
+                        'username' => $user->username,
+                        'role' => $user->role,
+                        'role_detail' => $user->roleRelation,
+                        'is_active' => $user->is_active,
+                    ],
                 ],
-            ],
-        ]);
+            ]);
+        }
+
+        return view('auth.me', compact('user'));
     }
 
     /**

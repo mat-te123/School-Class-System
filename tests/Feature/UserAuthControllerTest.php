@@ -133,4 +133,22 @@ class UserAuthControllerTest extends TestCase
 
         $this->assertGuest('web');
     }
+
+    /** Request browser reguler merender view auth.me */
+    public function test_user_can_view_me_blade(): void
+    {
+        $user = User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'admin_blade',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')->get('/me');
+
+        $response->assertOk();
+        $response->assertViewIs('auth.me');
+        $response->assertViewHas('user');
+    }
 }
