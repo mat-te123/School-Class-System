@@ -120,4 +120,66 @@ class SiswaControllerTest extends TestCase
         $response->assertViewIs('siswa.show');
         $response->assertViewHas('siswa');
     }
+
+    /** Request browser non-JSON redirect setelah store */
+    public function test_browser_store_redirects_back_with_success_flash(): void
+    {
+        $response = $this->actingAs($this->admin, 'web')
+            ->from('/siswa')
+            ->post('/siswa', [
+                'nisn' => '7777777777',
+                'nis' => '7001',
+                'nama_lengkap' => 'Siswa Store Redirect',
+                'kelas_asal_id' => $this->kelas->id,
+                'kelas_asal' => 'X A',
+            ]);
+
+        $response->assertRedirect('/siswa');
+        $response->assertSessionHas('success', 'Berhasil menambahkan data siswa');
+        $this->assertDatabaseHas('siswa', ['nisn' => '7777777777']);
+    }
+
+    /** Request browser non-JSON redirect setelah update */
+    public function test_browser_update_redirects_back_with_success_flash(): void
+    {
+        $siswa = Siswa::create([
+            'nisn' => '6666666666',
+            'nis' => '6001',
+            'nama_lengkap' => 'Siswa Update Redirect',
+            'kelas_asal_id' => $this->kelas->id,
+            'kelas_asal' => 'X A',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'web')
+            ->from('/siswa')
+            ->put('/siswa/' . $siswa->id, [
+                'nama_lengkap' => 'Siswa Update Redirect Edited',
+            ]);
+
+        $response->assertRedirect('/siswa');
+        $response->assertSessionHas('success', 'Berhasil mengubah data siswa');
+        $this->assertDatabaseHas('siswa', ['id' => $siswa->id, 'nama_lengkap' => 'Siswa Update Redirect Edited']);
+    }
+
+    /** Request browser non-JSON redirect setelah destroy */
+    public function test_browser_destroy_redirects_back_with_success_flash(): void
+    {
+        $siswa = Siswa::create([
+            'nisn' => '5555555555',
+            'nis' => '5001',
+            'nama_lengkap' => 'Siswa Destroy Redirect',
+            'kelas_asal_id' => $this->kelas->id,
+            'kelas_asal' => 'X A',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'web')
+            ->from('/siswa')
+            ->delete('/siswa/' . $siswa->id);
+
+        $response->assertRedirect('/siswa');
+        $response->assertSessionHas('success', 'Berhasil menghapus data siswa');
+        $this->assertSoftDeleted('siswa', ['id' => $siswa->id]);
+    }
 }

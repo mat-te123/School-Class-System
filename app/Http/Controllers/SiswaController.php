@@ -40,7 +40,7 @@ class SiswaController extends Controller
         return view('siswa.index', compact('siswa', 'kelasAsal'));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'nisn' => 'required|string|size:10|unique:siswa,nisn',
@@ -58,7 +58,8 @@ class SiswaController extends Controller
 
         $siswa = Siswa::create($validated);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
+            'success' => true,
             'message' => 'Berhasil menambahkan data siswa',
             'data' => $siswa
         ], 201);
@@ -78,7 +79,7 @@ class SiswaController extends Controller
         return view('siswa.show', compact('siswa'));
     }
 
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, string $id)
     {
         $siswa = Siswa::findOrFail($id);
 
@@ -97,18 +98,20 @@ class SiswaController extends Controller
 
         $siswa->update($validated);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
+            'success' => true,
             'message' => 'Berhasil mengubah data siswa',
             'data' => $siswa
         ]);
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id)
     {
         $siswa = Siswa::findOrFail($id);
         $siswa->delete();
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
+            'success' => true,
             'message' => 'Berhasil menghapus data siswa'
         ]);
     }
