@@ -62,4 +62,61 @@ class LaporanPesanControllerTest extends TestCase
             ->assertJsonPath('data.status', 'diproses')
             ->assertJsonPath('data.ditangani_oleh', $admin->id);
     }
+
+    /** Request browser non-JSON redirect setelah store */
+    public function test_browser_store_redirects_back_with_success_flash(): void
+    {
+        $response = $this->from('/laporan-pesan')
+            ->post('/laporan-pesan', [
+                'nisn' => '1234567890',
+                'nama' => 'Guest Siswa',
+                'kelas' => 'X IPA 1',
+                'judul' => 'Kendala Login',
+                'kategori' => 'bug',
+                'pesan' => 'Tidak bisa login dengan NISN.',
+            ]);
+
+        $response->assertRedirect('/laporan-pesan');
+        $response->assertSessionHas('success', 'Laporan pesan berhasil dikirim');
+    }
+
+    /** Request browser non-JSON redirect setelah updateStatus */
+    public function test_browser_update_status_redirects_back_with_success_flash(): void
+    {
+        $admin = User::factory()->create();
+        $report = LaporanPesan::create([
+            'judul' => 'Saran Fitur',
+            'pesan' => 'Tambahkan tombol export.',
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($admin, 'web')
+            ->from('/laporan-pesan')
+            ->put("/laporan-pesan/{$report->id}/status", [
+                'status' => 'diproses',
+                'catatan_penanganan' => 'Sedang dicek oleh dev.',
+            ]);
+
+        $response->assertRedirect('/laporan-pesan');
+        $response->assertSessionHas('success', 'Status laporan pesan berhasil diperbarui');
+    }
+
+    /** Request browser non-JSON redirect setelah destroy */
+    public function test_browser_destroy_redirects_back_with_success_flash(): void
+    {
+        $admin = User::factory()->create();
+        $report = LaporanPesan::create([
+            'judul' => 'Laporan Palsu',
+            'pesan' => 'Dihapus saja.',
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($admin, 'web')
+            ->from('/laporan-pesan')
+            ->delete("/laporan-pesan/{$report->id}");
+
+        $response->assertRedirect('/laporan-pesan');
+        $response->assertSessionHas('success', 'Laporan pesan berhasil dihapus');
+        $this->assertDatabaseMissing('laporan_pesan', ['id' => $report->id]);
+    }
 }

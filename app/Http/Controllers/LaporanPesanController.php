@@ -75,7 +75,7 @@ class LaporanPesanController extends Controller
     /**
      * Membuat laporan pesan baru (Bisa Publik/Guest, Siswa, maupun Admin/User).
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'judul' => 'required|string|max:150',
@@ -103,7 +103,8 @@ class LaporanPesanController extends Controller
 
         $laporan = LaporanPesan::create($validated);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
+            'success' => true,
             'message' => 'Laporan pesan berhasil dikirim',
             'data' => $laporan,
         ], 201);
@@ -140,7 +141,7 @@ class LaporanPesanController extends Controller
     /**
      * Memperbarui status dan catatan penanganan laporan (Khusus Admin / Guru BK).
      */
-    public function updateStatus(Request $request, string $id): JsonResponse
+    public function updateStatus(Request $request, string $id)
     {
         $laporan = LaporanPesan::findOrFail($id);
 
@@ -153,7 +154,8 @@ class LaporanPesanController extends Controller
 
         $laporan->update($validated);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
+            'success' => true,
             'message' => 'Status laporan pesan berhasil diperbarui',
             'data' => $laporan->load(['penangan:id,name,email']),
         ]);
@@ -162,12 +164,13 @@ class LaporanPesanController extends Controller
     /**
      * Menghapus laporan pesan (Khusus Admin / Guru BK).
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id)
     {
         $laporan = LaporanPesan::findOrFail($id);
         $laporan->delete();
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
+            'success' => true,
             'message' => 'Laporan pesan berhasil dihapus',
         ]);
     }
