@@ -64,14 +64,18 @@ class SiswaController extends Controller
         ], 201);
     }
 
-    public function show(string $id): JsonResponse
+    public function show(Request $request, string $id)
     {
         $siswa = Siswa::with('kelasAsalRelation')->findOrFail($id);
-        
-        return response()->json([
-            'message' => 'Berhasil mengambil detail siswa',
-            'data' => $siswa
-        ]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => 'Berhasil mengambil detail siswa',
+                'data' => $siswa
+            ]);
+        }
+
+        return view('siswa.show', compact('siswa'));
     }
 
     public function update(Request $request, string $id): JsonResponse

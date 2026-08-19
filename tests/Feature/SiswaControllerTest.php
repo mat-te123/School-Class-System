@@ -101,4 +101,23 @@ class SiswaControllerTest extends TestCase
     {
         $this->getJson('/siswa')->assertStatus(401);
     }
+
+    /** Request browser reguler merender view siswa.show */
+    public function test_admin_can_view_siswa_show_blade(): void
+    {
+        $siswa = Siswa::create([
+            'nisn' => '9999999999',
+            'nis' => '9999',
+            'nama_lengkap' => 'Siswa Detail',
+            'kelas_asal_id' => $this->kelas->id,
+            'kelas_asal' => 'X A',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'web')->get('/siswa/' . $siswa->id);
+
+        $response->assertOk();
+        $response->assertViewIs('siswa.show');
+        $response->assertViewHas('siswa');
+    }
 }
