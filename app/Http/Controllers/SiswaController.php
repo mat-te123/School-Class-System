@@ -8,13 +8,36 @@ use Illuminate\Http\JsonResponse;
 
 class SiswaController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request)
     {
-        $siswa = Siswa::with('kelasAsalRelation')->get();
-        return response()->json([
-            'message' => 'Berhasil mengambil daftar siswa',
-            'data' => $siswa
+        $validated = $request->validate([
+            'search'   => 'nullable|string|max:150',
+            'per_page' => 'nullable|integer|min:1|max:100',
         ]);
+
+        $query = Siswa::with('kelasAsalRelation');
+
+        if (!empty($validated['search'])) {
+            $search = trim($validated['search']);
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('nisn', 'like', "%{$search}%")
+                    ->orWhere('nis', 'like', "%{$search}%");
+            });
+        }
+
+        $siswa = $query->orderBy('nama_lengkap')->paginate((int) $request->input('per_page', 10));
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $siswa,
+            ]);
+        }
+
+        $kelasAsal = \App\Models\KelasAsal::orderBy('nama_kelas')->get();
+
+        return view('siswa.index', compact('siswa', 'kelasAsal'));
     }
 
     public function store(Request $request): JsonResponse
