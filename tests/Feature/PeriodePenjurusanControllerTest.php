@@ -272,6 +272,24 @@ class PeriodePenjurusanControllerTest extends TestCase
         $response->assertViewHas('periode');
     }
 
+    /** Request browser reguler merender view periode-penjurusan.show */
+    public function test_user_can_view_periode_show_blade(): void
+    {
+        $user = User::factory()->create();
+        $periode = PeriodePendaftaran::create([
+            'nama_periode' => 'Penjurusan Blade',
+            'tahun_ajaran' => '2025/2026',
+            'tanggal_buka' => now()->subDay(),
+            'tanggal_tutup' => now()->addDay(),
+        ]);
+
+        $response = $this->actingAs($user)->get('/periode-penjurusan/' . $periode->id);
+
+        $response->assertOk();
+        $response->assertViewIs('periode-penjurusan.show');
+        $response->assertViewHas('periode');
+    }
+
     /** Route auth.any: user yang belum login ditolak (JSON => 401) */
     public function test_unauthenticated_user_cannot_access_periode_index(): void
     {

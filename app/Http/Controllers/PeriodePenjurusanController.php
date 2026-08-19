@@ -40,12 +40,18 @@ class PeriodePenjurusanController extends Controller
         return view('periode-penjurusan.index', compact('periode'));
     }
 
-    public function show(string $id): JsonResponse
+    public function show(Request $request, string $id)
     {
-        return response()->json([
-            'success' => true,
-            'data' => PeriodePendaftaran::findOrFail($id),
-        ]);
+        $periode = PeriodePendaftaran::findOrFail($id);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $periode,
+            ]);
+        }
+
+        return view('periode-penjurusan.show', compact('periode'));
     }
 
     public function store(Request $request): JsonResponse
