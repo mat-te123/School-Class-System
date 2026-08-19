@@ -115,23 +115,30 @@ class SiswaAuthController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function profile(Request $request): JsonResponse
+    public function profile(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
 
         if (!$siswa) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated / Akses ditolak.',
-            ], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Akses ditolak.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Akses ditolak.');
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'siswa' => $siswa,
-            ],
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'siswa' => $siswa,
+                ],
+            ]);
+        }
+
+        return view('siswa.profile', compact('siswa'));
     }
 
     /**

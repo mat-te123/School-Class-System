@@ -302,4 +302,22 @@ class SiswaAuthControllerTest extends TestCase
         $this->assertTrue($siswa->is_active);
         $this->assertNotNull($siswa->password);
     }
+
+    /** Request browser reguler merender view siswa.profile */
+    public function test_siswa_can_view_profile_blade(): void
+    {
+        $siswa = Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '6666666666',
+            'nis' => '6666',
+            'nama_lengkap' => 'Siswa Profile Blade',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($siswa, 'siswa')->get('/siswa/profile');
+
+        $response->assertOk();
+        $response->assertViewIs('siswa.profile');
+        $response->assertViewHas('siswa');
+    }
 }
