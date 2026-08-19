@@ -45,14 +45,14 @@ class PaketMenuPilihanControllerTest extends TestCase
         $response = $this->actingAs($user, 'web')->getJson('/paket-menu-pilihan');
 
         $response->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-                'total' => 2,
-            ])
-            ->assertJsonPath('data.0.nama_menu', 'Menu 1 (P1)')
-            ->assertJsonPath('data.0.kuota_tersisa', 26)
-            ->assertJsonPath('data.1.nama_menu', 'Menu 4 (P4)')
-            ->assertJsonPath('data.1.kuota_tersisa', 31);
+            ->assertJson(['success' => true])
+            ->assertJsonCount(2, 'data.data');
+
+        $this->assertEquals(2, $response->json('data.total'));
+        $response->assertJsonPath('data.data.0.nama_menu', 'Menu 1 (P1)')
+            ->assertJsonPath('data.data.0.kuota_tersisa', 26)
+            ->assertJsonPath('data.data.1.nama_menu', 'Menu 4 (P4)')
+            ->assertJsonPath('data.data.1.kuota_tersisa', 31);
     }
 
     /**
@@ -90,12 +90,12 @@ class PaketMenuPilihanControllerTest extends TestCase
         $response = $this->actingAs($siswa, 'siswa')->getJson('/paket-menu-pilihan?rumpun=sosial');
 
         $response->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-                'total' => 1,
-            ])
-            ->assertJsonPath('data.0.rumpun', 'sosial')
-            ->assertJsonPath('data.0.nama_menu', 'Menu 4 (P4)');
+            ->assertJson(['success' => true])
+            ->assertJsonCount(1, 'data.data');
+
+        $this->assertEquals(1, $response->json('data.total'));
+        $response->assertJsonPath('data.data.0.rumpun', 'sosial')
+            ->assertJsonPath('data.data.0.nama_menu', 'Menu 4 (P4)');
     }
 
     /**

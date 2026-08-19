@@ -17,8 +17,13 @@ class PaketMenuPilihanController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
+        $validated = $request->validate([
+            'search'   => 'nullable|string|max:50',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
         $query = PaketMenuPilihan::query();
 
         // 1. Filter Rumpun (eksakta / sosial)
@@ -37,16 +42,16 @@ class PaketMenuPilihanController extends Controller
         }
 
         // 3. Pencarian berdasarkan nama menu
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where('nama_menu', 'like', '%' . $search . '%');
+        if (!empty($validated['search'])) {
+            $search = trim($validated['search']);
+            $query->where('nama_menu', 'like', "%{$search}%");
         }
 
-        // 4. Urutkan berdasarkan nama_menu ascending
-        $paketMenu = $query->orderBy('nama_menu', 'asc')->get();
+        // 4. Urutkan berdasarkan nama_menu ascending dan lakukan paginasi
+        $paginator = $query->orderBy('nama_menu', 'asc')->paginate((int) $request->input('per_page', 10));
 
-        // 5. Transformasi data dengan menambahkan field sisa kuota
-        $data = $paketMenu->map(function ($item) {
+        // 5. Transformasi data dengan menambahkan field sisa kuota (melalui ->through() untuk memelihara paginator)
+        $paginator->through(function ($item) {
             return [
                 'id' => $item->id,
                 'nama_menu' => $item->nama_menu,
@@ -58,12 +63,14 @@ class PaketMenuPilihanController extends Controller
             ];
         });
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil daftar Paket Menu Pilihan.',
-            'total' => $data->count(),
-            'data' => $data,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $paginator,
+            ]);
+        }
+
+        return view('paket-menu-pilihan.index', compact('paginator'));
     }
 
     /**
