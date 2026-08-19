@@ -93,10 +93,11 @@ class MasterMataPelajaranControllerTest extends TestCase
         $response = $this->actingAs($this->user, 'web')->getJson('/master-mata-pelajaran');
 
         $response->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-                'total' => 1,
-            ]);
+            ->assertJson(['success' => true])
+            ->assertJsonCount(1, 'data.data');
+
+        $this->assertEquals(1, $response->json('data.total'));
+        $response->assertJsonPath('data.data.0.kode_mapel', 'MAT_U');
     }
 
     public function test_can_update_master_mata_pelajaran(): void

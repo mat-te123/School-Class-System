@@ -16,8 +16,13 @@ class KriteriaBobotMenuController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
+        $validated = $request->validate([
+            'search'   => 'nullable|string|max:50',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
         $query = KriteriaBobotMenu::with(['paketMenuPilihan', 'masterMataPelajaran']);
 
         if ($request->has('paket_menu_pilihan_id') && !empty($request->paket_menu_pilihan_id)) {
@@ -28,14 +33,16 @@ class KriteriaBobotMenuController extends Controller
             $query->where('master_mata_pelajaran_id', $request->master_mata_pelajaran_id);
         }
 
-        $items = $query->get();
+        $items = $query->paginate((int) $request->input('per_page', 10));
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil daftar kriteria bobot menu.',
-            'total' => $items->count(),
-            'data' => $items,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $items,
+            ]);
+        }
+
+        return view('kriteria-bobot-menu.index', compact('items'));
     }
 
     /**

@@ -22,10 +22,10 @@ class NilaiSiswaController extends Controller
     /**
      * FR-14: Daftar nilai siswa per mata pelajaran, dengan filter.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
-        if ($denied = $this->denyIfNotAdmin()) {
-            return $denied;
+        if ($this->denyIfNotAdmin()) {
+            abort(403, 'Akses ditolak. Hanya admin yang dapat melihat daftar nilai siswa.');
         }
 
         $validated = $request->validate([
@@ -62,11 +62,14 @@ class NilaiSiswaController extends Controller
 
         $data = $query->paginate((int) $request->input('per_page', 50));
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil daftar nilai siswa.',
-            'data'    => $data,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $data,
+            ]);
+        }
+
+        return view('nilai-siswa.index', compact('data'));
     }
 
     /**
@@ -95,11 +98,15 @@ class NilaiSiswaController extends Controller
 
         $data = $query->get();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil daftar nilai siswa.',
-            'data'    => $data,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil daftar nilai siswa.',
+                'data'    => $data,
+            ]);
+        }
+
+        return view('nilai-siswa.index-siswa', compact('data'));
     }
 
     /**

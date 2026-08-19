@@ -15,8 +15,13 @@ class MasterMataPelajaranController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
+        $validated = $request->validate([
+            'search'   => 'nullable|string|max:50',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
         $query = MasterMataPelajaran::query();
 
         // Filter berdasarkan kelompok_mapel (umum, pilihan, muatan_lokal)
@@ -35,22 +40,24 @@ class MasterMataPelajaranController extends Controller
         }
 
         // Pencarian nama atau kode mapel
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
+        if (!empty($validated['search'])) {
+            $search = trim($validated['search']);
             $query->where(function ($q) use ($search) {
-                $q->where('nama_mapel', 'like', '%' . $search . '%')
-                  ->orWhere('kode_mapel', 'like', '%' . $search . '%');
+                $q->where('nama_mapel', 'like', "%{$search}%")
+                  ->orWhere('kode_mapel', 'like', "%{$search}%");
             });
         }
 
-        $mapels = $query->orderBy('kode_mapel', 'asc')->get();
+        $mapels = $query->orderBy('kode_mapel', 'asc')->paginate((int) $request->input('per_page', 10));
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil data Master Mata Pelajaran.',
-            'total' => $mapels->count(),
-            'data' => $mapels,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $mapels,
+            ]);
+        }
+
+        return view('master-mata-pelajaran.index', compact('mapels'));
     }
 
     /**
@@ -171,25 +178,32 @@ class MasterMataPelajaranController extends Controller
      * Mendapatkan detail Master Mata Pelajaran (GET /master-mata-pelajaran/{id}).
      *
      * @param string $id
-     * @return JsonResponse
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\View\View
      */
-    public function show(string $id): JsonResponse
+    public function show(string $id)
     {
         $mapel = MasterMataPelajaran::where('id', $id)
             ->orWhere('kode_mapel', $id)
             ->first();
 
         if (!$mapel) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data Master Mata Pelajaran tidak ditemukan.',
-            ], 404);
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data Master Mata Pelajaran tidak ditemukan.',
+                ], 404);
+            }
+            abort(404, 'Data Master Mata Pelajaran tidak ditemukan.');
         }
 
-        return response()->json([
-            'success' => true,
-            'data'    => $mapel,
-        ]);
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $mapel,
+            ]);
+        }
+
+        return view('master-mata-pelajaran.show', compact('mapel'));
     }
 
     /**

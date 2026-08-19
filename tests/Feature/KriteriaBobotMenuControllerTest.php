@@ -46,12 +46,12 @@ class KriteriaBobotMenuControllerTest extends TestCase
         $response = $this->actingAs($user, 'web')->getJson('/kriteria-bobot-menu?paket_menu_pilihan_id=' . $paket->id);
 
         $response->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-                'total' => 1,
-            ])
-            ->assertJsonPath('data.0.bobot_persen', 75.5)
-            ->assertJsonPath('data.0.master_mata_pelajaran.nama_mapel', 'Matematika Umum');
+            ->assertJson(['success' => true])
+            ->assertJsonCount(1, 'data.data');
+
+        $this->assertEquals(1, $response->json('data.total'));
+        $response->assertJsonPath('data.data.0.bobot_persen', 75.5)
+            ->assertJsonPath('data.data.0.master_mata_pelajaran.nama_mapel', 'Matematika Umum');
     }
 
     public function test_admin_can_set_kriteria_bobot_menu_single(): void

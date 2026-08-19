@@ -12,8 +12,13 @@ class LaporanPesanController extends Controller
     /**
      * Menampilkan daftar semua laporan (Khusus Admin / Guru BK).
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
+        $validated = $request->validate([
+            'search'   => 'nullable|string|max:50',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
         $query = LaporanPesan::with(['user:id,name,email', 'siswa:id,nama_lengkap,nisn', 'penangan:id,name,email']);
 
         if ($request->filled('status')) {
@@ -24,8 +29,8 @@ class LaporanPesanController extends Controller
             $query->where('kategori', $request->query('kategori'));
         }
 
-        if ($request->filled('search')) {
-            $search = $request->query('search');
+        if (!empty($validated['search'])) {
+            $search = trim($validated['search']);
             $query->where(function ($q) use ($search) {
                 $q->where('judul', 'like', "%{$search}%")
                   ->orWhere('pesan', 'like', "%{$search}%")
@@ -34,29 +39,37 @@ class LaporanPesanController extends Controller
             });
         }
 
-        $laporan = $query->latest()->get();
+        $laporan = $query->latest()->paginate((int) $request->input('per_page', 10));
 
-        return response()->json([
-            'message' => 'Berhasil mengambil daftar laporan pesan',
-            'data' => $laporan,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $laporan,
+            ]);
+        }
+
+        return view('laporan-pesan.index', compact('laporan'));
     }
 
     /**
      * Menampilkan daftar laporan milik siswa yang sedang login.
      */
-    public function indexSiswa(Request $request): JsonResponse
+    public function indexSiswa(Request $request)
     {
         $siswaId = Auth::guard('siswa')->id();
 
         $laporan = LaporanPesan::where('siswa_id', $siswaId)
             ->latest()
-            ->get();
+            ->paginate((int) $request->input('per_page', 10));
 
-        return response()->json([
-            'message' => 'Berhasil mengambil daftar laporan milik siswa',
-            'data' => $laporan,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => 'Berhasil mengambil daftar laporan milik siswa',
+                'data' => $laporan,
+            ]);
+        }
+
+        return view('laporan-pesan.index-siswa', compact('laporan'));
     }
 
     /**
@@ -99,22 +112,29 @@ class LaporanPesanController extends Controller
     /**
      * Menampilkan detail laporan pesan.
      */
-    public function show(string $id): JsonResponse
+    public function show(string $id)
     {
         $laporan = LaporanPesan::with(['user:id,name,email', 'siswa:id,nama_lengkap,nisn', 'penangan:id,name,email'])
             ->findOrFail($id);
 
         // Jika siswa, hanya boleh lihat milik sendiri
         if (Auth::guard('siswa')->check() && $laporan->siswa_id !== Auth::guard('siswa')->id()) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki akses ke laporan ini.',
-            ], 403);
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'message' => 'Anda tidak memiliki akses ke laporan ini.',
+                ], 403);
+            }
+            abort(403, 'Anda tidak memiliki akses ke laporan ini.');
         }
 
-        return response()->json([
-            'message' => 'Berhasil mengambil detail laporan pesan',
-            'data' => $laporan,
-        ]);
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'message' => 'Berhasil mengambil detail laporan pesan',
+                'data' => $laporan,
+            ]);
+        }
+
+        return view('laporan-pesan.show', compact('laporan'));
     }
 
     /**

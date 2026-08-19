@@ -48,7 +48,9 @@ class LaporanPesanControllerTest extends TestCase
             ->getJson('/laporan-pesan');
 
         $response->assertStatus(200)
-            ->assertJsonCount(1, 'data');
+            ->assertJsonCount(1, 'data.data');
+
+        $this->assertEquals(1, $response->json('data.total'));
 
         $updateResponse = $this->actingAs($admin, 'web')
             ->putJson("/laporan-pesan/{$report->id}/status", [
