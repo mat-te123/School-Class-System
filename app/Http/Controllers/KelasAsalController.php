@@ -107,7 +107,7 @@ class KelasAsalController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
 
@@ -209,7 +209,7 @@ class KelasAsalController extends Controller
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil menambahkan Kelas X baru.',
             'data' => $kelas,
@@ -223,7 +223,7 @@ class KelasAsalController extends Controller
      * @param string $id
      * @return JsonResponse
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, string $id)
     {
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
 
@@ -268,7 +268,7 @@ class KelasAsalController extends Controller
 
         $kelas->update($validated);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil memperbarui data Kelas X.',
             'data' => $kelas,
@@ -282,7 +282,7 @@ class KelasAsalController extends Controller
      * @param string $id
      * @return JsonResponse
      */
-    public function destroy(Request $request, string $id): JsonResponse
+    public function destroy(Request $request, string $id)
     {
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
 
@@ -324,7 +324,7 @@ class KelasAsalController extends Controller
 
         $kelas->delete();
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil menghapus data Kelas X.',
         ]);

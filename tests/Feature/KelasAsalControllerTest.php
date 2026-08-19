@@ -410,4 +410,85 @@ class KelasAsalControllerTest extends TestCase
         $response->assertViewIs('kelas-asal.index');
         $response->assertViewHas('kelases');
     }
+
+    /** Request browser non-JSON redirect ke halaman asal setelah store */
+    public function test_browser_store_redirects_back_with_success_flash(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'user_store_kelas',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')
+            ->from('/kelas-asal')
+            ->post('/kelas-asal', [
+                'nama_kelas' => 'X C',
+                'kapasitas' => 32,
+            ]);
+
+        $response->assertRedirect('/kelas-asal');
+        $response->assertSessionHas('success', 'Berhasil menambahkan Kelas X baru.');
+        $this->assertDatabaseHas('kelas_asal', ['nama_kelas' => 'X C']);
+    }
+
+    /** Request browser non-JSON redirect ke halaman asal setelah update */
+    public function test_browser_update_redirects_back_with_success_flash(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'user_update_kelas',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $kelas = KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'X D',
+            'tingkat' => 'X',
+            'kapasitas' => 36,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')
+            ->from('/kelas-asal')
+            ->put('/kelas-asal/' . $kelas->id, [
+                'kapasitas' => 40,
+            ]);
+
+        $response->assertRedirect('/kelas-asal');
+        $response->assertSessionHas('success', 'Berhasil memperbarui data Kelas X.');
+        $this->assertDatabaseHas('kelas_asal', ['id' => $kelas->id, 'kapasitas' => 40]);
+    }
+
+    /** Request browser non-JSON redirect ke halaman asal setelah destroy */
+    public function test_browser_destroy_redirects_back_with_success_flash(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'user_destroy_kelas',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $kelas = KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'X E',
+            'tingkat' => 'X',
+            'kapasitas' => 36,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')
+            ->from('/kelas-asal')
+            ->delete('/kelas-asal/' . $kelas->id);
+
+        $response->assertRedirect('/kelas-asal');
+        $response->assertSessionHas('success', 'Berhasil menghapus data Kelas X.');
+        $this->assertSoftDeleted('kelas_asal', ['id' => $kelas->id]);
+    }
 }
