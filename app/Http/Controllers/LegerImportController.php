@@ -220,10 +220,14 @@ class LegerImportController extends Controller
 
         $history = $query->orderBy('created_at', 'desc')->paginate((int) $request->input('per_page', 10));
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil riwayat unggah file Leger Excel.',
-            'data'    => $history,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil riwayat unggah file Leger Excel.',
+                'data'    => $history,
+            ]);
+        }
+
+        return view('leger.history', compact('history'));
     }
 }
