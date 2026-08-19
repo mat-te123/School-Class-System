@@ -54,7 +54,7 @@ class PeriodePenjurusanController extends Controller
         return view('periode-penjurusan.show', compact('periode'));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $this->ensureAdmin();
         $validated = $request->validate($this->rules());
@@ -74,14 +74,14 @@ class PeriodePenjurusanController extends Controller
             ]);
         });
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Periode penjurusan berhasil dibuat.',
             'data' => $periode,
         ], 201);
     }
 
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, string $id)
     {
         $this->ensureAdmin();
         $periode = PeriodePendaftaran::findOrFail($id);
@@ -96,7 +96,7 @@ class PeriodePenjurusanController extends Controller
             $periode->update($validated);
         });
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Periode penjurusan berhasil diperbarui.',
             'data' => $periode->fresh(),
@@ -115,7 +115,14 @@ class PeriodePenjurusanController extends Controller
 
     private function ensureAdmin(): void
     {
-        if (Auth::guard('web')->user()->role !== 'admin') {
+        $user = Auth::guard('web')->user();
+        if (!$user || $user->role !== 'admin') {
+            if (request()->wantsJson() || request()->ajax()) {
+                abort(response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Hanya Admin yang dapat mengelola periode penjurusan.',
+                ], 403));
+            }
             abort(403, 'Akses ditolak. Hanya Admin yang dapat mengelola periode penjurusan.');
         }
     }

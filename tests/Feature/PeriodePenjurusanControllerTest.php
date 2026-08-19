@@ -295,4 +295,45 @@ class PeriodePenjurusanControllerTest extends TestCase
     {
         $this->getJson('/periode-penjurusan')->assertStatus(401);
     }
+
+    /** Request browser non-JSON redirect setelah store */
+    public function test_browser_store_redirects_back_with_success_flash(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)
+            ->from('/periode-penjurusan')
+            ->post('/periode-penjurusan', [
+                'nama_periode' => 'Penjurusan Redirect',
+                'tahun_ajaran' => '2026/2027',
+                'tanggal_buka' => '2026-08-11 08:00:00',
+                'tanggal_tutup' => '2026-08-20 23:59:59',
+            ]);
+
+        $response->assertRedirect('/periode-penjurusan');
+        $response->assertSessionHas('success', 'Periode penjurusan berhasil dibuat.');
+        $this->assertDatabaseHas('periode_pendaftaran', ['nama_periode' => 'Penjurusan Redirect']);
+    }
+
+    /** Request browser non-JSON redirect setelah update */
+    public function test_browser_update_redirects_back_with_success_flash(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $periode = PeriodePendaftaran::create([
+            'nama_periode' => 'Penjurusan Update Redirect',
+            'tahun_ajaran' => '2026/2027',
+            'tanggal_buka' => '2026-08-11 08:00:00',
+            'tanggal_tutup' => '2026-08-20 23:59:59',
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->from('/periode-penjurusan')
+            ->put('/periode-penjurusan/' . $periode->id, [
+                'nama_periode' => 'Penjurusan Update Redirect Edited',
+            ]);
+
+        $response->assertRedirect('/periode-penjurusan');
+        $response->assertSessionHas('success', 'Periode penjurusan berhasil diperbarui.');
+        $this->assertDatabaseHas('periode_pendaftaran', ['id' => $periode->id, 'nama_periode' => 'Penjurusan Update Redirect Edited']);
+    }
 }
