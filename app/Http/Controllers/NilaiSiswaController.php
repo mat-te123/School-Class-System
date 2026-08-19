@@ -75,15 +75,18 @@ class NilaiSiswaController extends Controller
     /**
      * FR-49: Siswa dapat melihat nilai mata pelajaran mereka sendiri.
      */
-    public function indexSiswa(Request $request): JsonResponse
+    public function indexSiswa(Request $request)
     {
         // Pastikan siswa login via auth:siswa guard
         $siswa = Auth::guard('siswa')->user();
         if (!$siswa) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.');
         }
 
         $query = DetailNilaiSiswa::with([

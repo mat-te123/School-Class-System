@@ -233,6 +233,18 @@ class NilaiSiswaControllerTest extends TestCase
             ->assertStatus(401); // Karena middleware auth:siswa tidak menemukan session guard siswa
     }
 
+    /** Request browser reguler merender view nilai-siswa.index-siswa */
+    public function test_siswa_can_view_nilai_index_blade(): void
+    {
+        $this->seedNilai(85);
+
+        $response = $this->actingAs($this->siswa, 'siswa')->get('/siswa/nilai');
+
+        $response->assertOk();
+        $response->assertViewIs('nilai-siswa.index-siswa');
+        $response->assertViewHas('data');
+    }
+
     private function seedNilai(float $nilai): DetailNilaiSiswa
     {
         $leger = NilaiLegerSiswa::create([
