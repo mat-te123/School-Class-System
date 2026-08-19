@@ -290,22 +290,28 @@ class PaketMenuPilihanController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated / Belum login.',
-            ], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Belum login.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Belum login.');
         }
 
         if ($user->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Hanya Admin yang dapat menambah Paket Menu Pilihan.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Hanya Admin yang dapat menambah Paket Menu Pilihan.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Hanya Admin yang dapat menambah Paket Menu Pilihan.');
         }
 
         $namaMenu    = trim($request->input('nama_menu', ''));
@@ -326,7 +332,7 @@ class PaketMenuPilihanController extends Controller
                     'is_active'       => filter_var($request->input('is_active', true), FILTER_VALIDATE_BOOLEAN),
                 ]);
 
-                return response()->json([
+                return $this->handleWriteResponse($request, [
                     'success' => true,
                     'message' => "Paket menu pilihan '{$trashed->nama_menu}' yang sebelumnya terhapus berhasil dipulihkan dan diperbarui.",
                     'data'    => [
@@ -360,7 +366,7 @@ class PaketMenuPilihanController extends Controller
                     'is_active'       => $validated['is_active'] ?? true,
                 ]);
 
-                return response()->json([
+                return $this->handleWriteResponse($request, [
                     'success' => true,
                     'message' => "Paket menu pilihan '{$paketMenu->nama_menu}' lama telah dihapus permanen dan data paket menu baru berhasil dibuat.",
                     'data'    => [
@@ -376,20 +382,23 @@ class PaketMenuPilihanController extends Controller
             }
 
             // Jika belum ada parameter action/restore/overwrite, kembalikan 409 Conflict dengan pilihan opsi
-            return response()->json([
-                'success'    => false,
-                'is_trashed' => true,
-                'message'    => "Paket menu pilihan dengan nama '{$trashed->nama_menu}' pernah dihapus sebelumnya. Apakah Anda ingin memulihkan (restore) atau menimpa dengan data baru (overwrite)?",
-                'trashed_data' => [
-                    'id'         => $trashed->id,
-                    'nama_menu'  => $trashed->nama_menu,
-                    'deleted_at' => $trashed->deleted_at,
-                ],
-                'options' => [
-                    'restore'   => 'Gunakan payload JSON {"action": "restore"} atau query parameter ?restore=1 untuk memulihkan dan memperbarui data lama.',
-                    'overwrite' => 'Gunakan payload JSON {"action": "overwrite"} atau query parameter ?overwrite=1 untuk menghapus permanen data lama dan membuat data baru.',
-                ],
-            ], 409);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success'    => false,
+                    'is_trashed' => true,
+                    'message'    => "Paket menu pilihan dengan nama '{$trashed->nama_menu}' pernah dihapus sebelumnya. Apakah Anda ingin memulihkan (restore) atau menimpa dengan data baru (overwrite)?",
+                    'trashed_data' => [
+                        'id'         => $trashed->id,
+                        'nama_menu'  => $trashed->nama_menu,
+                        'deleted_at' => $trashed->deleted_at,
+                    ],
+                    'options' => [
+                        'restore'   => 'Gunakan payload JSON {"action": "restore"} atau query parameter ?restore=1 untuk memulihkan dan memperbarui data lama.',
+                        'overwrite' => 'Gunakan payload JSON {"action": "overwrite"} atau query parameter ?overwrite=1 untuk menghapus permanen data lama dan membuat data baru.',
+                    ],
+                ], 409);
+            }
+            abort(409, "Paket menu pilihan dengan nama '{$trashed->nama_menu}' pernah dihapus sebelumnya.");
         }
 
         $validated = $request->validate([
@@ -414,7 +423,7 @@ class PaketMenuPilihanController extends Controller
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil menambahkan Paket Menu Pilihan baru.',
             'data' => [
@@ -436,22 +445,28 @@ class PaketMenuPilihanController extends Controller
      * @param string $identifier (UUID id atau nama_menu)
      * @return JsonResponse
      */
-    public function update(Request $request, string $identifier): JsonResponse
+    public function update(Request $request, string $identifier)
     {
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated / Belum login.',
-            ], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Belum login.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Belum login.');
         }
 
         if ($user->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Hanya Admin yang dapat mengubah Paket Menu Pilihan.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Hanya Admin yang dapat mengubah Paket Menu Pilihan.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Hanya Admin yang dapat mengubah Paket Menu Pilihan.');
         }
 
         $paketMenu = PaketMenuPilihan::where('id', $identifier)
@@ -459,10 +474,13 @@ class PaketMenuPilihanController extends Controller
             ->first();
 
         if (!$paketMenu) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Paket Menu Pilihan tidak ditemukan.',
-            ], 404);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Paket Menu Pilihan tidak ditemukan.',
+                ], 404);
+            }
+            abort(404, 'Paket Menu Pilihan tidak ditemukan.');
         }
 
         $validated = $request->validate([
@@ -484,7 +502,7 @@ class PaketMenuPilihanController extends Controller
 
         $paketMenu->update($validated);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil memperbarui data Paket Menu Pilihan.',
             'data' => [
@@ -506,22 +524,28 @@ class PaketMenuPilihanController extends Controller
      * @param string $identifier (UUID id atau nama_menu)
      * @return JsonResponse
      */
-    public function destroy(Request $request, string $identifier): JsonResponse
+    public function destroy(Request $request, string $identifier)
     {
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated / Belum login.',
-            ], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Belum login.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Belum login.');
         }
 
         if ($user->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Hanya Admin yang dapat menghapus Paket Menu Pilihan.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Hanya Admin yang dapat menghapus Paket Menu Pilihan.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Hanya Admin yang dapat menghapus Paket Menu Pilihan.');
         }
 
         $paketMenu = PaketMenuPilihan::where('id', $identifier)
@@ -529,22 +553,28 @@ class PaketMenuPilihanController extends Controller
             ->first();
 
         if (!$paketMenu) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Paket Menu Pilihan tidak ditemukan.',
-            ], 404);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Paket Menu Pilihan tidak ditemukan.',
+                ], 404);
+            }
+            abort(404, 'Paket Menu Pilihan tidak ditemukan.');
         }
 
         if ($paketMenu->kuota_terisi > 0) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Paket Menu Pilihan tidak dapat dihapus karena sudah memiliki ' . $paketMenu->kuota_terisi . ' kuota terisi / pendaftar.',
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Paket Menu Pilihan tidak dapat dihapus karena sudah memiliki ' . $paketMenu->kuota_terisi . ' kuota terisi / pendaftar.',
+                ], 422);
+            }
+            abort(422, 'Paket Menu Pilihan tidak dapat dihapus karena sudah memiliki ' . $paketMenu->kuota_terisi . ' kuota terisi / pendaftar.');
         }
 
         $paketMenu->delete();
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil menghapus Paket Menu Pilihan.',
         ]);

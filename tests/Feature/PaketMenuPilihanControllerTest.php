@@ -584,4 +584,87 @@ class PaketMenuPilihanControllerTest extends TestCase
         $response->assertViewIs('paket-menu-pilihan.show-siswa');
         $response->assertViewHas('paketMenu');
     }
+
+    /** Request browser non-JSON redirect setelah store */
+    public function test_browser_store_redirects_back_with_success_flash(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'user_paket_store_redirect',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')
+            ->from('/paket-menu-pilihan')
+            ->post('/paket-menu-pilihan', [
+                'nama_menu' => 'Menu Redirect (P11)',
+                'rumpun' => 'sosial',
+                'kuota_kapasitas' => 40,
+            ]);
+
+        $response->assertRedirect('/paket-menu-pilihan');
+        $response->assertSessionHas('success', 'Berhasil menambahkan Paket Menu Pilihan baru.');
+        $this->assertDatabaseHas('paket_menu_pilihan', ['nama_menu' => 'Menu Redirect (P11)']);
+    }
+
+    /** Request browser non-JSON redirect setelah update */
+    public function test_browser_update_redirects_back_with_success_flash(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'user_paket_update_redirect',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Menu Update Redirect (P12)',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')
+            ->from('/paket-menu-pilihan')
+            ->put('/paket-menu-pilihan/' . $paket->id, [
+                'kuota_kapasitas' => 42,
+            ]);
+
+        $response->assertRedirect('/paket-menu-pilihan');
+        $response->assertSessionHas('success', 'Berhasil memperbarui data Paket Menu Pilihan.');
+        $this->assertDatabaseHas('paket_menu_pilihan', ['id' => $paket->id, 'kuota_kapasitas' => 42]);
+    }
+
+    /** Request browser non-JSON redirect setelah destroy */
+    public function test_browser_destroy_redirects_back_with_success_flash(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'user_paket_destroy_redirect',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Menu Destroy Redirect (P13)',
+            'rumpun' => 'sosial',
+            'kuota_kapasitas' => 36,
+            'kuota_terisi' => 0,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')
+            ->from('/paket-menu-pilihan')
+            ->delete('/paket-menu-pilihan/' . $paket->id);
+
+        $response->assertRedirect('/paket-menu-pilihan');
+        $response->assertSessionHas('success', 'Berhasil menghapus Paket Menu Pilihan.');
+        $this->assertSoftDeleted('paket_menu_pilihan', ['id' => $paket->id]);
+    }
 }
