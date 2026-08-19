@@ -9,6 +9,8 @@ use App\Models\PeriodePendaftaran;
 use App\Models\Siswa;
 use App\Models\KelasAsal;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -223,5 +225,209 @@ class PendaftaranPilihanControllerTest extends TestCase
             ]);
         
         $this->assertEquals($this->paket1->id, $response->json('data.detail_pendaftaran.0.paket_menu_pilihan_id'));
+    }
+
+    public function test_siswa_can_upload_dokumen_wali(): void
+    {
+        $pendaftaran = PendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
+            'tanggal_submit' => now(),
+            'status' => 'menunggu',
+        ]);
+
+        Storage::fake('public');
+        $file = UploadedFile::fake()->create('surat_wali.pdf', 200, 'application/pdf');
+
+        // PENTING: putJson() tidak bisa upload file binary. Gunakan ->call() dengan FILES array:
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->call('PUT', '/siswa/pendaftaran-pilihan/dokumen', [], [], ['dokumen_wali' => $file], ['HTTP_ACCEPT' => 'application/json']);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = $response->json();
+        $this->assertTrue($data['success']);
+        $this->assertNotNull($data['data']['dokumen_wali_path']);
+
+        $this->assertNotNull(
+            PendaftaranPilihan::find($pendaftaran->id)->dokumen_wali_path
+        );
+    }
+
+    public function test_siswa_can_cancel_pending_submission(): void
+    {
+        // Set periode pertukaran aktif
+        $this->periode->update([
+            'tanggal_mulai_pertukaran' => now()->subHour(),
+            'tanggal_selesai_pertukaran' => now()->addHour(),
+        ]);
+
+        $pendaftaran = PendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
+            'tanggal_submit' => now(),
+            'status' => 'menunggu',
+        ]);
+
+        DetailPendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'pendaftaran_pilihan_id' => $pendaftaran->id,
+            'paket_menu_pilihan_id' => $this->paket1->id,
+            'urutan_pilihan' => 1,
+        ]);
+        $this->paket1->update(['kuota_terisi' => 1]);
+
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->deleteJson('/siswa/pendaftaran-pilihan');
+
+        $response->assertStatus(200)->assertJson(['success' => true]);
+        $this->assertDatabaseCount('pendaftaran_pilihan', 0);
+        $this->assertEquals(0, $this->paket1->fresh()->kuota_terisi);
+    }
+
+    public function test_siswa_cannot_cancel_approved_submission(): void
+    {
+        $this->periode->update([
+            'tanggal_mulai_pertukaran' => now()->subHour(),
+            'tanggal_selesai_pertukaran' => now()->addHour(),
+        ]);
+
+        PendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
+            'tanggal_submit' => now(),
+            'status' => 'disetujui',
+        ]);
+
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->deleteJson('/siswa/pendaftaran-pilihan');
+
+        $response->assertStatus(422);
+    }
+
+    /** Request browser non-JSON redirect setelah storeSiswa */
+    public function test_browser_store_siswa_redirects_back_with_success_flash(): void
+    {
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->from('/siswa/pendaftaran-pilihan')
+            ->post('/siswa/pendaftaran-pilihan', [
+                'pilihan' => [
+                    $this->paket1->id,
+                    $this->paket2->id,
+                    $this->paket3->id,
+                ],
+            ]);
+
+        $response->assertRedirect('/siswa/pendaftaran-pilihan');
+        $response->assertSessionHas('success', 'Berhasil menyimpan 3 paket menu pilihan prioritas Anda.');
+        $this->assertDatabaseHas('pendaftaran_pilihan', ['siswa_id' => $this->siswa->id]);
+    }
+
+    /** Request browser non-JSON redirect setelah updateSiswa */
+    public function test_browser_update_siswa_redirects_back_with_success_flash(): void
+    {
+        $pendaftaran = PendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
+            'tanggal_submit' => now(),
+            'status' => 'menunggu',
+        ]);
+
+        DetailPendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'pendaftaran_pilihan_id' => $pendaftaran->id,
+            'paket_menu_pilihan_id' => $this->paket1->id,
+            'urutan_pilihan' => 1,
+        ]);
+        DetailPendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'pendaftaran_pilihan_id' => $pendaftaran->id,
+            'paket_menu_pilihan_id' => $this->paket2->id,
+            'urutan_pilihan' => 2,
+        ]);
+        DetailPendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'pendaftaran_pilihan_id' => $pendaftaran->id,
+            'paket_menu_pilihan_id' => $this->paket3->id,
+            'urutan_pilihan' => 3,
+        ]);
+        $this->paket1->update(['kuota_terisi' => 1]);
+        $this->paket2->update(['kuota_terisi' => 1]);
+        $this->paket3->update(['kuota_terisi' => 1]);
+
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->from('/siswa/pendaftaran-pilihan')
+            ->put('/siswa/pendaftaran-pilihan', [
+                'pilihan' => [
+                    $this->paket1->id,
+                    $this->paket2->id,
+                    $this->paket3->id,
+                ],
+            ]);
+
+        $response->assertRedirect('/siswa/pendaftaran-pilihan');
+        $response->assertSessionHas('success', 'Pilihan paket prioritas Anda berhasil diperbarui.');
+    }
+
+    /** Request browser non-JSON redirect setelah uploadDokumenSiswa */
+    public function test_browser_upload_dokumen_siswa_redirects_back_with_success_flash(): void
+    {
+        Storage::fake('public');
+
+        $pendaftaran = PendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
+            'tanggal_submit' => now(),
+            'status' => 'menunggu',
+        ]);
+
+        $file = UploadedFile::fake()->create('dokumen.pdf', 100, 'application/pdf');
+
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->from('/siswa/pendaftaran-pilihan')
+            ->put('/siswa/pendaftaran-pilihan/dokumen', [
+                'dokumen_wali' => $file,
+            ]);
+
+        $response->assertRedirect('/siswa/pendaftaran-pilihan');
+        $response->assertSessionHas('success', 'Dokumen wali berhasil diunggah.');
+        $this->assertNotNull($pendaftaran->fresh()->dokumen_wali_path);
+    }
+
+    /** Request browser non-JSON redirect setelah cancelSiswa */
+    public function test_browser_cancel_siswa_redirects_back_with_success_flash(): void
+    {
+        $this->periode->update([
+            'tanggal_mulai_pertukaran' => now()->subHour(),
+            'tanggal_selesai_pertukaran' => now()->addHour(),
+        ]);
+
+        $pendaftaran = PendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
+            'tanggal_submit' => now(),
+            'status' => 'menunggu',
+        ]);
+
+        DetailPendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'pendaftaran_pilihan_id' => $pendaftaran->id,
+            'paket_menu_pilihan_id' => $this->paket1->id,
+            'urutan_pilihan' => 1,
+        ]);
+        $this->paket1->update(['kuota_terisi' => 1]);
+
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->from('/siswa/pendaftaran-pilihan')
+            ->delete('/siswa/pendaftaran-pilihan');
+
+        $response->assertRedirect('/siswa/pendaftaran-pilihan');
+        $response->assertSessionHas('success', 'Pengajuan berhasil dibatalkan.');
+        $this->assertDatabaseCount('pendaftaran_pilihan', 0);
     }
 }

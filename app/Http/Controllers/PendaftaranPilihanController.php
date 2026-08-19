@@ -73,14 +73,17 @@ class PendaftaranPilihanController extends Controller
     /**
      * FR-52: Siswa memilih 3 paket prioritas (submit formulir pendaftaran pilihan).
      */
-    public function storeSiswa(Request $request): JsonResponse
+    public function storeSiswa(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
         if (!$siswa) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated / Akses ditolak.',
-            ], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Akses ditolak.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Akses ditolak.');
         }
 
         // 1. Cek apakah ada periode pendaftaran aktif yang sedang buka
@@ -91,10 +94,13 @@ class PendaftaranPilihanController extends Controller
             ->first();
 
         if (!$periodeAktif) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Pendaftaran ditolak. Tidak ada periode pendaftaran aktif yang sedang berjalan.',
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pendaftaran ditolak. Tidak ada periode pendaftaran aktif yang sedang berjalan.',
+                ], 422);
+            }
+            abort(422, 'Pendaftaran ditolak. Tidak ada periode pendaftaran aktif yang sedang berjalan.');
         }
 
         // 2. Cek apakah siswa sudah pernah mendaftar pada periode ini
@@ -103,10 +109,13 @@ class PendaftaranPilihanController extends Controller
             ->first();
 
         if ($existingPendaftaran) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda sudah pernah mengirimkan pilihan paket pada periode ini.',
-            ], 409);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda sudah pernah mengirimkan pilihan paket pada periode ini.',
+                ], 409);
+            }
+            abort(409, 'Anda sudah pernah mengirimkan pilihan paket pada periode ini.');
         }
 
         $maxPilihan = $periodeAktif->max_pilihan_siswa ?? 3;
@@ -128,10 +137,13 @@ class PendaftaranPilihanController extends Controller
 
         // 4. Pastikan tidak ada pilihan yang duplikat
         if (count($pilihanIds) !== count(array_unique($pilihanIds))) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.',
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.',
+                ], 422);
+            }
+            abort(422, 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.');
         }
 
         // 5. Pastikan semua paket menu yang dipilih berstatus is_active = true
@@ -140,10 +152,13 @@ class PendaftaranPilihanController extends Controller
             ->count();
 
         if ($activePackagesCount !== count($pilihanIds)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Salah satu paket menu yang Anda pilih tidak aktif.',
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Salah satu paket menu yang Anda pilih tidak aktif.',
+                ], 422);
+            }
+            abort(422, 'Salah satu paket menu yang Anda pilih tidak aktif.');
         }
 
         // 6. Simpan data Pendaftaran & Detail Pilihan dalam Transaction
@@ -176,7 +191,7 @@ class PendaftaranPilihanController extends Controller
             'periodePendaftaran',
         ]);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil menyimpan 3 paket menu pilihan prioritas Anda.',
             'data' => $pendaftaran,
@@ -186,11 +201,14 @@ class PendaftaranPilihanController extends Controller
     /**
      * FR-58: Siswa upload dokumen wali pada pengajuan yang sedang menunggu.
      */
-    public function uploadDokumenSiswa(Request $request): JsonResponse
+    public function uploadDokumenSiswa(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
         if (!$siswa) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+            }
+            abort(401, 'Unauthenticated.');
         }
 
         $now = now();
@@ -201,7 +219,10 @@ class PendaftaranPilihanController extends Controller
             ->first();
 
         if (!$periodeAktif) {
-            return response()->json(['success' => false, 'message' => 'Tidak ada periode pendaftaran yang sedang aktif.'], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Tidak ada periode pendaftaran yang sedang aktif.'], 422);
+            }
+            abort(422, 'Tidak ada periode pendaftaran yang sedang aktif.');
         }
 
         $pendaftaran = PendaftaranPilihan::where('siswa_id', $siswa->id)
@@ -209,7 +230,10 @@ class PendaftaranPilihanController extends Controller
             ->first();
 
         if (!$pendaftaran) {
-            return response()->json(['success' => false, 'message' => 'Belum ada pengajuan pilihan untuk periode ini.'], 404);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Belum ada pengajuan pilihan untuk periode ini.'], 404);
+            }
+            abort(404, 'Belum ada pengajuan pilihan untuk periode ini.');
         }
 
         $validated = $request->validate([
@@ -221,7 +245,7 @@ class PendaftaranPilihanController extends Controller
 
         $pendaftaran->update(['dokumen_wali_path' => $path]);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Dokumen wali berhasil diunggah.',
             'data' => ['dokumen_wali_path' => $path],
@@ -231,11 +255,14 @@ class PendaftaranPilihanController extends Controller
     /**
      * FR-59: Siswa batalkan pengajuan (hanya status 'menunggu' & dalam periode pertukaran).
      */
-    public function cancelSiswa(): JsonResponse
+    public function cancelSiswa(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
         if (!$siswa) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+            }
+            abort(401, 'Unauthenticated.');
         }
 
         $now = now();
@@ -245,10 +272,13 @@ class PendaftaranPilihanController extends Controller
             ->first();
 
         if (!$periodeAktif) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Pembatalan hanya dapat dilakukan dalam periode pertukaran aktif.',
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pembatalan hanya dapat dilakukan dalam periode pertukaran aktif.',
+                ], 422);
+            }
+            abort(422, 'Pembatalan hanya dapat dilakukan dalam periode pertukaran aktif.');
         }
 
         $pendaftaran = PendaftaranPilihan::with('detailPendaftaran')
@@ -257,14 +287,20 @@ class PendaftaranPilihanController extends Controller
             ->first();
 
         if (!$pendaftaran) {
-            return response()->json(['success' => false, 'message' => 'Tidak ada pengajuan yang ditemukan.'], 404);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Tidak ada pengajuan yang ditemukan.'], 404);
+            }
+            abort(404, 'Tidak ada pengajuan yang ditemukan.');
         }
 
         if ($pendaftaran->status !== 'menunggu') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Pengajuan yang sudah disetujui atau ditolak tidak dapat dibatalkan.',
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengajuan yang sudah disetujui atau ditolak tidak dapat dibatalkan.',
+                ], 422);
+            }
+            abort(422, 'Pengajuan yang sudah disetujui atau ditolak tidak dapat dibatalkan.');
         }
 
         DB::transaction(function () use ($pendaftaran) {
@@ -275,21 +311,24 @@ class PendaftaranPilihanController extends Controller
             $pendaftaran->delete();
         });
 
-        return response()->json(['success' => true, 'message' => 'Pengajuan berhasil dibatalkan.']);
+        return $this->handleWriteResponse($request, ['success' => true, 'message' => 'Pengajuan berhasil dibatalkan.']);
     }
 
     /**
      * FR-53: Siswa mengubah 3 paket prioritas pada periode pendaftaran yang masih buka.
      * Diizinkan selama status pengajuan masih 'menunggu'.
      */
-    public function updateSiswa(Request $request): JsonResponse
+    public function updateSiswa(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
         if (!$siswa) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated / Akses ditolak.',
-            ], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Akses ditolak.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Akses ditolak.');
         }
 
         $now = now();
@@ -299,10 +338,13 @@ class PendaftaranPilihanController extends Controller
             ->first();
 
         if (!$periodeAktif) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Pendaftaran ditolak. Tidak ada periode pendaftaran aktif yang sedang berjalan.',
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pendaftaran ditolak. Tidak ada periode pendaftaran aktif yang sedang berjalan.',
+                ], 422);
+            }
+            abort(422, 'Pendaftaran ditolak. Tidak ada periode pendaftaran aktif yang sedang berjalan.');
         }
 
         $pendaftaran = PendaftaranPilihan::with('detailPendaftaran')
@@ -311,17 +353,23 @@ class PendaftaranPilihanController extends Controller
             ->first();
 
         if (!$pendaftaran) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Belum ada pengajuan pilihan untuk periode ini. Silakan submit terlebih dahulu.',
-            ], 404);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Belum ada pengajuan pilihan untuk periode ini. Silakan submit terlebih dahulu.',
+                ], 404);
+            }
+            abort(404, 'Belum ada pengajuan pilihan untuk periode ini. Silakan submit terlebih dahulu.');
         }
 
         if ($pendaftaran->status !== 'menunggu') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Pilihan tidak dapat diubah karena pengajuan sudah direview oleh admin.',
-            ], 409);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pilihan tidak dapat diubah karena pengajuan sudah direview oleh admin.',
+                ], 409);
+            }
+            abort(409, 'Pilihan tidak dapat diubah karena pengajuan sudah direview oleh admin.');
         }
 
         $maxPilihan = $periodeAktif->max_pilihan_siswa ?? 3;
@@ -341,10 +389,13 @@ class PendaftaranPilihanController extends Controller
         $pilihanIds = $validated['pilihan'];
 
         if (count($pilihanIds) !== count(array_unique($pilihanIds))) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.',
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.',
+                ], 422);
+            }
+            abort(422, 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.');
         }
 
         $activePackagesCount = PaketMenuPilihan::whereIn('id', $pilihanIds)
@@ -352,10 +403,13 @@ class PendaftaranPilihanController extends Controller
             ->count();
 
         if ($activePackagesCount !== count($pilihanIds)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Salah satu paket menu yang Anda pilih tidak aktif.',
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Salah satu paket menu yang Anda pilih tidak aktif.',
+                ], 422);
+            }
+            abort(422, 'Salah satu paket menu yang Anda pilih tidak aktif.');
         }
 
         DB::transaction(function () use ($pendaftaran, $pilihanIds) {
@@ -389,7 +443,7 @@ class PendaftaranPilihanController extends Controller
             'periodePendaftaran',
         ]);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Pilihan paket prioritas Anda berhasil diperbarui.',
             'data' => $pendaftaran,
