@@ -400,23 +400,29 @@ class PendaftaranPilihanController extends Controller
      * FR-54 - FR-56: Siswa melihat hasil penempatan, status diterima, dan detail skor akhir.
      * Hasil hanya tampil bila status_pengumuman periode = AKTIF.
      */
-    public function hasilPenempatanSiswa(): JsonResponse
+    public function hasilPenempatanSiswa(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
         if (!$siswa) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated / Akses ditolak.',
-            ], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Akses ditolak.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Akses ditolak.');
         }
 
         $periode = PeriodePendaftaran::where('is_active', true)->latest('tanggal_tutup')->first();
 
         if (!$periode || $periode->status_pengumuman !== 'AKTIF') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Hasil penempatan belum dipublikasikan.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hasil penempatan belum dipublikasikan.',
+                ], 403);
+            }
+            abort(403, 'Hasil penempatan belum dipublikasikan.');
         }
 
         $hasil = HasilSeleksi::with('paketMenuPilihan')
@@ -424,25 +430,32 @@ class PendaftaranPilihanController extends Controller
             ->first();
 
         if (!$hasil) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Hasil penempatan untuk Anda belum tersedia.',
-            ], 404);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hasil penempatan untuk Anda belum tersedia.',
+                ], 404);
+            }
+            abort(404, 'Hasil penempatan untuk Anda belum tersedia.');
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $hasil->id,
-                'pilihan_ke_diterima' => $hasil->pilihan_ke_diterima,
-                'mekanisme' => $hasil->mekanisme,
-                'status' => $hasil->pilihan_ke_diterima ? 'Diterima' : 'Belum diterima',
-                'skor_penempatan' => $hasil->skor_penempatan,
-                'rata_6_mapel' => $hasil->rata_6_mapel,
-                'rank_pada_pilihan' => $hasil->rank_pada_pilihan,
-                'paket_diterima' => $hasil->paketMenuPilihan?->nama_menu,
-                'tanggal_diproses' => $hasil->tanggal_diproses,
-            ],
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $hasil->id,
+                    'pilihan_ke_diterima' => $hasil->pilihan_ke_diterima,
+                    'mekanisme' => $hasil->mekanisme,
+                    'status' => $hasil->pilihan_ke_diterima ? 'Diterima' : 'Belum diterima',
+                    'skor_penempatan' => $hasil->skor_penempatan,
+                    'rata_6_mapel' => $hasil->rata_6_mapel,
+                    'rank_pada_pilihan' => $hasil->rank_pada_pilihan,
+                    'paket_diterima' => $hasil->paketMenuPilihan?->nama_menu,
+                    'tanggal_diproses' => $hasil->tanggal_diproses,
+                ],
+            ]);
+        }
+
+        return view('pendaftaran-pilihan.hasil-penempatan', compact('hasil'));
     }
 }
