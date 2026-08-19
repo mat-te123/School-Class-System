@@ -14,8 +14,13 @@ class KelasAsalController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
+        $validated = $request->validate([
+            'search'   => 'nullable|string|max:50',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
         // Khusus hanya mengambil kelas tingkat X
         $query = KelasAsal::query()->where('tingkat', 'X')->withCount('siswas');
 
@@ -29,31 +34,22 @@ class KelasAsalController extends Controller
         }
 
         // Pencarian berdasarkan nama kelas
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where('nama_kelas', 'like', '%' . $search . '%');
+        if (!empty($validated['search'])) {
+            $search = trim($validated['search']);
+            $query->where('nama_kelas', 'like', "%{$search}%");
         }
 
         // Urutkan berdasarkan nama_kelas ascending
-        $kelases = $query->orderBy('nama_kelas', 'asc')->get();
+        $kelases = $query->orderBy('nama_kelas', 'asc')->paginate((int) $request->input('per_page', 10));
 
-        $data = $kelases->map(function ($item) {
-            return [
-                'id' => $item->id,
-                'nama_kelas' => $item->nama_kelas,
-                'tingkat' => $item->tingkat,
-                'kapasitas' => $item->kapasitas,
-                'total_siswa' => $item->siswas_count ?? 0,
-                'is_active' => $item->is_active,
-            ];
-        });
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $kelases,
+            ]);
+        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil daftar Kelas X.',
-            'total' => $data->count(),
-            'data' => $data,
-        ]);
+        return view('kelas-asal.index', compact('kelases'));
     }
 
     /**
