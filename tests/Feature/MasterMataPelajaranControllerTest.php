@@ -275,4 +275,61 @@ class MasterMataPelajaranControllerTest extends TestCase
         $this->assertDatabaseMissing('master_mata_pelajaran', ['id' => $oldId]);
         $this->assertDatabaseHas('master_mata_pelajaran', ['id' => $newId, 'kode_mapel' => 'SOS_1', 'nama_mapel' => 'Sosiologi Baru']);
     }
+
+    /** Request browser non-JSON redirect setelah store */
+    public function test_browser_store_redirects_back_with_success_flash(): void
+    {
+        $response = $this->actingAs($this->user, 'web')
+            ->from('/master-mata-pelajaran')
+            ->post('/master-mata-pelajaran', [
+                'kode_mapel' => 'MAT_W_2',
+                'nama_mapel' => 'Matematika Wajib 2',
+                'kelompok_mapel' => 'umum',
+            ]);
+
+        $response->assertRedirect('/master-mata-pelajaran');
+        $response->assertSessionHas('success', 'Berhasil menambahkan Master Mata Pelajaran baru.');
+    }
+
+    /** Request browser non-JSON redirect setelah update */
+    public function test_browser_update_redirects_back_with_success_flash(): void
+    {
+        $mapel = MasterMataPelajaran::create([
+            'id' => (string) Str::uuid(),
+            'kode_mapel' => 'MAT_W_3',
+            'nama_mapel' => 'Matematika Wajib 3',
+            'kelompok_mapel' => 'umum',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user, 'web')
+            ->from('/master-mata-pelajaran')
+            ->put('/master-mata-pelajaran/' . $mapel->id, [
+                'nama_mapel' => 'Matematika Wajib 3 Edited',
+            ]);
+
+        $response->assertRedirect('/master-mata-pelajaran');
+        $response->assertSessionHas('success', 'Berhasil memperbarui data Master Mata Pelajaran.');
+        $this->assertDatabaseHas('master_mata_pelajaran', ['id' => $mapel->id, 'nama_mapel' => 'Matematika Wajib 3 Edited']);
+    }
+
+    /** Request browser non-JSON redirect setelah destroy */
+    public function test_browser_destroy_redirects_back_with_success_flash(): void
+    {
+        $mapel = MasterMataPelajaran::create([
+            'id' => (string) Str::uuid(),
+            'kode_mapel' => 'MAT_W_4',
+            'nama_mapel' => 'Matematika Wajib 4',
+            'kelompok_mapel' => 'umum',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user, 'web')
+            ->from('/master-mata-pelajaran')
+            ->delete('/master-mata-pelajaran/' . $mapel->id);
+
+        $response->assertRedirect('/master-mata-pelajaran');
+        $response->assertSessionHas('success', 'Berhasil menghapus data Master Mata Pelajaran.');
+        $this->assertSoftDeleted('master_mata_pelajaran', ['id' => $mapel->id]);
+    }
 }
