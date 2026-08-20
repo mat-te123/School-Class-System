@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PendaftaranPilihan;
+use App\Models\Siswa;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -148,5 +149,106 @@ class AdminPendaftaranReviewController extends Controller
             . '.' . pathinfo($pendaftaran->dokumen_wali_path, PATHINFO_EXTENSION);
 
         return Storage::disk('public')->download($pendaftaran->dokumen_wali_path, $filename);
+    }
+
+    /**
+     * FR-20: Admin melihat daftar siswa yang sudah dan belum mengisi pilihan kelas.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Contracts\View\View
+     */
+    public function statusPilihan(Request $request)
+    {
+        $validated = $request->validate([
+            'periode_id'    => 'required|uuid|exists:periode_pendaftaran,id',
+            'kelas_asal_id' => 'nullable|uuid|exists:kelas_asal,id',
+            'search'        => 'nullable|string|max:50',
+            'per_page'      => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $query = Siswa::with('kelasAsalRelation')
+            ->whereNull('deleted_at')
+            ->where('is_active', true);
+
+        if (!empty($validated['kelas_asal_id'])) {
+            $query->where('kelas_asal_id', $validated['kelas_asal_id']);
+        }
+
+        if (!empty($validated['search'])) {
+            $search = trim($validated['search']);
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%");
+            });
+        }
+
+        $siswa = $query->orderBy('nama_lengkap')
+            ->paginate((int) $request->input('per_page', 20));
+
+        // Collect all siswa IDs
+        $siswaIds = $siswa->pluck('id');
+
+        // Get all submissions for this period
+        $submissions = PendaftaranPilihan::with('detailPendaftaran.paketMenuPilihan')
+            ->where('periode_pendaftaran_id', $validated['periode_id'])
+            ->whereIn('siswa_id', $siswaIds)
+            ->get()
+            ->keyBy('siswa_id');
+
+        $data = $siswa->map(function ($s) use ($submissions) {
+            $sub = $submissions->get($s->id);
+            return [
+                'siswa' => [
+                    'id' => $s->id,
+                    'nisn' => $s->nisn,
+                    'nis' => $s->nis,
+                    'nama_lengkap' => $s->nama_lengkap,
+                    'kelas_asal' => $s->kelasAsalRelation?->nama_kelas,
+                    'jenis_kelamin' => $s->jenis_kelamin,
+                    'angkatan' => $s->angkatan,
+                ],
+                'has_submitted' => !is_null($sub),
+                'submission' => $sub ? [
+                    'id' => $sub->id,
+                    'tanggal_submit' => $sub->tanggal_submit,
+                    'status' => $sub->status,
+                    'catatan_penolakan' => $sub->catatan_penolakan,
+                ] : null,
+                'pilihan' => $sub ? $sub->detailPendaftaran->map(function ($d) {
+                    return [
+                        'urutan_pilihan' => $d->urutan_pilihan,
+                        'paket_menu' => [
+                            'id' => $d->paketMenuPilihan?->id,
+                            'nama_menu' => $d->paketMenuPilihan?->nama_menu,
+                            'rumpun' => $d->paketMenuPilihan?->rumpun,
+                        ],
+                    ];
+                }) : null,
+            ];
+        });
+
+        $totalSudah = $data->where('has_submitted', true)->count();
+        $totalBelum = $data->where('has_submitted', false)->count();
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'meta' => [
+                    'total_siswa' => $data->count(),
+                    'total_sudah' => $totalSudah,
+                    'total_belum' => $totalBelum,
+                    'periode_id' => $validated['periode_id'],
+                ],
+                'data' => $data,
+                'pagination' => [
+                    'current_page' => $siswa->currentPage(),
+                    'per_page' => $siswa->perPage(),
+                    'total' => $siswa->total(),
+                    'last_page' => $siswa->lastPage(),
+                ],
+            ]);
+        }
+
+        return view('admin-pendaftaran-review.status-pilihan', compact('data', 'totalSudah', 'totalBelum'));
     }
 }

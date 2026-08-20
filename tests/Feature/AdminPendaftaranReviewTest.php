@@ -24,6 +24,7 @@ class AdminPendaftaranReviewTest extends TestCase
     private PeriodePendaftaran $periode;
     private PendaftaranPilihan $pendaftaran;
     private PaketMenuPilihan $paket1;
+    private KelasAsal $kelas;
 
     protected function setUp(): void
     {
@@ -37,7 +38,7 @@ class AdminPendaftaranReviewTest extends TestCase
             'is_active' => true,
         ]);
 
-        $kelas = KelasAsal::create([
+        $this->kelas = KelasAsal::create([
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'XII MIPA 1',
             'tingkat' => 'X',
@@ -48,7 +49,7 @@ class AdminPendaftaranReviewTest extends TestCase
             'nisn' => '9999999999',
             'nis' => '99999',
             'nama_lengkap' => 'Siswa Review',
-            'kelas_asal_id' => $kelas->id,
+            'kelas_asal_id' => $this->kelas->id,
             'jenis_kelamin' => 'L',
             'angkatan' => '2024',
             'is_active' => true,
@@ -182,5 +183,84 @@ class AdminPendaftaranReviewTest extends TestCase
         $response->assertRedirect('/admin/pendaftaran-pilihan');
         $response->assertSessionHas('success', 'Pengajuan pilihan paket berhasil ditolak.');
         $this->assertEquals('ditolak', $this->pendaftaran->fresh()->status);
+    }
+
+    /** FR-20: Admin melihat daftar siswa yang sudah dan belum mengisi pilihan kelas */
+    public function test_admin_can_view_student_submission_status(): void
+    {
+        $periode = PeriodePendaftaran::create([
+            'id' => (string) Str::uuid(),
+            'nama_periode' => 'Periode Status',
+            'tahun_ajaran' => '2024/2025',
+            'gelombang' => 'Utama',
+            'max_pilihan_siswa' => 3,
+            'tanggal_buka' => now()->subDays(5),
+            'tanggal_tutup' => now()->addDays(5),
+            'status_pengumuman' => 'AKTIF',
+            'is_active' => true,
+        ]);
+
+        // Siswa A: sudah mengisi
+        $siswaSudah = Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '1111111110',
+            'nis' => '11110',
+            'nama_lengkap' => 'Sudah Mengisi',
+            'kelas_asal_id' => $this->kelas->id,
+            'jenis_kelamin' => 'L',
+            'angkatan' => '2024',
+            'is_active' => true,
+        ]);
+        $pendaftaran = PendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'siswa_id' => $siswaSudah->id,
+            'periode_pendaftaran_id' => $periode->id,
+            'tanggal_submit' => now(),
+            'status' => 'menunggu',
+        ]);
+        DetailPendaftaranPilihan::create([
+            'id' => (string) Str::uuid(),
+            'pendaftaran_pilihan_id' => $pendaftaran->id,
+            'paket_menu_pilihan_id' => $this->paket1->id,
+            'urutan_pilihan' => 1,
+        ]);
+
+        // Siswa B: belum mengisi
+        $siswaBelum = Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '1111111111',
+            'nis' => '11111',
+            'nama_lengkap' => 'Belum Mengisi',
+            'kelas_asal_id' => $this->kelas->id,
+            'jenis_kelamin' => 'P',
+            'angkatan' => '2024',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'web')
+            ->getJson('/admin/siswa/status-pilihan?periode_id=' . $periode->id);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'meta' => [
+                    'total_sudah' => 1,
+                    'total_belum' => 1,
+                    'total_siswa' => 2,
+                ],
+            ]);
+
+        $data = $response->json('data');
+        $siswaHasil = collect($data);
+        $sudah = $siswaHasil->firstWhere('siswa.nisn', '1111111110');
+        $belum = $siswaHasil->firstWhere('siswa.nisn', '1111111111');
+
+        $this->assertTrue($sudah['has_submitted']);
+        $this->assertNotNull($sudah['submission']);
+        $this->assertCount(1, $sudah['pilihan']);
+
+        $this->assertFalse($belum['has_submitted']);
+        $this->assertNull($belum['submission']);
+        $this->assertNull($belum['pilihan']);
     }
 }
