@@ -19,6 +19,7 @@ Sistem Manajemen Klasifikasi & Pemilihan Paket Menu Kelas (School Class System) 
   - [8. Data Siswa](#8-data-siswa)
   - [9. Periode Penjurusan (FR-9, FR-10, FR-11)](#9-periode-penjurusan-fr-9-fr-10-fr-11)
   - [10. Fitur Khusus Siswa (FR-49, FR-50, FR-51)](#10-fitur-khusus-siswa-fr-49-fr-50-fr-51)
+  - [11. Proyeksi Universitas & Program Studi (FR-39, FR-57)](#11-proyeksi-universitas--program-studi-fr-39-fr-57)
 
 ---
 
@@ -769,4 +770,235 @@ Endpoint khusus untuk siswa yang sudah terautentikasi (guard `siswa`). Semua end
 
 * **Endpoint Status Pilihan Siswa**: `GET /siswa/pendaftaran-pilihan`
   - Mengambil data pendaftaran pilihan siswa yang sedang login pada periode aktif saat ini.
+
+---
+
+### 11. Proyeksi Universitas & Program Studi (FR-39, FR-57)
+
+Endpoint untuk mengelola data proyeksi universitas dan program studi. Fitur ini memungkinkan siswa melihat informasi universitas dan program studi, serta admin untuk mengelola data tersebut.
+
+> [!IMPORTANT]
+> - **Read access**: `auth.any` (Siswa / Admin / Guru BK)
+> - **Write access**: `auth:web` dengan role `admin` saja (dicek di controller)
+> - FR-39: Proyeksi Universitas
+> - FR-57: Program Studi
+
+---
+
+#### A. Daftar Proyeksi Universitas (FR-39)
+
+* **Endpoint**: `GET /proyeksi-universitas`
+* **Access**: `auth.any`
+* **Deskripsi**: Menampilkan daftar proyeksi universitas dengan fitur pencarian.
+
+* **Query Parameters** *(opsional)*:
+  * `search`: Pencarian nama universitas, singkatan, kota, atau provinsi
+  * `per_page`: Jumlah data per halaman (default: 15, max: 100)
+  * `is_active`: `true` / `false` / `all` (default: `true`)
+
+* **Response Status**: `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": "uuid-universitas",
+        "nama_universitas": "Universitas Indonesia",
+        "singkatan": "UI",
+        "akreditasi": "A",
+        "lokasi_kota": "Depok",
+        "lokasi_provinsi": "Jawa Barat",
+        "website": "https://ui.ac.id",
+        "deskripsi": "Universitas negeri terkemuka di Indonesia",
+        "tahun_data": 2024,
+        "is_active": true,
+        "created_at": "2026-08-19T10:00:00.000000Z",
+        "updated_at": "2026-08-19T10:00:00.000000Z"
+      }
+    ],
+    "per_page": 15,
+    "total": 50
+  }
+}
+```
+
+---
+
+#### B. Detail Proyeksi Universitas dengan Program Studi (FR-57)
+
+* **Endpoint**: `GET /proyeksi-universitas/{id}`
+* **Access**: `auth.any`
+* **Deskripsi**: Menampilkan detail universitas beserta daftar program studi aktif.
+
+* **Response Status**: `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid-universitas",
+    "nama_universitas": "Universitas Indonesia",
+    "singkatan": "UI",
+    "akreditasi": "A",
+    "lokasi_kota": "Depok",
+    "lokasi_provinsi": "Jawa Barat",
+    "website": "https://ui.ac.id",
+    "deskripsi": "Universitas negeri terkemuka di Indonesia",
+    "tahun_data": 2024,
+    "is_active": true,
+    "program_studis": [
+      {
+        "id": "uuid-prodi",
+        "nama_prodi": "Teknik Informatika",
+        "jenjang": "S1",
+        "akreditasi_prodi": "A",
+        "daya_tampung": 120,
+        "peminat_tahun_lalu": 2500,
+        "kelompok_saintek_soshum": "Saintek"
+      }
+    ]
+  }
+}
+```
+
+---
+
+#### C. Tambah Proyeksi Universitas (FR-39)
+
+* **Endpoint**: `POST /proyeksi-universitas`
+* **Access**: `auth:web` (Admin only)
+* **Payload Request**:
+```json
+{
+  "nama_universitas": "Universitas Indonesia",
+  "singkatan": "UI",
+  "akreditasi": "A",
+  "lokasi_kota": "Depok",
+  "lokasi_provinsi": "Jawa Barat",
+  "website": "https://ui.ac.id",
+  "deskripsi": "Universitas negeri terkemuka di Indonesia",
+  "tahun_data": 2024,
+  "is_active": true
+}
+```
+
+* **Response Status**: `201 Created`
+
+---
+
+#### D. Ubah & Hapus Proyeksi Universitas
+
+* `PUT /proyeksi-universitas/{id}` (`auth:web` - Admin only)
+* `DELETE /proyeksi-universitas/{id}` (`auth:web` - Admin only)
+* *Catatan*: `DELETE` menggunakan **Soft Deletes** (`deleted_at`).
+
+---
+
+#### E. Daftar Program Studi (FR-57)
+
+* **Endpoint**: `GET /program-studi`
+* **Access**: `auth.any`
+* **Deskripsi**: Menampilkan daftar program studi dengan berbagai filter.
+
+* **Query Parameters** *(opsional)*:
+  * `search`: Pencarian nama prodi atau universitas
+  * `per_page`: Jumlah data per halaman (default: 15, max: 100)
+  * `proyeksi_universitas_id`: Filter berdasarkan UUID universitas
+  * `jenjang`: Filter jenjang (`D3`, `D4`, `S1`, `S2`, `S3`, `Profesi`)
+  * `kelompok_saintek_soshum`: Filter kelompok (`Saintek`, `Soshum`, `Campuran`)
+  * `is_active`: `true` / `false` / `all` (default: `true`)
+
+* **Response Status**: `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": "uuid-prodi",
+        "proyeksi_universitas_id": "uuid-universitas",
+        "nama_prodi": "Teknik Informatika",
+        "jenjang": "S1",
+        "akreditasi_prodi": "A",
+        "daya_tampung": 120,
+        "peminat_tahun_lalu": 2500,
+        "kelompok_saintek_soshum": "Saintek",
+        "is_active": true,
+        "proyeksi_universitas": {
+          "id": "uuid-universitas",
+          "nama_universitas": "Universitas Indonesia",
+          "singkatan": "UI"
+        }
+      }
+    ],
+    "per_page": 15,
+    "total": 100
+  }
+}
+```
+
+---
+
+#### F. Detail Program Studi (FR-57)
+
+* **Endpoint**: `GET /program-studi/{id}`
+* **Access**: `auth.any`
+
+* **Response Status**: `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid-prodi",
+    "proyeksi_universitas_id": "uuid-universitas",
+    "nama_prodi": "Teknik Informatika",
+    "jenjang": "S1",
+    "akreditasi_prodi": "A",
+    "daya_tampung": 120,
+    "peminat_tahun_lalu": 2500,
+    "kelompok_saintek_soshum": "Saintek",
+    "is_active": true,
+    "proyeksi_universitas": {
+      "id": "uuid-universitas",
+      "nama_universitas": "Universitas Indonesia",
+      "singkatan": "UI",
+      "akreditasi": "A",
+      "lokasi_kota": "Depok",
+      "lokasi_provinsi": "Jawa Barat"
+    }
+  }
+}
+```
+
+---
+
+#### G. Tambah Program Studi (FR-57)
+
+* **Endpoint**: `POST /program-studi`
+* **Access**: `auth:web` (Admin only)
+* **Payload Request**:
+```json
+{
+  "proyeksi_universitas_id": "uuid-universitas",
+  "nama_prodi": "Teknik Informatika",
+  "jenjang": "S1",
+  "akreditasi_prodi": "A",
+  "daya_tampung": 120,
+  "peminat_tahun_lalu": 2500,
+  "kelompok_saintek_soshum": "Saintek",
+  "is_active": true
+}
+```
+
+* **Response Status**: `201 Created`
+
+---
+
+#### H. Ubah & Hapus Program Studi
+
+* `PUT /program-studi/{id}` (`auth:web` - Admin only)
+* `DELETE /program-studi/{id}` (`auth:web` - Admin only)
+* *Catatan*: `DELETE` menggunakan **Soft Deletes** (`deleted_at`).
 

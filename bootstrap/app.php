@@ -35,6 +35,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'siswa/*',
             'periode-penjurusan',
             'periode-penjurusan/*',
+            'proyeksi-universitas',
+            'proyeksi-universitas/*',
+            'program-studi',
+            'program-studi/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
