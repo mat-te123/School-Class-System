@@ -14,13 +14,13 @@ class KelasAsalSeeder extends Seeder
     public function run(): void
     {
         $kelases = [
-            ['nama_kelas' => 'X A', 'tingkat' => 'X', 'kapasitas' => 36],
-            ['nama_kelas' => 'X B', 'tingkat' => 'X', 'kapasitas' => 36],
-            ['nama_kelas' => 'X C', 'tingkat' => 'X', 'kapasitas' => 36],
-            ['nama_kelas' => 'X D', 'tingkat' => 'X', 'kapasitas' => 36],
-            ['nama_kelas' => 'X E', 'tingkat' => 'X', 'kapasitas' => 36],
-            ['nama_kelas' => 'X F', 'tingkat' => 'X', 'kapasitas' => 36],
-            ['nama_kelas' => 'X G', 'tingkat' => 'X', 'kapasitas' => 36],
+            ['nama_kelas' => 'X A'],
+            ['nama_kelas' => 'X B'],
+            ['nama_kelas' => 'X C'],
+            ['nama_kelas' => 'X D'],
+            ['nama_kelas' => 'X E'],
+            ['nama_kelas' => 'X F'],
+            ['nama_kelas' => 'X G'],
         ];
 
         foreach ($kelases as $k) {
@@ -28,9 +28,7 @@ class KelasAsalSeeder extends Seeder
                 ['nama_kelas' => $k['nama_kelas']],
                 [
                     'id' => (string) Str::uuid(),
-                    'tingkat' => $k['tingkat'],
-                    'kapasitas' => $k['kapasitas'],
-                    'is_active' => true,
+                    'tingkat' => 'X',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]

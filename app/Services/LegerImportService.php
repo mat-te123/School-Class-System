@@ -54,7 +54,7 @@ class LegerImportService
             $kelasNama = $metadata['kelas_asal'] ?? 'X A';
             $kelasAsalModel = \App\Models\KelasAsal::firstOrCreate(
                 ['nama_kelas' => $kelasNama],
-                ['id' => (string) Str::uuid(), 'tingkat' => 'X', 'kapasitas' => 36, 'is_active' => true]
+                ['id' => (string) Str::uuid(), 'tingkat' => 'X']
             );
         } else {
             $kelasNama = $kelasAsalModel->nama_kelas;

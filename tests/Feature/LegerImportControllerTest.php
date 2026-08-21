@@ -43,8 +43,6 @@ class LegerImportControllerTest extends TestCase
         $kelas = \App\Models\KelasAsal::create([
             'id'        => (string) Str::uuid(),
             'nama_kelas'=> 'X A',
-            'tingkat'   => 'X',
-            'kapasitas' => 36,
             'is_active' => true,
         ]);
 
@@ -101,8 +99,6 @@ class LegerImportControllerTest extends TestCase
         $kelas = \App\Models\KelasAsal::create([
             'id'        => (string) Str::uuid(),
             'nama_kelas'=> 'X A',
-            'tingkat'   => 'X',
-            'kapasitas' => 36,
             'is_active' => true,
         ]);
 
@@ -173,8 +169,6 @@ class LegerImportControllerTest extends TestCase
         $kelas = \App\Models\KelasAsal::create([
             'id'         => (string) Str::uuid(),
             'nama_kelas' => 'X B Khusus',
-            'tingkat'    => 'X',
-            'kapasitas'  => 36,
             'is_active'  => true,
         ]);
 
@@ -216,8 +210,6 @@ class LegerImportControllerTest extends TestCase
         $kelas = \App\Models\KelasAsal::create([
             'id'        => (string) Str::uuid(),
             'nama_kelas'=> 'X C',
-            'tingkat'   => 'X',
-            'kapasitas' => 36,
             'is_active' => true,
         ]);
 
@@ -262,8 +254,6 @@ class LegerImportControllerTest extends TestCase
         $kelas = \App\Models\KelasAsal::create([
             'id'        => (string) Str::uuid(),
             'nama_kelas'=> 'X A',
-            'tingkat'   => 'X',
-            'kapasitas' => 36,
             'is_active' => true,
         ]);
 
@@ -324,8 +314,6 @@ class LegerImportControllerTest extends TestCase
         $kelas = \App\Models\KelasAsal::create([
             'id'        => (string) Str::uuid(),
             'nama_kelas'=> 'X B',
-            'tingkat'   => 'X',
-            'kapasitas' => 36,
             'is_active' => true,
         ]);
 

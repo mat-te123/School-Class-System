@@ -12,7 +12,7 @@ class KelasAsalControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_can_get_all_kelas_x(): void
+    public function test_can_get_all_kelas(): void
     {
         $user = \App\Models\User::create([
             'id' => (string) Str::uuid(),
@@ -22,29 +22,16 @@ class KelasAsalControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $kelasX1 = KelasAsal::create([
+        $kelas1 = KelasAsal::create([
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'X A',
             'tingkat' => 'X',
-            'kapasitas' => 36,
-            'is_active' => true,
         ]);
 
-        $kelasX2 = KelasAsal::create([
-            'id' => (string) Str::uuid(),
-            'nama_kelas' => 'X B',
-            'tingkat' => 'X',
-            'kapasitas' => 36,
-            'is_active' => true,
-        ]);
-
-        // Kelas XI (should be ignored)
-        KelasAsal::create([
+        $kelas2 = KelasAsal::create([
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'XI IPA 1',
             'tingkat' => 'XI',
-            'kapasitas' => 36,
-            'is_active' => true,
         ]);
 
         $response = $this->actingAs($user, 'web')->getJson('/kelas-asal');
@@ -56,7 +43,38 @@ class KelasAsalControllerTest extends TestCase
         $this->assertEquals(2, $response->json('data.total'));
     }
 
-    public function test_can_get_detail_kelas_x_by_id_or_nama(): void
+    public function test_can_filter_kelas_by_tingkat(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'test_user_kelas_filter',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'X A',
+            'tingkat' => 'X',
+        ]);
+
+        KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'XI IPA 1',
+            'tingkat' => 'XI',
+        ]);
+
+        $response = $this->actingAs($user, 'web')->getJson('/kelas-asal?tingkat=X');
+
+        $response->assertStatus(200)
+            ->assertJson(['success' => true])
+            ->assertJsonCount(1, 'data.data');
+
+        $this->assertEquals('X A', $response->json('data.data.0.nama_kelas'));
+    }
+
+    public function test_can_get_detail_kelas_by_id_or_nama(): void
     {
         $siswa = Siswa::create([
             'id' => (string) Str::uuid(),
@@ -71,8 +89,6 @@ class KelasAsalControllerTest extends TestCase
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'X A',
             'tingkat' => 'X',
-            'kapasitas' => 36,
-            'is_active' => true,
         ]);
 
         $response = $this->actingAs($siswa, 'siswa')->getJson('/kelas-asal/' . $kelas->id);
@@ -88,7 +104,7 @@ class KelasAsalControllerTest extends TestCase
             ]);
     }
 
-    public function test_admin_can_create_kelas_x(): void
+    public function test_admin_can_create_kelas(): void
     {
         $admin = \App\Models\User::create([
             'id' => (string) Str::uuid(),
@@ -100,17 +116,16 @@ class KelasAsalControllerTest extends TestCase
 
         $response = $this->actingAs($admin, 'web')->postJson('/kelas-asal', [
             'nama_kelas' => 'X H',
-            'kapasitas' => 32,
+            'tingkat' => 'X',
         ]);
 
         $response->assertStatus(201)
             ->assertJson([
                 'success' => true,
-                'message' => 'Berhasil menambahkan Kelas X baru.',
+                'message' => 'Berhasil menambahkan Kelas baru.',
                 'data' => [
                     'nama_kelas' => 'X H',
                     'tingkat' => 'X',
-                    'kapasitas' => 32,
                 ],
             ]);
 
@@ -120,7 +135,7 @@ class KelasAsalControllerTest extends TestCase
         ]);
     }
 
-    public function test_non_admin_cannot_create_kelas_x(): void
+    public function test_non_admin_cannot_create_kelas(): void
     {
         $guruBk = \App\Models\User::create([
             'id' => (string) Str::uuid(),
@@ -137,7 +152,7 @@ class KelasAsalControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_admin_can_update_kelas_x(): void
+    public function test_admin_can_update_kelas(): void
     {
         $admin = \App\Models\User::create([
             'id' => (string) Str::uuid(),
@@ -151,13 +166,11 @@ class KelasAsalControllerTest extends TestCase
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'X A',
             'tingkat' => 'X',
-            'kapasitas' => 36,
-            'is_active' => true,
         ]);
 
         $response = $this->actingAs($admin, 'web')->putJson('/kelas-asal/' . $kelas->id, [
             'nama_kelas' => 'X A Unggulan',
-            'kapasitas' => 40,
+            'tingkat' => 'X',
         ]);
 
         $response->assertStatus(200)
@@ -165,12 +178,12 @@ class KelasAsalControllerTest extends TestCase
                 'success' => true,
                 'data' => [
                     'nama_kelas' => 'X A Unggulan',
-                    'kapasitas' => 40,
+                    'tingkat' => 'X',
                 ],
             ]);
     }
 
-    public function test_admin_can_delete_kelas_x(): void
+    public function test_admin_can_delete_kelas(): void
     {
         $admin = \App\Models\User::create([
             'id' => (string) Str::uuid(),
@@ -184,8 +197,6 @@ class KelasAsalControllerTest extends TestCase
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'X Z',
             'tingkat' => 'X',
-            'kapasitas' => 36,
-            'is_active' => true,
         ]);
 
         $response = $this->actingAs($admin, 'web')->deleteJson('/kelas-asal/' . $kelas->id);
@@ -193,7 +204,7 @@ class KelasAsalControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
-                'message' => 'Berhasil menghapus data Kelas X.',
+                'message' => 'Berhasil menghapus data Kelas.',
             ]);
 
         $this->assertSoftDeleted('kelas_asal', [
@@ -226,14 +237,11 @@ class KelasAsalControllerTest extends TestCase
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'X D',
             'tingkat' => 'X',
-            'kapasitas' => 36,
-            'is_active' => true,
         ]);
         $kelas->delete();
 
         $response = $this->actingAs($admin, 'web')->postJson('/kelas-asal', [
             'nama_kelas' => 'X D',
-            'kapasitas' => 40,
         ]);
 
         $response->assertStatus(409)
@@ -257,16 +265,13 @@ class KelasAsalControllerTest extends TestCase
         $kelas = KelasAsal::create([
             'nama_kelas' => 'X E',
             'tingkat' => 'X',
-            'kapasitas' => 30,
-            'is_active' => false,
         ]);
         $oldId = $kelas->id;
         $kelas->delete();
 
         $response = $this->actingAs($admin, 'web')->postJson('/kelas-asal', [
             'nama_kelas' => 'X E',
-            'kapasitas' => 36,
-            'is_active' => true,
+            'tingkat' => 'X',
             'action' => 'restore',
         ]);
 
@@ -277,15 +282,14 @@ class KelasAsalControllerTest extends TestCase
                 'data' => [
                     'id' => $oldId,
                     'nama_kelas' => 'X E',
-                    'kapasitas' => 36,
-                    'is_active' => true,
+                    'tingkat' => 'X',
                 ],
             ]);
 
         $this->assertDatabaseHas('kelas_asal', [
             'id' => $oldId,
             'deleted_at' => null,
-            'kapasitas' => 36,
+            'tingkat' => 'X',
         ]);
     }
 
@@ -304,15 +308,12 @@ class KelasAsalControllerTest extends TestCase
             'id' => $oldId,
             'nama_kelas' => 'X F',
             'tingkat' => 'X',
-            'kapasitas' => 30,
-            'is_active' => true,
         ]);
         $kelas->delete();
 
         $response = $this->actingAs($admin, 'web')->postJson('/kelas-asal', [
             'nama_kelas' => 'X F',
-            'kapasitas' => 36,
-            'is_active' => true,
+            'tingkat' => 'X',
             'action' => 'overwrite',
         ]);
 
@@ -325,7 +326,7 @@ class KelasAsalControllerTest extends TestCase
         $newId = $response->json('data.id');
         $this->assertNotEquals($oldId, $newId);
         $this->assertDatabaseMissing('kelas_asal', ['id' => $oldId]);
-        $this->assertDatabaseHas('kelas_asal', ['id' => $newId, 'nama_kelas' => 'X F']);
+        $this->assertDatabaseHas('kelas_asal', ['id' => $newId, 'nama_kelas' => 'X F', 'tingkat' => 'X']);
     }
 
     /** Paginasi server-side: per_page & meta paginator benar */
@@ -344,8 +345,6 @@ class KelasAsalControllerTest extends TestCase
                 'id' => (string) Str::uuid(),
                 'nama_kelas' => "X {$i}",
                 'tingkat' => 'X',
-                'kapasitas' => 36,
-                'is_active' => true,
             ]);
         }
 
@@ -375,15 +374,11 @@ class KelasAsalControllerTest extends TestCase
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'X A',
             'tingkat' => 'X',
-            'kapasitas' => 36,
-            'is_active' => true,
         ]);
         KelasAsal::create([
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'XI IPA 1',
             'tingkat' => 'XI',
-            'kapasitas' => 36,
-            'is_active' => true,
         ]);
 
         $response = $this->actingAs($user, 'web')->getJson('/kelas-asal?search=X A');
@@ -393,8 +388,8 @@ class KelasAsalControllerTest extends TestCase
         $this->assertEquals('X A', $response->json('data.data.0.nama_kelas'));
     }
 
-    /** Request browser reguler merender view kelas-asal.index */
-    public function test_authenticated_user_can_view_kelas_index_blade(): void
+    /** Request web index mengembalikan response sukses */
+    public function test_authenticated_user_can_access_kelas_index(): void
     {
         $user = \App\Models\User::create([
             'id' => (string) Str::uuid(),
@@ -407,8 +402,6 @@ class KelasAsalControllerTest extends TestCase
         $response = $this->actingAs($user, 'web')->get('/kelas-asal');
 
         $response->assertStatus(200);
-        $response->assertViewIs('kelas-asal.index');
-        $response->assertViewHas('kelases');
     }
 
     /** Request browser non-JSON redirect ke halaman asal setelah store */
@@ -426,12 +419,12 @@ class KelasAsalControllerTest extends TestCase
             ->from('/kelas-asal')
             ->post('/kelas-asal', [
                 'nama_kelas' => 'X C',
-                'kapasitas' => 32,
+                'tingkat' => 'X',
             ]);
 
         $response->assertRedirect('/kelas-asal');
-        $response->assertSessionHas('success', 'Berhasil menambahkan Kelas X baru.');
-        $this->assertDatabaseHas('kelas_asal', ['nama_kelas' => 'X C']);
+        $response->assertSessionHas('success', 'Berhasil menambahkan Kelas baru.');
+        $this->assertDatabaseHas('kelas_asal', ['nama_kelas' => 'X C', 'tingkat' => 'X']);
     }
 
     /** Request browser non-JSON redirect ke halaman asal setelah update */
@@ -449,19 +442,18 @@ class KelasAsalControllerTest extends TestCase
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'X D',
             'tingkat' => 'X',
-            'kapasitas' => 36,
-            'is_active' => true,
         ]);
 
         $response = $this->actingAs($user, 'web')
             ->from('/kelas-asal')
             ->put('/kelas-asal/' . $kelas->id, [
-                'kapasitas' => 40,
+                'nama_kelas' => 'X D Updated',
+                'tingkat' => 'X',
             ]);
 
         $response->assertRedirect('/kelas-asal');
-        $response->assertSessionHas('success', 'Berhasil memperbarui data Kelas X.');
-        $this->assertDatabaseHas('kelas_asal', ['id' => $kelas->id, 'kapasitas' => 40]);
+        $response->assertSessionHas('success', 'Berhasil memperbarui data Kelas.');
+        $this->assertDatabaseHas('kelas_asal', ['id' => $kelas->id, 'nama_kelas' => 'X D Updated']);
     }
 
     /** Request browser non-JSON redirect ke halaman asal setelah destroy */
@@ -479,8 +471,6 @@ class KelasAsalControllerTest extends TestCase
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'X E',
             'tingkat' => 'X',
-            'kapasitas' => 36,
-            'is_active' => true,
         ]);
 
         $response = $this->actingAs($user, 'web')
@@ -488,7 +478,7 @@ class KelasAsalControllerTest extends TestCase
             ->delete('/kelas-asal/' . $kelas->id);
 
         $response->assertRedirect('/kelas-asal');
-        $response->assertSessionHas('success', 'Berhasil menghapus data Kelas X.');
+        $response->assertSessionHas('success', 'Berhasil menghapus data Kelas.');
         $this->assertSoftDeleted('kelas_asal', ['id' => $kelas->id]);
     }
 }

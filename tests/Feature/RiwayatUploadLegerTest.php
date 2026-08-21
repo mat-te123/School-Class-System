@@ -20,8 +20,6 @@ class RiwayatUploadLegerTest extends TestCase
         $kelas = KelasAsal::create([
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'X A',
-            'tingkat' => 'X',
-            'kapasitas' => 36,
         ]);
 
         // 1. Simpan upload pertama
@@ -70,8 +68,6 @@ class RiwayatUploadLegerTest extends TestCase
         $kelas = KelasAsal::create([
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'X B',
-            'tingkat' => 'X',
-            'kapasitas' => 36,
         ]);
 
         $upload = RiwayatUploadLeger::create([

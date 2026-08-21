@@ -17,17 +17,7 @@ class KelasAsal extends Model
     protected $fillable = [
         'nama_kelas',
         'tingkat',
-        'kapasitas',
-        'is_active',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'kapasitas' => 'integer',
-            'is_active' => 'boolean',
-        ];
-    }
 
     /**
      * Relasi ke model Siswa.

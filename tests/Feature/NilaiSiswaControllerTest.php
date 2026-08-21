@@ -35,8 +35,6 @@ class NilaiSiswaControllerTest extends TestCase
         $kelas = KelasAsal::create([
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'X B',
-            'tingkat' => 'X',
-            'kapasitas' => 36,
             'is_active' => true,
         ]);
 

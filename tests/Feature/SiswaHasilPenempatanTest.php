@@ -31,7 +31,6 @@ class SiswaHasilPenempatanTest extends TestCase
         $kelas = KelasAsal::create([
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'XII MIPA 1',
-            'tingkat' => 'X',
         ]);
 
         $this->siswa = Siswa::create([
