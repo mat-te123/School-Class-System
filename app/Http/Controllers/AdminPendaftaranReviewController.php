@@ -251,4 +251,75 @@ class AdminPendaftaranReviewController extends Controller
 
         return view('admin-pendaftaran-review.status-pilihan', compact('data', 'totalSudah', 'totalBelum'));
     }
+
+    /**
+     * FR-22: Admin melihat urutan prioritas pilihan milik siswa tertentu.
+     *
+     * @param string $siswaId
+     * @param Request $request
+     * @return JsonResponse|\Illuminate\Contracts\View\View
+     */
+    public function prioritasPilihanSiswa(string $siswaId, Request $request)
+    {
+        $siswa = Siswa::with('kelasAsalRelation')->findOrFail($siswaId);
+
+        $pendaftaranHistory = PendaftaranPilihan::with([
+            'periodePendaftaran',
+            'detailPendaftaran.paketMenuPilihan.kriteriaBobots.mataPelajaran',
+            'peninjau',
+        ])
+        ->where('siswa_id', $siswaId)
+        ->orderBy('tanggal_submit', 'desc')
+        ->get()
+        ->map(function ($p) {
+            return [
+                'id'                 => $p->id,
+                'periode'            => [
+                    'id'           => $p->periodePendaftaran?->id,
+                    'nama_periode' => $p->periodePendaftaran?->nama_periode,
+                    'tahun_ajaran' => $p->periodePendaftaran?->tahun_ajaran,
+                    'gelombang'    => $p->periodePendaftaran?->gelombang,
+                ],
+                'tanggal_submit'     => $p->tanggal_submit,
+                'status'             => $p->status,
+                'catatan_penolakan'  => $p->catatan_penolakan,
+                'dokumen_wali_path'  => $p->dokumen_wali_path,
+                'ditinjau_oleh'      => $p->peninjau?->name ?? $p->peninjau?->username,
+                'tanggal_tinjauan'   => $p->tanggal_tinjauan,
+                'pilihan_prioritas'  => $p->detailPendaftaran->sortBy('urutan_pilihan')->values()->map(function ($d) {
+                    return [
+                        'urutan_pilihan' => $d->urutan_pilihan,
+                        'paket_menu'     => [
+                            'id'        => $d->paketMenuPilihan?->id,
+                            'nama_menu' => $d->paketMenuPilihan?->nama_menu,
+                            'rumpun'    => $d->paketMenuPilihan?->rumpun,
+                            'kuota'     => $d->paketMenuPilihan?->kuota_kapasitas,
+                        ],
+                    ];
+                }),
+            ];
+        });
+
+        $data = [
+            'siswa' => [
+                'id'            => $siswa->id,
+                'nisn'          => $siswa->nisn,
+                'nis'           => $siswa->nis,
+                'nama_lengkap'  => $siswa->nama_lengkap,
+                'kelas_asal'    => $siswa->kelasAsalRelation?->nama_kelas,
+                'jenis_kelamin' => $siswa->jenis_kelamin,
+                'angkatan'      => $siswa->angkatan,
+            ],
+            'riwayat_pendaftaran' => $pendaftaranHistory,
+        ];
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $data,
+            ]);
+        }
+
+        return view('admin-pendaftaran-review.prioritas-siswa', compact('data'));
+    }
 }

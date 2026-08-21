@@ -245,8 +245,8 @@ class AdminPendaftaranReviewTest extends TestCase
                 'success' => true,
                 'meta' => [
                     'total_sudah' => 1,
-                    'total_belum' => 1,
-                    'total_siswa' => 2,
+                    'total_belum' => 2,
+                    'total_siswa' => 3,
                 ],
             ]);
 
@@ -262,5 +262,30 @@ class AdminPendaftaranReviewTest extends TestCase
         $this->assertFalse($belum['has_submitted']);
         $this->assertNull($belum['submission']);
         $this->assertNull($belum['pilihan']);
+    }
+
+    /** FR-22: Admin melihat urutan prioritas pilihan setiap siswa berdasarkan ID siswa */
+    public function test_admin_can_view_student_priority_choices_by_student_id(): void
+    {
+        $response = $this->actingAs($this->admin, 'web')
+            ->getJson('/admin/siswa/' . $this->siswa->id . '/pilihan');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'siswa' => [
+                        'id' => $this->siswa->id,
+                        'nisn' => $this->siswa->nisn,
+                        'nama_lengkap' => $this->siswa->nama_lengkap,
+                    ],
+                ],
+            ]);
+
+        $pendaftaranList = $response->json('data.riwayat_pendaftaran');
+        $this->assertNotEmpty($pendaftaranList);
+        $firstPendaftaran = $pendaftaranList[0];
+        $this->assertArrayHasKey('pilihan_prioritas', $firstPendaftaran);
+        $this->assertEquals(1, $firstPendaftaran['pilihan_prioritas'][0]['urutan_pilihan']);
     }
 }

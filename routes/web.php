@@ -130,6 +130,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::put('/admin/pendaftaran-pilihan/{id}/reject', [AdminPendaftaranReviewController::class, 'reject'])->name('admin-pendaftaran.reject');
     Route::get('/admin/pendaftaran-pilihan/{id}/dokumen', [AdminPendaftaranReviewController::class, 'downloadDokumen'])->name('admin-pendaftaran.dokumen');
     Route::get('/admin/siswa/status-pilihan', [AdminPendaftaranReviewController::class, 'statusPilihan'])->name('admin.siswa.status-pilihan');
+    Route::get('/admin/siswa/{siswaId}/pilihan', [AdminPendaftaranReviewController::class, 'prioritasPilihanSiswa'])->name('admin.siswa.pilihan');
 });
 
 // ===== Route Laporan Pesan (Report) =====
