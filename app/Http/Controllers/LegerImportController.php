@@ -73,6 +73,21 @@ class LegerImportController extends Controller
             abort(422, 'Validasi file gagal. Format file harus berupa .xlsx atau .xls');
         }
 
+        // 3b. Validasi ukuran file maksimal 5 MB
+        $maxSizeBytes = 5 * 1024 * 1024; // 5 MB
+        if ($uploadedFile->getSize() > $maxSizeBytes) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi file gagal.',
+                    'errors' => [
+                        'file' => ['Ukuran file maksimal 5 MB.'],
+                    ],
+                ], 422);
+            }
+            abort(422, 'Validasi file gagal. Ukuran file maksimal 5 MB.');
+        }
+
         // 4. Validasi kelas_asal_id dan angkatan wajib diisi dari form data
         $kelasAsalId = $request->input('kelas_asal_id') ?? $request->input('kelas_id');
         $angkatan    = $request->input('angkatan');
