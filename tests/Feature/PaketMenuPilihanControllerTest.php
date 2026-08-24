@@ -45,14 +45,14 @@ class PaketMenuPilihanControllerTest extends TestCase
         $response = $this->actingAs($user, 'web')->getJson('/paket-menu-pilihan');
 
         $response->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-                'total' => 2,
-            ])
-            ->assertJsonPath('data.0.nama_menu', 'Menu 1 (P1)')
-            ->assertJsonPath('data.0.kuota_tersisa', 26)
-            ->assertJsonPath('data.1.nama_menu', 'Menu 4 (P4)')
-            ->assertJsonPath('data.1.kuota_tersisa', 31);
+            ->assertJson(['success' => true])
+            ->assertJsonCount(2, 'data.data');
+
+        $this->assertEquals(2, $response->json('data.total'));
+        $response->assertJsonPath('data.data.0.nama_menu', 'Menu 1 (P1)')
+            ->assertJsonPath('data.data.0.kuota_tersisa', 26)
+            ->assertJsonPath('data.data.1.nama_menu', 'Menu 4 (P4)')
+            ->assertJsonPath('data.data.1.kuota_tersisa', 31);
     }
 
     /**
@@ -90,12 +90,12 @@ class PaketMenuPilihanControllerTest extends TestCase
         $response = $this->actingAs($siswa, 'siswa')->getJson('/paket-menu-pilihan?rumpun=sosial');
 
         $response->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-                'total' => 1,
-            ])
-            ->assertJsonPath('data.0.rumpun', 'sosial')
-            ->assertJsonPath('data.0.nama_menu', 'Menu 4 (P4)');
+            ->assertJson(['success' => true])
+            ->assertJsonCount(1, 'data.data');
+
+        $this->assertEquals(1, $response->json('data.total'));
+        $response->assertJsonPath('data.data.0.rumpun', 'sosial')
+            ->assertJsonPath('data.data.0.nama_menu', 'Menu 4 (P4)');
     }
 
     /**
@@ -510,5 +510,161 @@ class PaketMenuPilihanControllerTest extends TestCase
 
         $response = $this->actingAs($siswa, 'siswa')->getJson('/siswa/paket-menu-aktif/' . $paketInactive->id);
         $response->assertStatus(404);
+    }
+
+    /** Request browser reguler merender view paket-menu-pilihan.show */
+    public function test_user_can_view_paket_menu_show_blade(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'test_user_paket_show',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Menu Blade (P9)',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 30,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')->get('/paket-menu-pilihan/' . $paket->id);
+
+        $response->assertOk();
+        $response->assertViewIs('paket-menu-pilihan.show');
+        $response->assertViewHas('paketMenu');
+    }
+
+    /** Request browser reguler merender view paket-menu-pilihan.index-siswa */
+    public function test_siswa_can_view_paket_menu_aktif_blade(): void
+    {
+        $siswa = \App\Models\Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '8888888888',
+            'nis' => '8888',
+            'nama_lengkap' => 'Siswa Blade',
+            'password' => 'password123',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($siswa, 'siswa')->get('/siswa/paket-menu-aktif');
+
+        $response->assertOk();
+        $response->assertViewIs('paket-menu-pilihan.index-siswa');
+        $response->assertViewHas('formattedMenus');
+        $response->assertViewHas('activePeriods');
+    }
+
+    /** Request browser reguler merender view paket-menu-pilihan.show-siswa */
+    public function test_siswa_can_view_paket_menu_aktif_detail_blade(): void
+    {
+        $siswa = \App\Models\Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '7777777777',
+            'nis' => '7777',
+            'nama_lengkap' => 'Siswa Detail Blade',
+            'password' => 'password123',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Menu Detail Blade (P8)',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 30,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($siswa, 'siswa')->get('/siswa/paket-menu-aktif/' . $paket->id);
+
+        $response->assertOk();
+        $response->assertViewIs('paket-menu-pilihan.show-siswa');
+        $response->assertViewHas('paketMenu');
+    }
+
+    /** Request browser non-JSON redirect setelah store */
+    public function test_browser_store_redirects_back_with_success_flash(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'user_paket_store_redirect',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')
+            ->from('/paket-menu-pilihan')
+            ->post('/paket-menu-pilihan', [
+                'nama_menu' => 'Menu Redirect (P11)',
+                'rumpun' => 'sosial',
+                'kuota_kapasitas' => 40,
+            ]);
+
+        $response->assertRedirect('/paket-menu-pilihan');
+        $response->assertSessionHas('success', 'Berhasil menambahkan Paket Menu Pilihan baru.');
+        $this->assertDatabaseHas('paket_menu_pilihan', ['nama_menu' => 'Menu Redirect (P11)']);
+    }
+
+    /** Request browser non-JSON redirect setelah update */
+    public function test_browser_update_redirects_back_with_success_flash(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'user_paket_update_redirect',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Menu Update Redirect (P12)',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')
+            ->from('/paket-menu-pilihan')
+            ->put('/paket-menu-pilihan/' . $paket->id, [
+                'kuota_kapasitas' => 42,
+            ]);
+
+        $response->assertRedirect('/paket-menu-pilihan');
+        $response->assertSessionHas('success', 'Berhasil memperbarui data Paket Menu Pilihan.');
+        $this->assertDatabaseHas('paket_menu_pilihan', ['id' => $paket->id, 'kuota_kapasitas' => 42]);
+    }
+
+    /** Request browser non-JSON redirect setelah destroy */
+    public function test_browser_destroy_redirects_back_with_success_flash(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'user_paket_destroy_redirect',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'nama_menu' => 'Menu Destroy Redirect (P13)',
+            'rumpun' => 'sosial',
+            'kuota_kapasitas' => 36,
+            'kuota_terisi' => 0,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'web')
+            ->from('/paket-menu-pilihan')
+            ->delete('/paket-menu-pilihan/' . $paket->id);
+
+        $response->assertRedirect('/paket-menu-pilihan');
+        $response->assertSessionHas('success', 'Berhasil menghapus Paket Menu Pilihan.');
+        $this->assertSoftDeleted('paket_menu_pilihan', ['id' => $paket->id]);
     }
 }

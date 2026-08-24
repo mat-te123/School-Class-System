@@ -24,15 +24,18 @@ class LegerImportController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function import(Request $request): JsonResponse
+    public function import(Request $request)
     {
         // Hanya admin yang boleh upload file Leger Excel
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
         if (!$user || $user->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Hanya admin yang dapat mengunggah file Leger Excel.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Hanya admin yang dapat mengunggah file Leger Excel.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Hanya admin yang dapat mengunggah file Leger Excel.');
         }
 
         // 1. Deteksi file yang diunggah
@@ -43,25 +46,46 @@ class LegerImportController extends Controller
 
         // 2. Jika tidak ada file
         if (!$uploadedFile) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi file gagal.',
-                'errors' => [
-                    'file' => ['File XLSX Leger wajib diunggah pada field "file".'],
-                ],
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi file gagal.',
+                    'errors' => [
+                        'file' => ['File XLSX Leger wajib diunggah pada field "file".'],
+                    ],
+                ], 422);
+            }
+            abort(422, 'Validasi file gagal. File XLSX Leger wajib diunggah.');
         }
 
         // 3. Validasi ekstensi
         $extension = strtolower($uploadedFile->getClientOriginalExtension());
         if (!in_array($extension, ['xlsx', 'xls'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi file gagal.',
-                'errors' => [
-                    'file' => ['Format file harus berupa .xlsx atau .xls'],
-                ],
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi file gagal.',
+                    'errors' => [
+                        'file' => ['Format file harus berupa .xlsx atau .xls'],
+                    ],
+                ], 422);
+            }
+            abort(422, 'Validasi file gagal. Format file harus berupa .xlsx atau .xls');
+        }
+
+        // 3b. Validasi ukuran file maksimal 5 MB
+        $maxSizeBytes = 5 * 1024 * 1024; // 5 MB
+        if ($uploadedFile->getSize() > $maxSizeBytes) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi file gagal.',
+                    'errors' => [
+                        'file' => ['Ukuran file maksimal 5 MB.'],
+                    ],
+                ], 422);
+            }
+            abort(422, 'Validasi file gagal. Ukuran file maksimal 5 MB.');
         }
 
         // 4. Validasi kelas_asal_id dan angkatan wajib diisi dari form data
@@ -86,11 +110,14 @@ class LegerImportController extends Controller
         }
 
         if (!empty($validationErrors)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal.',
-                'errors'  => $validationErrors,
-            ], 422);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal.',
+                    'errors'  => $validationErrors,
+                ], 422);
+            }
+            abort(422, 'Validasi gagal. Field kelas_asal_id dan angkatan wajib diisi.');
         }
 
         // Ambil nama kelas dari model yang sudah ditemukan
@@ -103,10 +130,13 @@ class LegerImportController extends Controller
             ->first();
 
         if ($duplicate) {
-            return response()->json([
-                'success' => false,
-                'message' => "File Leger untuk Kelas '{$kelasNama}' Angkatan '{$angkatan}' sudah pernah diunggah ({$duplicate->file_name}). Satu kelas dan angkatan hanya diizinkan 1 file Excel.",
-            ], 409);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "File Leger untuk Kelas '{$kelasNama}' Angkatan '{$angkatan}' sudah pernah diunggah ({$duplicate->file_name}). Satu kelas dan angkatan hanya diizinkan 1 file Excel.",
+                ], 409);
+            }
+            abort(409, "File Leger untuk Kelas '{$kelasNama}' Angkatan '{$angkatan}' sudah pernah diunggah.");
         }
 
         try {
@@ -126,7 +156,7 @@ class LegerImportController extends Controller
             if ($request->boolean('sync', false)) {
                 $result = $this->importService->importFromXlsx($fullPath, $userId, $kelasAsalId, $angkatan);
 
-                return response()->json([
+                return $this->handleWriteResponse($request, [
                     'success' => true,
                     'message' => 'File XLSX Leger berhasil diimpor ke database secara langsung (sync).',
                     'file_url' => url('/leger/download/' . $fileName),
@@ -137,7 +167,7 @@ class LegerImportController extends Controller
             // 8. Asynchronous Mode (Background Queue Job) - Respon Instan (< 50ms)
             ProcessLegerImportJob::dispatch($fullPath, $userId, $kelasAsalId, $angkatan);
 
-            return response()->json([
+            return $this->handleWriteResponse($request, [
                 'success'   => true,
                 'message'   => 'File XLSX Leger berhasil diterima dan sedang diproses di background queue (Asynchronous).',
                 'status'    => 'queued',
@@ -147,10 +177,13 @@ class LegerImportController extends Controller
                 'angkatan'  => $angkatan,
             ], 202);
         } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengunggah file XLSX: ' . $e->getMessage(),
-            ], 500);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal mengunggah file XLSX: ' . $e->getMessage(),
+                ], 500);
+            }
+            abort(500, 'Gagal mengunggah file XLSX: ' . $e->getMessage());
         }
     }
 
@@ -189,9 +222,9 @@ class LegerImportController extends Controller
      * Mengambil riwayat dan tracking unggah file Leger Excel berdasarkan kelas dan angkatan.
      *
      * @param Request $request
-     * @return JsonResponse
+     * @return JsonResponse|\Illuminate\View\View
      */
-    public function history(Request $request): JsonResponse
+    public function history(Request $request)
     {
         $user = \Illuminate\Support\Facades\Auth::guard('web')->user() ?? \Illuminate\Support\Facades\Auth::user();
         
@@ -202,23 +235,32 @@ class LegerImportController extends Controller
             ], 403);
         }
 
+        $validated = $request->validate([
+            'nama_kelas' => 'nullable|string|max:50',
+            'angkatan'   => 'nullable|string|max:10',
+            'per_page'   => 'nullable|integer|min:1|max:100',
+        ]);
+
         $query = \App\Models\RiwayatUploadLeger::with(['kelasAsal', 'uploader']);
 
-        if ($request->has('nama_kelas') && !empty($request->nama_kelas)) {
-            $query->where('nama_kelas', $request->nama_kelas);
+        if (!empty($validated['nama_kelas'])) {
+            $query->where('nama_kelas', $validated['nama_kelas']);
         }
 
-        if ($request->has('angkatan') && !empty($request->angkatan)) {
-            $query->where('angkatan', $request->angkatan);
+        if (!empty($validated['angkatan'])) {
+            $query->where('angkatan', $validated['angkatan']);
         }
 
-        $history = $query->orderBy('created_at', 'desc')->get();
+        $history = $query->orderBy('created_at', 'desc')->paginate((int) $request->input('per_page', 10));
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil riwayat unggah file Leger Excel.',
-            'total' => $history->count(),
-            'data' => $history,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil riwayat unggah file Leger Excel.',
+                'data'    => $history,
+            ]);
+        }
+
+        return view('leger.history', compact('history'));
     }
 }

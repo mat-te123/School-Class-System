@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminPendaftaranReviewController;
 use App\Http\Controllers\KelasAsalController;
 use App\Http\Controllers\KriteriaBobotMenuController;
+use App\Http\Controllers\LaporanPesanController;
 use App\Http\Controllers\LegerImportController;
 use App\Http\Controllers\MasterMataPelajaranController;
 use App\Http\Controllers\NilaiSiswaController;
@@ -11,6 +13,8 @@ use App\Http\Controllers\PeriodePenjurusanController;
 use App\Http\Controllers\SiswaAuthController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\UserAuthController;
+use App\Http\Controllers\ProyeksiUniversitasController;
+use App\Http\Controllers\ProgramStudiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -119,4 +123,57 @@ Route::middleware(['auth:web'])->group(function () {
     Route::post('/siswa', [SiswaController::class, 'store'])->name('siswa.store');
     Route::put('/siswa/{id}', [SiswaController::class, 'update'])->name('siswa.update');
     Route::delete('/siswa/{id}', [SiswaController::class, 'destroy'])->name('siswa.destroy');
+
+    // Route Review Pengajuan Pilihan Siswa (FR-19, FR-40 s/d FR-44)
+    Route::get('/admin/pendaftaran-pilihan', [AdminPendaftaranReviewController::class, 'index'])->name('admin-pendaftaran.index');
+    Route::get('/admin/pendaftaran-pilihan/{id}', [AdminPendaftaranReviewController::class, 'show'])->name('admin-pendaftaran.show');
+    Route::put('/admin/pendaftaran-pilihan/{id}/approve', [AdminPendaftaranReviewController::class, 'approve'])->name('admin-pendaftaran.approve');
+    Route::put('/admin/pendaftaran-pilihan/{id}/reject', [AdminPendaftaranReviewController::class, 'reject'])->name('admin-pendaftaran.reject');
+    Route::get('/admin/pendaftaran-pilihan/{id}/dokumen', [AdminPendaftaranReviewController::class, 'downloadDokumen'])->name('admin-pendaftaran.dokumen');
+    Route::get('/admin/siswa/status-pilihan', [AdminPendaftaranReviewController::class, 'statusPilihan'])->name('admin.siswa.status-pilihan');
+    Route::get('/admin/siswa/{siswaId}/pilihan', [AdminPendaftaranReviewController::class, 'prioritasPilihanSiswa'])->name('admin.siswa.pilihan');
+});
+
+// ===== Route Laporan Pesan (Report) =====
+// Publik / Guest: kirim laporan (bisa juga dipakai siswa & admin yang login)
+Route::post('/laporan-pesan', [LaporanPesanController::class, 'store'])->name('laporan-pesan.store');
+
+// Siswa (login): lihat laporan milik sendiri
+Route::middleware(['auth:siswa'])->group(function () {
+    Route::get('/siswa/laporan-pesan', [LaporanPesanController::class, 'indexSiswa'])->name('laporan-pesan.siswa.index');
+    Route::get('/siswa/laporan-pesan/{id}', [LaporanPesanController::class, 'show'])->name('laporan-pesan.siswa.show');
+});
+
+// Admin / Guru BK (login): kelola seluruh laporan
+Route::middleware(['auth:web'])->group(function () {
+    Route::get('/laporan-pesan', [LaporanPesanController::class, 'index'])->name('laporan-pesan.index');
+    Route::get('/laporan-pesan/{id}', [LaporanPesanController::class, 'show'])->name('laporan-pesan.show');
+    Route::put('/laporan-pesan/{id}/status', [LaporanPesanController::class, 'updateStatus'])->name('laporan-pesan.update-status');
+    Route::delete('/laporan-pesan/{id}', [LaporanPesanController::class, 'destroy'])->name('laporan-pesan.destroy');
+});
+
+// ===== Route Proyeksi Universitas (FR-39, FR-57) =====
+// Read: siswa & admin/guru BK
+Route::middleware(['auth.any'])->group(function () {
+    Route::get('/proyeksi-universitas', [ProyeksiUniversitasController::class, 'index'])->name('proyeksi-universitas.index');
+    Route::get('/proyeksi-universitas/{id}', [ProyeksiUniversitasController::class, 'show'])->name('proyeksi-universitas.show');
+});
+
+// Write: admin only (dicek di controller)
+Route::middleware(['auth:web'])->group(function () {
+    Route::post('/proyeksi-universitas', [ProyeksiUniversitasController::class, 'store'])->name('proyeksi-universitas.store');
+    Route::put('/proyeksi-universitas/{id}', [ProyeksiUniversitasController::class, 'update'])->name('proyeksi-universitas.update');
+    Route::delete('/proyeksi-universitas/{id}', [ProyeksiUniversitasController::class, 'destroy'])->name('proyeksi-universitas.destroy');
+});
+
+// ===== Route Program Studi (FR-57) =====
+Route::middleware(['auth.any'])->group(function () {
+    Route::get('/program-studi', [ProgramStudiController::class, 'index'])->name('program-studi.index');
+    Route::get('/program-studi/{id}', [ProgramStudiController::class, 'show'])->name('program-studi.show');
+});
+
+Route::middleware(['auth:web'])->group(function () {
+    Route::post('/program-studi', [ProgramStudiController::class, 'store'])->name('program-studi.store');
+    Route::put('/program-studi/{id}', [ProgramStudiController::class, 'update'])->name('program-studi.update');
+    Route::delete('/program-studi/{id}', [ProgramStudiController::class, 'destroy'])->name('program-studi.destroy');
 });

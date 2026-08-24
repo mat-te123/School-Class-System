@@ -15,8 +15,13 @@ class MasterMataPelajaranController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
+        $validated = $request->validate([
+            'search'   => 'nullable|string|max:50',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
         $query = MasterMataPelajaran::query();
 
         // Filter berdasarkan kelompok_mapel (umum, pilihan, muatan_lokal)
@@ -35,22 +40,24 @@ class MasterMataPelajaranController extends Controller
         }
 
         // Pencarian nama atau kode mapel
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
+        if (!empty($validated['search'])) {
+            $search = trim($validated['search']);
             $query->where(function ($q) use ($search) {
-                $q->where('nama_mapel', 'like', '%' . $search . '%')
-                  ->orWhere('kode_mapel', 'like', '%' . $search . '%');
+                $q->where('nama_mapel', 'like', "%{$search}%")
+                  ->orWhere('kode_mapel', 'like', "%{$search}%");
             });
         }
 
-        $mapels = $query->orderBy('kode_mapel', 'asc')->get();
+        $mapels = $query->orderBy('kode_mapel', 'asc')->paginate((int) $request->input('per_page', 10));
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil data Master Mata Pelajaran.',
-            'total' => $mapels->count(),
-            'data' => $mapels,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $mapels,
+            ]);
+        }
+
+        return view('master-mata-pelajaran.index', compact('mapels'));
     }
 
     /**
@@ -59,7 +66,7 @@ class MasterMataPelajaranController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $kodeMapel   = strtoupper(trim($request->input('kode_mapel', '')));
         $action      = $request->input('action');
@@ -80,7 +87,7 @@ class MasterMataPelajaranController extends Controller
                     'is_active'             => filter_var($request->input('is_active', true), FILTER_VALIDATE_BOOLEAN),
                 ]);
 
-                return response()->json([
+                return $this->handleWriteResponse($request, [
                     'success' => true,
                     'message' => "Mata pelajaran '{$trashed->kode_mapel}' yang sebelumnya terhapus berhasil dipulihkan dan diperbarui.",
                     'data'    => $trashed,
@@ -108,7 +115,7 @@ class MasterMataPelajaranController extends Controller
                     'is_active'             => filter_var($request->input('is_active', true), FILTER_VALIDATE_BOOLEAN),
                 ]);
 
-                return response()->json([
+                return $this->handleWriteResponse($request, [
                     'success' => true,
                     'message' => "Mata pelajaran '{$mapel->kode_mapel}' lama telah dihapus permanen dan data mata pelajaran baru berhasil dibuat.",
                     'data'    => $mapel,
@@ -116,21 +123,24 @@ class MasterMataPelajaranController extends Controller
             }
 
             // Jika belum ada parameter action/restore/overwrite, kembalikan 409 Conflict dengan pilihan opsi
-            return response()->json([
-                'success'    => false,
-                'is_trashed' => true,
-                'message'    => "Mata pelajaran dengan kode '{$kodeMapel}' pernah dihapus sebelumnya. Apakah Anda ingin memulihkan (restore) atau menimpa dengan data baru (overwrite)?",
-                'trashed_data' => [
-                    'id'         => $trashed->id,
-                    'kode_mapel' => $trashed->kode_mapel,
-                    'nama_mapel' => $trashed->nama_mapel,
-                    'deleted_at' => $trashed->deleted_at,
-                ],
-                'options' => [
-                    'restore'   => 'Gunakan payload JSON {"action": "restore"} atau query parameter ?restore=1 untuk memulihkan dan memperbarui data lama.',
-                    'overwrite' => 'Gunakan payload JSON {"action": "overwrite"} atau query parameter ?overwrite=1 untuk menghapus permanen data lama dan membuat data baru.',
-                ],
-            ], 409);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success'    => false,
+                    'is_trashed' => true,
+                    'message'    => "Mata pelajaran dengan kode '{$kodeMapel}' pernah dihapus sebelumnya. Apakah Anda ingin memulihkan (restore) atau menimpa dengan data baru (overwrite)?",
+                    'trashed_data' => [
+                        'id'         => $trashed->id,
+                        'kode_mapel' => $trashed->kode_mapel,
+                        'nama_mapel' => $trashed->nama_mapel,
+                        'deleted_at' => $trashed->deleted_at,
+                    ],
+                    'options' => [
+                        'restore'   => 'Gunakan payload JSON {"action": "restore"} atau query parameter ?restore=1 untuk memulihkan dan memperbarui data lama.',
+                        'overwrite' => 'Gunakan payload JSON {"action": "overwrite"} atau query parameter ?overwrite=1 untuk menghapus permanen data lama dan membuat data baru.',
+                    ],
+                ], 409);
+            }
+            abort(409, "Mata pelajaran dengan kode '{$kodeMapel}' pernah dihapus sebelumnya.");
         }
 
         // 1. Validasi Input Normal
@@ -160,7 +170,7 @@ class MasterMataPelajaranController extends Controller
         ]);
 
         // 3. Return Respon JSON HTTP 201 Created
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil menambahkan Master Mata Pelajaran baru.',
             'data'    => $mapel,
@@ -171,25 +181,32 @@ class MasterMataPelajaranController extends Controller
      * Mendapatkan detail Master Mata Pelajaran (GET /master-mata-pelajaran/{id}).
      *
      * @param string $id
-     * @return JsonResponse
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\View\View
      */
-    public function show(string $id): JsonResponse
+    public function show(string $id)
     {
         $mapel = MasterMataPelajaran::where('id', $id)
             ->orWhere('kode_mapel', $id)
             ->first();
 
         if (!$mapel) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data Master Mata Pelajaran tidak ditemukan.',
-            ], 404);
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data Master Mata Pelajaran tidak ditemukan.',
+                ], 404);
+            }
+            abort(404, 'Data Master Mata Pelajaran tidak ditemukan.');
         }
 
-        return response()->json([
-            'success' => true,
-            'data'    => $mapel,
-        ]);
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $mapel,
+            ]);
+        }
+
+        return view('master-mata-pelajaran.show', compact('mapel'));
     }
 
     /**
@@ -199,17 +216,20 @@ class MasterMataPelajaranController extends Controller
      * @param string $id
      * @return JsonResponse
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, string $id)
     {
         $mapel = MasterMataPelajaran::where('id', $id)
             ->orWhere('kode_mapel', $id)
             ->first();
 
         if (!$mapel) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data Master Mata Pelajaran tidak ditemukan.',
-            ], 404);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data Master Mata Pelajaran tidak ditemukan.',
+                ], 404);
+            }
+            abort(404, 'Data Master Mata Pelajaran tidak ditemukan.');
         }
 
         $validated = $request->validate([
@@ -238,7 +258,7 @@ class MasterMataPelajaranController extends Controller
 
         $mapel->save();
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil memperbarui data Master Mata Pelajaran.',
             'data'    => $mapel->fresh(),
@@ -251,22 +271,25 @@ class MasterMataPelajaranController extends Controller
      * @param string $id
      * @return JsonResponse
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id)
     {
         $mapel = MasterMataPelajaran::where('id', $id)
             ->orWhere('kode_mapel', $id)
             ->first();
 
         if (!$mapel) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data Master Mata Pelajaran tidak ditemukan.',
-            ], 404);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data Master Mata Pelajaran tidak ditemukan.',
+                ], 404);
+            }
+            abort(404, 'Data Master Mata Pelajaran tidak ditemukan.');
         }
 
         $mapel->delete();
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil menghapus data Master Mata Pelajaran.',
         ]);

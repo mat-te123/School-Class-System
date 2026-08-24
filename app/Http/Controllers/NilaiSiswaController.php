@@ -22,10 +22,10 @@ class NilaiSiswaController extends Controller
     /**
      * FR-14: Daftar nilai siswa per mata pelajaran, dengan filter.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
-        if ($denied = $this->denyIfNotAdmin()) {
-            return $denied;
+        if ($this->denyIfNotAdmin()) {
+            abort(403, 'Akses ditolak. Hanya admin yang dapat melihat daftar nilai siswa.');
         }
 
         $validated = $request->validate([
@@ -62,25 +62,31 @@ class NilaiSiswaController extends Controller
 
         $data = $query->paginate((int) $request->input('per_page', 50));
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil daftar nilai siswa.',
-            'data'    => $data,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $data,
+            ]);
+        }
+
+        return view('nilai-siswa.index', compact('data'));
     }
 
     /**
      * FR-49: Siswa dapat melihat nilai mata pelajaran mereka sendiri.
      */
-    public function indexSiswa(Request $request): JsonResponse
+    public function indexSiswa(Request $request)
     {
         // Pastikan siswa login via auth:siswa guard
         $siswa = Auth::guard('siswa')->user();
         if (!$siswa) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.',
-            ], 403);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Silakan login sebagai siswa terlebih dahulu.');
         }
 
         $query = DetailNilaiSiswa::with([
@@ -95,17 +101,21 @@ class NilaiSiswaController extends Controller
 
         $data = $query->get();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil mengambil daftar nilai siswa.',
-            'data'    => $data,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil daftar nilai siswa.',
+                'data'    => $data,
+            ]);
+        }
+
+        return view('nilai-siswa.index-siswa', compact('data'));
     }
 
     /**
      * FR-14: Perbaiki satu nilai mata pelajaran siswa.
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, string $id)
     {
         if ($denied = $this->denyIfNotAdmin()) {
             return $denied;
@@ -126,7 +136,7 @@ class NilaiSiswaController extends Controller
             $this->recalculateLeger($detail->nilai_leger_siswa_id);
         });
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil memperbaiki nilai siswa.',
             'data'    => $detail->fresh(['mataPelajaran', 'leger']),
@@ -138,7 +148,7 @@ class NilaiSiswaController extends Controller
      *
      * Payload: mapel_id, tahun_ajaran, semester, rows: [{nisn, nilai}, ...]
      */
-    public function importMapel(Request $request): JsonResponse
+    public function importMapel(Request $request)
     {
         if ($denied = $this->denyIfNotAdmin()) {
             return $denied;
@@ -171,7 +181,7 @@ class NilaiSiswaController extends Controller
             $validRows
         );
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
             'success'                => true,
             'message'                => "Impor nilai '{$mapel->nama_mapel}' sedang diproses di background.",
             'expected_imported'      => $expectedImported,
@@ -210,14 +220,17 @@ class NilaiSiswaController extends Controller
         ]);
     }
 
-    private function denyIfNotAdmin(): ?JsonResponse
+    private function denyIfNotAdmin()
     {
         $user = Auth::guard('web')->user();
         if (!$user || $user->role !== 'admin') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Hanya admin yang dapat mengubah data nilai siswa.',
-            ], 403);
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak. Hanya admin yang dapat mengubah data nilai siswa.',
+                ], 403);
+            }
+            abort(403, 'Akses ditolak. Hanya admin yang dapat mengubah data nilai siswa.');
         }
 
         return null;

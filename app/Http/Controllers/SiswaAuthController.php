@@ -23,6 +23,7 @@ class SiswaAuthController extends Controller
     /**
      * Proses Login Siswa via NISN dan Password.
      *
+     * @param Request $request
      * @return RedirectResponse|JsonResponse
      */
     public function login(Request $request)
@@ -40,7 +41,7 @@ class SiswaAuthController extends Controller
         $siswa = Siswa::where('nisn', $credentials['nisn'])->first();
 
         // Jika data siswa tidak ditemukan
-        if (! $siswa) {
+        if (!$siswa) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -54,7 +55,7 @@ class SiswaAuthController extends Controller
         }
 
         // 3. Cek apakah status akun siswa aktif
-        if (! $siswa->is_active) {
+        if (!$siswa->is_active) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -68,7 +69,7 @@ class SiswaAuthController extends Controller
         }
 
         // 4. Verifikasi Password
-        if (! $siswa->password || ! Hash::check($credentials['password'], $siswa->password)) {
+        if (!$siswa->password || !Hash::check($credentials['password'], $siswa->password)) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -105,29 +106,39 @@ class SiswaAuthController extends Controller
             ]);
         }
 
-        return redirect()->intended('/siswa/dashboard')->with('success', 'Selamat datang, '.$siswa->nama_lengkap);
+        return redirect()->intended('/siswa/dashboard')->with('success', 'Selamat datang, ' . $siswa->nama_lengkap);
     }
 
     /**
      * Mendapatkan profil Siswa yang sedang login.
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function profile(Request $request): JsonResponse
+    public function profile(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
 
-        if (! $siswa) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated / Akses ditolak.',
-            ], 401);
+        if (!$siswa) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Akses ditolak.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Akses ditolak.');
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'siswa' => $siswa,
-            ],
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'siswa' => $siswa,
+                ],
+            ]);
+        }
+
+        return view('siswa.profile', compact('siswa'));
     }
 
     /**
@@ -149,6 +160,7 @@ class SiswaAuthController extends Controller
      * Tahap 1: Cek & Validasi Awal NISN untuk Registrasi Siswa.
      * Memastikan NISN terdaftar di sistem dan password masih kosong.
      *
+     * @param Request $request
      * @return JsonResponse|RedirectResponse
      */
     public function checkNisn(Request $request)
@@ -162,7 +174,7 @@ class SiswaAuthController extends Controller
         $siswa = Siswa::where('nisn', $request->nisn)->first();
 
         // 1. Cek apakah NISN terdaftar di sistem
-        if (! $siswa) {
+        if (!$siswa) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -176,7 +188,7 @@ class SiswaAuthController extends Controller
         }
 
         // 2. Cek apakah password siswa sudah pernah diisi / didaftarkan
-        if (! empty($siswa->password)) {
+        if (!empty($siswa->password)) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -213,6 +225,7 @@ class SiswaAuthController extends Controller
      * Tahap 2: Proses Registrasi Siswa dengan melengkapi data
      * jenis kelamin, tanggal lahir, dan password.
      *
+     * @param Request $request
      * @return JsonResponse|RedirectResponse
      */
     public function register(Request $request)
@@ -239,7 +252,7 @@ class SiswaAuthController extends Controller
         // 2. Cari Siswa berdasarkan NISN
         $siswa = Siswa::where('nisn', $validated['nisn'])->first();
 
-        if (! $siswa) {
+        if (!$siswa) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -253,7 +266,7 @@ class SiswaAuthController extends Controller
         }
 
         // 3. Pastikan password masih kosong (belum pernah diisi)
-        if (! empty($siswa->password)) {
+        if (!empty($siswa->password)) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -300,6 +313,7 @@ class SiswaAuthController extends Controller
     /**
      * Proses Logout Siswa.
      *
+     * @param Request $request
      * @return RedirectResponse|JsonResponse
      */
     public function logout(Request $request)

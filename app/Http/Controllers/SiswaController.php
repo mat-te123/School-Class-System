@@ -3,24 +3,44 @@
 namespace App\Http\Controllers;
 
 use App\Models\Siswa;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\JsonResponse;
 
 class SiswaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $siswa = Siswa::with('kelasAsalRelation')->get();
-        // return response()->json([
-        //     'message' => 'Berhasil mengambil daftar siswa',
-        //     'data' => $siswa
-        // ]);
+        $validated = $request->validate([
+            'search'   => 'nullable|string|max:150',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
 
-        return view('auth.siswa.index', compact('siswa'));
+        $query = Siswa::with('kelasAsalRelation');
+
+        if (!empty($validated['search'])) {
+            $search = trim($validated['search']);
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('nisn', 'like', "%{$search}%")
+                    ->orWhere('nis', 'like', "%{$search}%");
+            });
+        }
+
+        $siswa = $query->orderBy('nama_lengkap')->paginate((int) $request->input('per_page', 10));
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $siswa,
+            ]);
+        }
+
+        $kelasAsal = \App\Models\KelasAsal::orderBy('nama_kelas')->get();
+
+        return view('siswa.index', compact('siswa', 'kelasAsal'));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'nisn' => 'required|string|size:10|unique:siswa,nisn',
@@ -38,29 +58,34 @@ class SiswaController extends Controller
 
         $siswa = Siswa::create($validated);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
+            'success' => true,
             'message' => 'Berhasil menambahkan data siswa',
-            'data' => $siswa,
+            'data' => $siswa
         ], 201);
     }
 
-    public function show(string $id): JsonResponse
+    public function show(Request $request, string $id)
     {
         $siswa = Siswa::with('kelasAsalRelation')->findOrFail($id);
 
-        return response()->json([
-            'message' => 'Berhasil mengambil detail siswa',
-            'data' => $siswa,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => 'Berhasil mengambil detail siswa',
+                'data' => $siswa
+            ]);
+        }
+
+        return view('siswa.show', compact('siswa'));
     }
 
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, string $id)
     {
         $siswa = Siswa::findOrFail($id);
 
         $validated = $request->validate([
-            'nisn' => 'sometimes|string|size:10|unique:siswa,nisn,'.$id,
-            'nis' => 'sometimes|string|max:10|unique:siswa,nis,'.$id,
+            'nisn' => 'sometimes|string|size:10|unique:siswa,nisn,' . $id,
+            'nis' => 'sometimes|string|max:10|unique:siswa,nis,' . $id,
             'nama_lengkap' => 'sometimes|string|max:150',
             'kelas_asal_id' => 'nullable|uuid|exists:kelas_asal,id',
             'kelas_asal' => 'nullable|string|max:50',
@@ -68,29 +93,26 @@ class SiswaController extends Controller
             'tanggal_lahir' => 'nullable|date',
             'angkatan' => 'nullable|string|max:4',
             'is_active' => 'boolean',
-            'password' => 'nullable|string|min:8',
         ]);
 
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        }
 
         $siswa->update($validated);
 
-        return response()->json([
+        return $this->handleWriteResponse($request, [
+            'success' => true,
             'message' => 'Berhasil mengubah data siswa',
-            'data' => $siswa,
+            'data' => $siswa
         ]);
     }
 
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
         $siswa = Siswa::findOrFail($id);
+        $siswa->delete();
 
-        $siswa = $siswa->delete();
-
-        return redirect()->route('siswa.index')
-            ->with('success', 'berhasil menghapus data siswa.');
-
+        return $this->handleWriteResponse($request, [
+            'success' => true,
+            'message' => 'Berhasil menghapus data siswa'
+        ]);
     }
 }

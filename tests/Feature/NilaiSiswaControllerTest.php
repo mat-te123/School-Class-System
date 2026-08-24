@@ -35,8 +35,6 @@ class NilaiSiswaControllerTest extends TestCase
         $kelas = KelasAsal::create([
             'id' => (string) Str::uuid(),
             'nama_kelas' => 'X B',
-            'tingkat' => 'X',
-            'kapasitas' => 36,
             'is_active' => true,
         ]);
 
@@ -233,6 +231,18 @@ class NilaiSiswaControllerTest extends TestCase
             ->assertStatus(401); // Karena middleware auth:siswa tidak menemukan session guard siswa
     }
 
+    /** Request browser reguler merender view nilai-siswa.index-siswa */
+    public function test_siswa_can_view_nilai_index_blade(): void
+    {
+        $this->seedNilai(85);
+
+        $response = $this->actingAs($this->siswa, 'siswa')->get('/siswa/nilai');
+
+        $response->assertOk();
+        $response->assertViewIs('nilai-siswa.index-siswa');
+        $response->assertViewHas('data');
+    }
+
     private function seedNilai(float $nilai): DetailNilaiSiswa
     {
         $leger = NilaiLegerSiswa::create([
@@ -250,5 +260,39 @@ class NilaiSiswaControllerTest extends TestCase
             'nilai_angka' => $nilai,
             'predikat' => 'C',
         ]);
+    }
+
+    /** Request browser non-JSON redirect setelah update */
+    public function test_browser_update_redirects_back_with_success_flash(): void
+    {
+        $detail = $this->seedNilai(75);
+
+        $response = $this->actingAs($this->admin, 'web')
+            ->from('/nilai-siswa')
+            ->put('/nilai-siswa/' . $detail->id, [
+                'nilai_angka' => 90.0,
+            ]);
+
+        $response->assertRedirect('/nilai-siswa');
+        $response->assertSessionHas('success', 'Berhasil memperbaiki nilai siswa.');
+        $this->assertEquals(90.0, $detail->fresh()->nilai_angka);
+    }
+
+    /** Request browser non-JSON redirect setelah importMapel */
+    public function test_browser_import_mapel_redirects_back_with_success_flash(): void
+    {
+        $response = $this->actingAs($this->admin, 'web')
+            ->from('/nilai-siswa')
+            ->post('/nilai-siswa/import-mapel', [
+                'mapel_id' => $this->mapel->id,
+                'tahun_ajaran' => '2024/2025',
+                'semester' => 'Genap',
+                'rows' => [
+                    ['nisn' => '1234567890', 'nilai' => 85.0],
+                ],
+            ]);
+
+        $response->assertRedirect('/nilai-siswa');
+        $response->assertSessionHas('success', "Impor nilai '{$this->mapel->nama_mapel}' sedang diproses di background.");
     }
 }
