@@ -3,19 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Siswa;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class SiswaController extends Controller
 {
-    public function index(): JsonResponse
+    public function index()
     {
         $siswa = Siswa::with('kelasAsalRelation')->get();
-        return response()->json([
-            'message' => 'Berhasil mengambil daftar siswa',
-            'data' => $siswa
-        ]);
+        // return response()->json([
+        //     'message' => 'Berhasil mengambil daftar siswa',
+        //     'data' => $siswa
+        // ]);
+
+        return view('auth.siswa.index', compact('siswa'));
     }
 
     public function store(Request $request): JsonResponse
@@ -38,17 +40,17 @@ class SiswaController extends Controller
 
         return response()->json([
             'message' => 'Berhasil menambahkan data siswa',
-            'data' => $siswa
+            'data' => $siswa,
         ], 201);
     }
 
     public function show(string $id): JsonResponse
     {
         $siswa = Siswa::with('kelasAsalRelation')->findOrFail($id);
-        
+
         return response()->json([
             'message' => 'Berhasil mengambil detail siswa',
-            'data' => $siswa
+            'data' => $siswa,
         ]);
     }
 
@@ -57,8 +59,8 @@ class SiswaController extends Controller
         $siswa = Siswa::findOrFail($id);
 
         $validated = $request->validate([
-            'nisn' => 'sometimes|string|size:10|unique:siswa,nisn,' . $id,
-            'nis' => 'sometimes|string|max:10|unique:siswa,nis,' . $id,
+            'nisn' => 'sometimes|string|size:10|unique:siswa,nisn,'.$id,
+            'nis' => 'sometimes|string|max:10|unique:siswa,nis,'.$id,
             'nama_lengkap' => 'sometimes|string|max:150',
             'kelas_asal_id' => 'nullable|uuid|exists:kelas_asal,id',
             'kelas_asal' => 'nullable|string|max:50',
@@ -66,7 +68,7 @@ class SiswaController extends Controller
             'tanggal_lahir' => 'nullable|date',
             'angkatan' => 'nullable|string|max:4',
             'is_active' => 'boolean',
-            'password' => 'nullable|string|min:8'
+            'password' => 'nullable|string|min:8',
         ]);
 
         if (isset($validated['password'])) {
@@ -77,17 +79,18 @@ class SiswaController extends Controller
 
         return response()->json([
             'message' => 'Berhasil mengubah data siswa',
-            'data' => $siswa
+            'data' => $siswa,
         ]);
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(string $id)
     {
         $siswa = Siswa::findOrFail($id);
-        $siswa->delete();
 
-        return response()->json([
-            'message' => 'Berhasil menghapus data siswa'
-        ]);
+        $siswa = $siswa->delete();
+
+        return redirect()->route('siswa.index')
+            ->with('success', 'berhasil menghapus data siswa.');
+
     }
 }

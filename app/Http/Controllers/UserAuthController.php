@@ -30,7 +30,6 @@ class UserAuthController extends Controller
     /**
      * Proses Login User (Admin / Guru BK) dan simpan ke Session.
      *
-     * @param Request $request
      * @return JsonResponse|RedirectResponse
      */
     public function login(Request $request)
@@ -48,7 +47,7 @@ class UserAuthController extends Controller
         $user = User::with('roleRelation')->where('username', $credentials['username'])->first();
 
         // Jika user tidak ditemukan
-        if (!$user) {
+        if (! $user) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -62,7 +61,7 @@ class UserAuthController extends Controller
         }
 
         // 3. Cek apakah status user aktif
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -76,7 +75,7 @@ class UserAuthController extends Controller
         }
 
         // 4. Verifikasi Password
-        if (!Hash::check($credentials['password'], $user->password)) {
+        if (! Hash::check($credentials['password'], $user->password)) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -102,7 +101,7 @@ class UserAuthController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Berhasil login sebagai ' . ($user->roleRelation?->label ?? $user->role) . '.',
+                'message' => 'Berhasil login sebagai '.($user->roleRelation?->label ?? $user->role).'.',
                 'data' => [
                     'user' => [
                         'id' => $user->id,
@@ -115,20 +114,17 @@ class UserAuthController extends Controller
             ]);
         }
 
-        return redirect()->intended('/admin/dashboard')->with('success', 'Selamat datang kembali, ' . $user->username);
+        return redirect()->intended('/admin/dashboard')->with('success', 'Selamat datang kembali, '.$user->username);
     }
 
     /**
      * Mendapatkan profil User yang sedang login dari session.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function me(Request $request): JsonResponse
     {
         $user = Auth::guard('web')->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthenticated / Belum login.',
@@ -155,7 +151,6 @@ class UserAuthController extends Controller
     /**
      * Proses Logout User dan hapus Session.
      *
-     * @param Request $request
      * @return RedirectResponse|JsonResponse
      */
     public function logout(Request $request)
