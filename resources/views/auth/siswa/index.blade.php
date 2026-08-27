@@ -1,4 +1,3 @@
-
 <x-app-layout title="Admin Dashboard">
     {{-- Alpine State Container --}}
     <div x-data="{
@@ -118,10 +117,33 @@
                         @endforelse
                     </tbody>
                 </table>
-                <div class="py-3 px-8 bg-gray-300 w-full">
+                <div class="flex flex-row py-3 px-8 bg-gray-300 w-full justify-between items-center">
                     <p class="text-black text-sm leading-5">
-                        Total siswa: {{ $siswa->count() }}
+                        {{ $siswa->firstItem() ?? 0 }} sampai {{ $siswa->lastItem() ?? 0 }} dari
+                        {{ $siswa->total() }} hasil
                     </p>
+                    <div class="flex flex-row w-fit gap-3 items-center">
+                        @if ($siswa->onFirstPage())
+                            <span class="text-gray-400 cursor-not-allowed">&lt; sebelum</span>
+                        @else
+                            <a href="{{ $siswa->previousPageUrl() }}" class="text-gray-800  hover:underline">&lt;
+                                sebelum</a>
+                        @endif
+                        <div class="flex flex-row gap-2 ">
+                            @for ($halaman = 1; $halaman <= $siswa->lastPage(); $halaman++)
+                                <a href="{{ $siswa->url($halaman) }}"
+                                    class="rounded {{ $halaman == $siswa->currentPage() ? ' text-gray-800 font-bold' : 'text-gray-500 hover:text-gray-800 font-bold' }}">
+                                    {{ $halaman }}
+                                </a>
+                            @endfor
+                        </div>
+                        @if ($siswa->hasMorePages())
+                            <a href="{{ $siswa->nextPageUrl() }}" class="text-gray-800 hover:underline">selanjutnya
+                                &gt;</a>
+                        @else
+                            <span class="text-gray-500 cursor-not-allowed">selanjutnya &gt;</span>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -129,7 +151,6 @@
         {{-- Include Reusable Delete Modal Component --}}
         <x-delete-modal />
         <x-update-modal-siswa />
-        <x-flash-message />
 
     </div>
 </x-app-layout>
