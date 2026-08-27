@@ -1,8 +1,10 @@
+
 <x-app-layout title="Admin Dashboard">
     {{-- Alpine State Container --}}
     <div x-data="{
         showDeleteModal: false,
-        showUpdateModal: false,
+        showupdateModal: false,
+        studentData: {},
         studentName: '',
         deleteUrl: '',
         editUrl: ''
@@ -86,9 +88,9 @@
                                         {{-- Edit Button --}}
                                         <button type="button"
                                             @click="
-                                            showUpdateModal = true;
-                                            studentName = '{{ addslashes($item->nama_lengkap) }}'
-                                            editUrl = '{{ route('admin-siswa.index', $item->id) }}';
+                                            showupdateModal = true;
+                                            studentData = {{ json_encode($item) }};
+                                            editUrl = '{{ route('siswa.update', $item->id) }}';
                                         "
                                             class="p-1 bg-blue-50 hover:bg-blue-300 rounded-lg transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
                                             <img src="{{ asset('Icon/Edit.svg') }}" alt="edit icon">
@@ -126,7 +128,8 @@
 
         {{-- Include Reusable Delete Modal Component --}}
         <x-delete-modal />
-        <x-update-modal />
+        <x-update-modal-siswa />
+        <x-flash-message />
 
     </div>
 </x-app-layout>

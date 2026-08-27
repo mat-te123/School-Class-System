@@ -37,7 +37,7 @@ class SiswaController extends Controller
 
         $kelasAsal = \App\Models\KelasAsal::orderBy('nama_kelas')->get();
 
-        return view('siswa.index', compact('siswa', 'kelasAsal'));
+        return view('auth.siswa.index', compact('siswa', 'kelasAsal'));
     }
 
     public function store(Request $request)
