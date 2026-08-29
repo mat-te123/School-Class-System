@@ -3,10 +3,15 @@
     <div x-data="{
         showDeleteModal: false,
         showupdateModal: false,
+        showaddmodal: false,
+        showmanual: true,
+        showotomatis: false,
         studentData: {},
         studentName: '',
         deleteUrl: '',
-        editUrl: ''
+        editUrl: '',
+        addUrl: '',
+        addExcelUrl: '',
     }">
 
         <div class="flex flex-col py-6 px-8 border border-b-black">
@@ -41,8 +46,12 @@
                     <option>Periode</option>
                 </select>
                 <button
-                    class="px-4 py-2 text-white rounded-md bg-[linear-gradient(180deg,#273344_11.77%,#000_166.84%)] whitespace-nowrap">
-                    Perbarui Data
+                    class="px-4 py-2 text-white rounded-md bg-[linear-gradient(180deg,#273344_11.77%,#000_166.84%)] whitespace-nowrap"
+                    @click="
+                    showaddmodal=true;
+                    addUrl='{{ route('siswa.store') }}';
+                    addExcelUrl='{{ route('leger.import') }}'; ">
+                    Tambahkan Data
                 </button>
             </div>
 
@@ -63,7 +72,7 @@
                     </thead>
                     <tbody
                         class="[&_td]:p-3 border-gray-200 [&_td]:border-t [&_td]:text-base [&_td]:leading-6 [&_td]:font-normal [&_td]:text-left">
-                        @forelse ($siswa as $index => $item)
+                        @forelse ($siswa as $index=> $item)
                             <tr class="bg-gray-50 hover:bg-gray-200 hover:cursor-pointer group">
                                 <th class="border-r border-t border-gray-200 p-2">
                                     {{ $index + 1 }}
@@ -151,6 +160,6 @@
         {{-- Include Reusable Delete Modal Component --}}
         <x-delete-modal />
         <x-update-modal-siswa />
-
-    </div>
+        <x-add-modal-siswa />
+        <x-flash-message />
 </x-app-layout>
