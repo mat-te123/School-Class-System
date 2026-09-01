@@ -54,9 +54,22 @@ class SiswaAuthController extends Controller
             ]);
         }
 
-        // 3. Cek apakah status akun siswa aktif
+        // 3. Cek apakah status akun siswa aktif atau belum didaftarkan
         if (!$siswa->is_active) {
-            if ($request->wantsJson()) {
+            if (empty($siswa->password)) {
+                if ($request->expectsJson() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'NISN Anda belum didaftarkan.',
+                    ], 403);
+                }
+
+                throw ValidationException::withMessages([
+                    'nisn' => ['NISN Anda belum didaftarkan. Silakan lakukan registrasi terlebih dahulu.'],
+                ]);
+            }
+
+            if ($request->expectsJson() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Akun Anda sedang dinonaktifkan.',
@@ -64,7 +77,7 @@ class SiswaAuthController extends Controller
             }
 
             throw ValidationException::withMessages([
-                'nisn' => ['Akun siswa Anda sedang tidak aktif.'],
+                'nisn' => ['Akun Anda sedang dinonaktifkan.'],
             ]);
         }
 
@@ -235,7 +248,7 @@ class SiswaAuthController extends Controller
             'nisn' => ['required', 'string'],
             'jenis_kelamin' => ['required', 'in:L,P'],
             'tanggal_lahir' => ['required', 'date'],
-            'angkatan' => ['required', 'string', 'max:20'],
+            'angkatan' => ['required', 'digits:4'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ], [
             'nisn.required' => 'NISN wajib diisi.',
@@ -244,6 +257,7 @@ class SiswaAuthController extends Controller
             'tanggal_lahir.required' => 'Tanggal lahir wajib diisi.',
             'tanggal_lahir.date' => 'Format tanggal lahir tidak valid.',
             'angkatan.required' => 'Angkatan wajib diisi.',
+            'angkatan.digits' => 'Angkatan harus berupa 4 digit tahun.',
             'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',

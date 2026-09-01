@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Siswa extends Authenticatable
@@ -71,5 +72,10 @@ class Siswa extends Authenticatable
     public function kelasAsalRelation(): BelongsTo
     {
         return $this->belongsTo(KelasAsal::class, 'kelas_asal_id');
+    }
+
+    public function pendaftaranPilihan(): HasMany
+    {
+        return $this->hasMany(PendaftaranPilihan::class, 'siswa_id');
     }
 }

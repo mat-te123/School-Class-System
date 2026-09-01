@@ -60,8 +60,9 @@ class LegerImportService
             $kelasNama = $kelasAsalModel->nama_kelas;
         }
 
-        // Angkatan untuk riwayat_upload_leger: prioritaskan dari form, fallback ke metadata Excel
-        $angkatan = !empty($angkatanFromForm) ? $angkatanFromForm : ($metadata['tahun_ajaran'] ?? '2024/2025');
+        // Angkatan untuk riwayat_upload_leger & data siswa: ambil 4 digit tahun pertama (contoh: "2024/2025" -> "2024")
+        $rawAngkatan = !empty($angkatanFromForm) ? $angkatanFromForm : ($metadata['tahun_ajaran'] ?? date('Y'));
+        $angkatan = $this->extractTahunAngkatan($rawAngkatan);
 
         // 2b. Cek Batasan 1 Kelas & Angkatan Hanya Boleh 1 File Excel Leger
         $existingUpload = \App\Models\RiwayatUploadLeger::where('nama_kelas', $kelasNama)
@@ -180,10 +181,15 @@ class LegerImportService
 
                 $rowCells = $data['row_cells'];
 
+                // 5 mapel utama untuk rata_6_mapel (nama kolom di Excel)
+                $mapelUtama = ['B.IND', 'MTK-U', 'IPA', 'IPS', 'B.ING'];
+
                 // Hitung Nilai & Rata-Rata
                 $nilaiMapelList = [];
                 $totalNilai = 0;
                 $jumlahMapelAda = 0;
+                $totalNilai6Mapel = 0;
+                $jumlah6MapelAda = 0;
 
                 foreach ($columnsMap['subjects'] as $col => $mapelName) {
                     $valStr = trim($rowCells[$col] ?? '');
@@ -196,10 +202,17 @@ class LegerImportService
                         ];
                         $totalNilai += $nilaiVal;
                         $jumlahMapelAda++;
+
+                        // Hitung juga untuk 5 mapel utama
+                        if (in_array($mapelName, $mapelUtama)) {
+                            $totalNilai6Mapel += $nilaiVal;
+                            $jumlah6MapelAda++;
+                        }
                     }
                 }
 
                 $rataKeseluruhan = $jumlahMapelAda > 0 ? round($totalNilai / $jumlahMapelAda, 2) : 0.00;
+                $rata6Mapel = $jumlah6MapelAda > 0 ? round($totalNilai6Mapel / $jumlah6MapelAda, 2) : 0.00;
                 $nilaiJson = [];
                 foreach ($nilaiMapelList as $n) {
                     $nilaiJson[$n['nama_mapel']] = $n['nilai'];
@@ -213,7 +226,7 @@ class LegerImportService
                     'siswa_id' => $siswaId,
                     'tahun_ajaran' => $metadata['tahun_ajaran'],
                     'semester' => $metadata['semester'],
-                    'rata_6_mapel' => $rataKeseluruhan,
+                    'rata_6_mapel' => $rata6Mapel,
                     'rata_keseluruhan' => $rataKeseluruhan,
                     'nilai_json' => json_encode($nilaiJson),
                 ];
@@ -408,5 +421,22 @@ class LegerImportService
         if ($nilai >= 80) return 'B';
         if ($nilai >= 70) return 'C';
         return 'D';
+    }
+
+    /**
+     * Ekstrak 4 digit tahun pertama dari string angkatan/tahun ajaran.
+     * Contoh: "2024/2025" -> "2024", "2024-2025" -> "2024", "2024" -> "2024".
+     */
+    private function extractTahunAngkatan(?string $angkatan): string
+    {
+        if (empty($angkatan)) {
+            return date('Y');
+        }
+
+        if (preg_match('/(\d{4})/', trim($angkatan), $matches)) {
+            return $matches[1];
+        }
+
+        return substr(trim($angkatan), 0, 4);
     }
 }

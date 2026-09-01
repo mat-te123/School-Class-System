@@ -19,8 +19,9 @@ class RecalculateLegerAverageJobTest extends TestCase
         $siswa1 = Siswa::factory()->create();
         $siswa2 = Siswa::factory()->create();
 
-        $mapel1 = MasterMataPelajaran::factory()->create();
-        $mapel2 = MasterMataPelajaran::factory()->create();
+        $mapel1 = MasterMataPelajaran::factory()->create(['nama_mapel' => 'B.IND']);
+        $mapel2 = MasterMataPelajaran::factory()->create(['nama_mapel' => 'PJOK']);
+        $mapel3 = MasterMataPelajaran::factory()->create(['nama_mapel' => 'MTK-U']);
 
         $leger1 = NilaiLegerSiswa::factory()->create([
             'siswa_id' => $siswa1->id,
@@ -55,6 +56,13 @@ class RecalculateLegerAverageJobTest extends TestCase
             'predikat' => 'B',
         ]);
 
+        DetailNilaiSiswa::create([
+            'nilai_leger_siswa_id' => $leger2->id,
+            'master_mata_pelajaran_id' => $mapel2->id,
+            'nilai_angka' => 75,
+            'predikat' => 'C',
+        ]);
+
         $legerIds = [$leger1->id, $leger2->id];
 
         // When: Job dijalankan
@@ -62,9 +70,15 @@ class RecalculateLegerAverageJobTest extends TestCase
 
         // Then: Average dihitung ulang secara batch
         $freshLeger1 = NilaiLegerSiswa::find($leger1->id);
+        // rata_keseluruhan = (90 + 80) / 2 = 85
         $this->assertEquals(85.0, $freshLeger1->rata_keseluruhan);
+        // rata_6_mapel hanya mapel utama (B.IND = 90)
+        $this->assertEquals(90.0, $freshLeger1->rata_6_mapel);
 
         $freshLeger2 = NilaiLegerSiswa::find($leger2->id);
-        $this->assertEquals(85.0, $freshLeger2->rata_keseluruhan);
+        // rata_keseluruhan = (85 + 75) / 2 = 80
+        $this->assertEquals(80.0, $freshLeger2->rata_keseluruhan);
+        // rata_6_mapel hanya mapel utama (B.IND = 85)
+        $this->assertEquals(85.0, $freshLeger2->rata_6_mapel);
     }
 }

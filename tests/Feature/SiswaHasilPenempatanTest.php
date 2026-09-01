@@ -175,9 +175,13 @@ class SiswaHasilPenempatanTest extends TestCase
             ]);
     }
 
-    /** Request browser reguler merender view pendaftaran-pilihan.hasil-penempatan */
-    public function test_siswa_can_view_hasil_penempatan_blade(): void
+    public function test_siswa_can_view_hasil_penempatan_when_tanggal_pengumuman_has_passed(): void
     {
+        $this->periode->update([
+            'status_pengumuman' => 'NON-AKTIF',
+            'tanggal_pengumuman' => now()->subMinute(),
+        ]);
+
         HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa->id,
@@ -190,10 +194,45 @@ class SiswaHasilPenempatanTest extends TestCase
             'tanggal_diproses' => now(),
         ]);
 
-        $response = $this->actingAs($this->siswa, 'siswa')->get('/siswa/hasil-penempatan');
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->getJson('/siswa/hasil-penempatan');
 
-        $response->assertOk();
-        $response->assertViewIs('pendaftaran-pilihan.hasil-penempatan');
-        $response->assertViewHas('hasil');
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'pilihan_ke_diterima' => 1,
+                    'mekanisme' => 'Pilihan 1',
+                ],
+            ]);
+    }
+
+    public function test_siswa_cannot_view_hasil_penempatan_when_tanggal_pengumuman_is_in_future(): void
+    {
+        $this->periode->update([
+            'status_pengumuman' => 'NON-AKTIF',
+            'tanggal_pengumuman' => now()->addDay(),
+        ]);
+
+        HasilSeleksi::create([
+            'id' => (string) Str::uuid(),
+            'siswa_id' => $this->siswa->id,
+            'paket_menu_pilihan_id' => $this->paket1->id,
+            'pilihan_ke_diterima' => 1,
+            'rank_pada_pilihan' => 5,
+            'skor_penempatan' => 88.50,
+            'rata_6_mapel' => 85.00,
+            'mekanisme' => 'Pilihan 1',
+            'tanggal_diproses' => now(),
+        ]);
+
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->getJson('/siswa/hasil-penempatan');
+
+        $response->assertStatus(403)
+            ->assertJson([
+                'success' => false,
+                'message' => 'Hasil penempatan belum dipublikasikan.',
+            ]);
     }
 }

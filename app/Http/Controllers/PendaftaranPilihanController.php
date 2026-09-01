@@ -469,7 +469,7 @@ class PendaftaranPilihanController extends Controller
 
         $periode = PeriodePendaftaran::where('is_active', true)->latest('tanggal_tutup')->first();
 
-        if (!$periode || $periode->status_pengumuman !== 'AKTIF') {
+        if (!$periode || !$periode->isPengumumanDibuka()) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,

@@ -196,7 +196,7 @@ class LegerImportControllerTest extends TestCase
                 'success'  => true,
                 'status'   => 'queued',
                 'kelas'    => 'X B Khusus',
-                'angkatan' => '2024/2025',
+                'angkatan' => '2024',
             ]);
 
         Queue::assertPushed(ProcessLegerImportJob::class);
@@ -257,12 +257,12 @@ class LegerImportControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        // Buat riwayat upload yang sudah selesai untuk kelas + angkatan yang sama
+        // Buat riwayat upload yang sudah selesai untuk kelas + angkatan yang sama (format 4 digit)
         \App\Models\RiwayatUploadLeger::create([
             'id'            => (string) Str::uuid(),
             'kelas_asal_id' => $kelas->id,
             'nama_kelas'    => 'X A',
-            'angkatan'      => '2024/2025',
+            'angkatan'      => '2024',
             'file_name'     => 'Leger_lama.xlsx',
             'file_path'     => '/tmp/Leger_lama.xlsx',
             'jumlah_siswa'  => 30,
@@ -281,7 +281,7 @@ class LegerImportControllerTest extends TestCase
             ->assertJson([
                 'success' => false,
             ])
-            ->assertJsonFragment(['message' => "File Leger untuk Kelas 'X A' Angkatan '2024/2025' sudah pernah diunggah (Leger_lama.xlsx). Satu kelas dan angkatan hanya diizinkan 1 file Excel."]);
+            ->assertJsonFragment(['message' => "File Leger untuk Kelas 'X A' Angkatan '2024' sudah pernah diunggah (Leger_lama.xlsx). Satu kelas dan angkatan hanya diizinkan 1 file Excel."]);
 
         Queue::assertNotPushed(ProcessLegerImportJob::class);
     }

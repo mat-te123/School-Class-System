@@ -31,10 +31,22 @@ class RecalculateLegerAverageJob implements ShouldQueue
             return;
         }
 
+        // 5 mapel utama untuk rata_6_mapel
+        $mapelUtama = ['B.IND', 'MTK-U', 'IPA', 'IPS', 'B.ING'];
+
         // Get averages per leger ID
         $averages = DB::table('detail_nilai_siswa')
             ->select('nilai_leger_siswa_id', DB::raw('AVG(nilai_angka) as average'))
             ->whereIn('nilai_leger_siswa_id', $legerIds)
+            ->groupBy('nilai_leger_siswa_id')
+            ->pluck('average', 'nilai_leger_siswa_id');
+
+        // Get averages for 5 mapel utama only
+        $averages6Mapel = DB::table('detail_nilai_siswa')
+            ->join('master_mata_pelajaran', 'detail_nilai_siswa.master_mata_pelajaran_id', '=', 'master_mata_pelajaran.id')
+            ->select('nilai_leger_siswa_id', DB::raw('AVG(nilai_angka) as average'))
+            ->whereIn('nilai_leger_siswa_id', $legerIds)
+            ->whereIn('master_mata_pelajaran.nama_mapel', $mapelUtama)
             ->groupBy('nilai_leger_siswa_id')
             ->pluck('average', 'nilai_leger_siswa_id');
 
@@ -47,7 +59,8 @@ class RecalculateLegerAverageJob implements ShouldQueue
             ->groupBy('nilai_leger_siswa_id');
 
         foreach ($legerIds as $legerId) {
-            $avg = round((float) ($averages->get($legerId) ?? 0), 2);
+            $rataKeseluruhan = round((float) ($averages->get($legerId) ?? 0), 2);
+            $rata6Mapel = round((float) ($averages6Mapel->get($legerId) ?? 0), 2);
             $legerDetails = $details->get($legerId, collect());
 
             $nilaiJson = [];
@@ -58,8 +71,8 @@ class RecalculateLegerAverageJob implements ShouldQueue
             DB::table('nilai_leger_siswa')
                 ->where('id', $legerId)
                 ->update([
-                    'rata_6_mapel'     => $avg,
-                    'rata_keseluruhan' => $avg,
+                    'rata_6_mapel'     => $rata6Mapel,
+                    'rata_keseluruhan' => $rataKeseluruhan,
                     'nilai_json'       => json_encode($nilaiJson),
                 ]);
         }

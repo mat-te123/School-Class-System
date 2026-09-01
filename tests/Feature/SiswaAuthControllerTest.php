@@ -100,7 +100,37 @@ class SiswaAuthControllerTest extends TestCase
     }
 
     /**
-     * Test Siswa tidak bisa login jika akun dinonaktifkan (is_active = false).
+     * Test Siswa tidak bisa login jika akun belum didaftarkan (password kosong dan is_active = false).
+     */
+    public function test_siswa_cannot_login_if_nisn_is_not_registered_yet(): void
+    {
+        Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '1234567890',
+            'nis' => '1001',
+            'nama_lengkap' => 'Budi Santoso',
+            'kelas_asal' => 'X A',
+            'jenis_kelamin' => 'L',
+            'is_active' => false,
+            'password' => null, // Belum registrasi password
+        ]);
+
+        $response = $this->postJson('/login/siswa', [
+            'nisn' => '1234567890',
+            'password' => 'anypassword',
+        ]);
+
+        $response->assertStatus(403)
+            ->assertJson([
+                'success' => false,
+                'message' => 'NISN Anda belum didaftarkan.',
+            ]);
+
+        $this->assertGuest('siswa');
+    }
+
+    /**
+     * Test Siswa tidak bisa login jika akun dinonaktifkan (is_active = false dan password sudah terisi).
      */
     public function test_siswa_cannot_login_if_account_is_inactive(): void
     {
@@ -275,7 +305,7 @@ class SiswaAuthControllerTest extends TestCase
             'nisn' => '1234567890',
             'jenis_kelamin' => 'P',
             'tanggal_lahir' => '2008-05-15',
-            'angkatan' => '2024/2025',
+            'angkatan' => '2024',
             'password' => 'newpassword123',
             'password_confirmation' => 'newpassword123',
         ]);
@@ -289,7 +319,7 @@ class SiswaAuthControllerTest extends TestCase
                         'nisn' => '1234567890',
                         'jenis_kelamin' => 'P',
                         'tanggal_lahir' => '2008-05-15',
-                        'angkatan' => '2024/2025',
+                        'angkatan' => '2024',
                         'is_active' => true,
                     ],
                 ],
@@ -298,9 +328,37 @@ class SiswaAuthControllerTest extends TestCase
         $siswa->refresh();
         $this->assertEquals('P', $siswa->jenis_kelamin);
         $this->assertEquals('2008-05-15', $siswa->tanggal_lahir->format('Y-m-d'));
-        $this->assertEquals('2024/2025', $siswa->angkatan);
+        $this->assertEquals('2024', $siswa->angkatan);
         $this->assertTrue($siswa->is_active);
         $this->assertNotNull($siswa->password);
+    }
+
+    /**
+     * Test Registrasi gagal jika angkatan bukan 4 digit tahun.
+     */
+    public function test_registration_fails_when_angkatan_is_not_4_digits(): void
+    {
+        Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '1234567890',
+            'nis' => '1001',
+            'nama_lengkap' => 'Siti Aminah',
+            'kelas_asal' => 'X B',
+            'password' => null,
+            'is_active' => false,
+        ]);
+
+        $response = $this->postJson('/register/siswa', [
+            'nisn' => '1234567890',
+            'jenis_kelamin' => 'P',
+            'tanggal_lahir' => '2008-05-15',
+            'angkatan' => '2024/2025', // Invalid format
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['angkatan']);
     }
 
     /** Request browser reguler merender view siswa.profile */

@@ -89,8 +89,8 @@ class LegerImportController extends Controller
         }
 
         // 4. Validasi kelas_asal_id dan angkatan wajib diisi dari form data
-        $kelasAsalId = $request->input('kelas_asal_id') ?? $request->input('kelas_id');
-        $angkatan    = $request->input('angkatan');
+        $kelasAsalId   = $request->input('kelas_asal_id') ?? $request->input('kelas_id');
+        $angkatanInput = $request->input('angkatan');
 
         $validationErrors = [];
 
@@ -105,8 +105,8 @@ class LegerImportController extends Controller
             }
         }
 
-        if (empty($angkatan)) {
-            $validationErrors['angkatan'] = ['Field angkatan wajib diisi. Contoh: 2024/2025'];
+        if (empty($angkatanInput)) {
+            $validationErrors['angkatan'] = ['Field angkatan wajib diisi. Contoh: 2024 atau 2024/2025'];
         }
 
         if (!empty($validationErrors)) {
@@ -119,6 +119,9 @@ class LegerImportController extends Controller
             }
             abort(422, 'Validasi gagal. Field kelas_asal_id dan angkatan wajib diisi.');
         }
+
+        // Ambil tahun pertama (4 digit) untuk angkatan (contoh: "2024/2025" -> "2024")
+        $angkatan = $this->extractTahunAngkatan($angkatanInput);
 
         // Ambil nama kelas dari model yang sudah ditemukan
         $kelasNama = $kelasModel->nama_kelas;
@@ -262,5 +265,22 @@ class LegerImportController extends Controller
         }
 
         return view('leger.history', compact('history'));
+    }
+
+    /**
+     * Ekstrak 4 digit tahun pertama dari string angkatan/tahun ajaran.
+     * Contoh: "2024/2025" -> "2024", "2024-2025" -> "2024", "2024" -> "2024".
+     */
+    private function extractTahunAngkatan(?string $angkatan): string
+    {
+        if (empty($angkatan)) {
+            return date('Y');
+        }
+
+        if (preg_match('/(\d{4})/', trim($angkatan), $matches)) {
+            return $matches[1];
+        }
+
+        return substr(trim($angkatan), 0, 4);
     }
 }

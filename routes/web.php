@@ -15,11 +15,20 @@ use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\ProyeksiUniversitasController;
 use App\Http\Controllers\ProgramStudiController;
+use App\Http\Controllers\AdminHasilPenjurusanController;
+use App\Http\Controllers\AdminPertukaranController;
+use App\Http\Controllers\AdminLaporanController;
+use App\Http\Controllers\SiswaPertukaranController;
+use App\Http\Controllers\ServerClockController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Route Public Server Clock / Time (Sinkronisasi Waktu Client)
+Route::get('/server-clock', [ServerClockController::class, 'index'])->name('server.clock');
+Route::get('/server-time', [ServerClockController::class, 'index'])->name('server.time');
 
 // Route Autentikasi User (Admin / Guru BK)
 Route::get('/login', [UserAuthController::class, 'showLoginForm'])->name('login');
@@ -50,11 +59,22 @@ Route::middleware(['auth:siswa'])->group(function () {
     // FR-52: Pendaftaran pilihan paket prioritas siswa
     Route::get('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'indexSiswa'])->name('siswa.pendaftaran-pilihan.index');
     Route::post('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'storeSiswa'])->name('siswa.pendaftaran-pilihan.store');
+    Route::put('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'updateSiswa'])->name('siswa.pendaftaran-pilihan.update');
+    Route::put('/siswa/pendaftaran-pilihan/dokumen', [PendaftaranPilihanController::class, 'uploadDokumenSiswa'])->name('siswa.pendaftaran-pilihan.dokumen');
+    Route::delete('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'cancelSiswa'])->name('siswa.pendaftaran-pilihan.cancel');
+
+    // FR-54 s/d FR-56: Siswa melihat hasil penempatan & status pengumuman
+    Route::get('/siswa/hasil-penempatan', [PendaftaranPilihanController::class, 'hasilPenempatanSiswa'])->name('siswa.hasil-penempatan');
 
     // Dashboard siswa (render Blade view)
     Route::get('/siswa/dashboard', function () {
         return view('siswa.dashboard');
     })->name('siswa.dashboard');
+
+    // Pertukaran kelas/paket siswa
+    Route::get('/siswa/pertukaran', [SiswaPertukaranController::class, 'index'])->name('siswa.pertukaran.index');
+    Route::post('/siswa/pertukaran', [SiswaPertukaranController::class, 'store'])->name('siswa.pertukaran.store');
+    Route::delete('/siswa/pertukaran/{id}', [SiswaPertukaranController::class, 'cancel'])->name('siswa.pertukaran.cancel');
 });
 
 // Route yang wajib login (bisa dari Siswa maupun Admin / Guru BK)
@@ -131,6 +151,31 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('/admin/pendaftaran-pilihan/{id}/dokumen', [AdminPendaftaranReviewController::class, 'downloadDokumen'])->name('admin-pendaftaran.dokumen');
     Route::get('/admin/siswa/status-pilihan', [AdminPendaftaranReviewController::class, 'statusPilihan'])->name('admin.siswa.status-pilihan');
     Route::get('/admin/siswa/{siswaId}/pilihan', [AdminPendaftaranReviewController::class, 'prioritasPilihanSiswa'])->name('admin.siswa.pilihan');
+
+    // ===== Route Manajemen Hasil Penjurusan (Admin) =====
+    Route::post('/admin/hasil-penjurusan/process', [AdminHasilPenjurusanController::class, 'runProcess'])->name('admin.hasil-penjurusan.process');
+    Route::get('/admin/hasil-penjurusan', [AdminHasilPenjurusanController::class, 'index'])->name('admin.hasil-penjurusan.index');
+    Route::get('/admin/hasil-penjurusan/rekap-kuota', [AdminHasilPenjurusanController::class, 'rekapKuota'])->name('admin.hasil-penjurusan.rekap-kuota');
+    Route::get('/admin/hasil-penjurusan/siswa/{siswaId}', [AdminHasilPenjurusanController::class, 'showSiswa'])->name('admin.hasil-penjurusan.show-siswa');
+    Route::put('/admin/hasil-penjurusan/{hasilId}/override', [AdminHasilPenjurusanController::class, 'overrideHasil'])->name('admin.hasil-penjurusan.override');
+    Route::post('/admin/hasil-penjurusan/lock', [AdminHasilPenjurusanController::class, 'lockFinal'])->name('admin.hasil-penjurusan.lock');
+    Route::post('/admin/hasil-penjurusan/unlock', [AdminHasilPenjurusanController::class, 'unlockFinal'])->name('admin.hasil-penjurusan.unlock');
+    Route::post('/admin/hasil-penjurusan/publish', [AdminHasilPenjurusanController::class, 'publishHasil'])->name('admin.hasil-penjurusan.publish');
+    Route::post('/admin/hasil-penjurusan/unpublish', [AdminHasilPenjurusanController::class, 'unpublishHasil'])->name('admin.hasil-penjurusan.unpublish');
+
+    // ===== Route Manajemen Pertukaran (Admin) =====
+    Route::get('/admin/pertukaran', [AdminPertukaranController::class, 'index'])->name('admin.pertukaran.index');
+    Route::get('/admin/pertukaran/{id}', [AdminPertukaranController::class, 'show'])->name('admin.pertukaran.show');
+    Route::get('/admin/pertukaran/{id}/dokumen', [AdminPertukaranController::class, 'downloadDokumen'])->name('admin.pertukaran.dokumen');
+    Route::put('/admin/pertukaran/{id}/approve', [AdminPertukaranController::class, 'approve'])->name('admin.pertukaran.approve');
+    Route::put('/admin/pertukaran/{id}/reject', [AdminPertukaranController::class, 'reject'])->name('admin.pertukaran.reject');
+
+    // ===== Route Laporan & Ekspor (Admin) =====
+    Route::get('/admin/laporan/hasil-penjurusan', [AdminLaporanController::class, 'hasilPenjurusan'])->name('admin.laporan.hasil-penjurusan');
+    Route::get('/admin/laporan/minat-siswa', [AdminLaporanController::class, 'minatSiswa'])->name('admin.laporan.minat-siswa');
+    Route::get('/admin/laporan/peminat-vs-kuota', [AdminLaporanController::class, 'peminatVsKuota'])->name('admin.laporan.peminat-vs-kuota');
+    Route::get('/admin/laporan/export/hasil-penjurusan', [AdminLaporanController::class, 'exportHasilPenjurusan'])->name('admin.laporan.export.hasil-penjurusan');
+    Route::get('/admin/laporan/export/minat-siswa', [AdminLaporanController::class, 'exportMinatSiswa'])->name('admin.laporan.export.minat-siswa');
 });
 
 // ===== Route Laporan Pesan (Report) =====

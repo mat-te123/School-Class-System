@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'logout/*',
             'register/*',
             'leger/*',
+            'nilai-siswa/*',
             'kelas-asal',
             'kelas-asal/*',
             'paket-menu-pilihan',
@@ -39,6 +40,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'proyeksi-universitas/*',
             'program-studi',
             'program-studi/*',
+            'admin/*',
+            'laporan-pesan',
+            'laporan-pesan/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

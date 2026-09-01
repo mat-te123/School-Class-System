@@ -25,6 +25,10 @@ class HasilSeleksi extends Model
         'rata_6_mapel',
         'mekanisme',
         'tanggal_diproses',
+        'is_manual_override',
+        'catatan_perubahan',
+        'diubah_oleh',
+        'tanggal_perubahan',
     ];
 
     protected $casts = [
@@ -33,6 +37,8 @@ class HasilSeleksi extends Model
         'skor_penempatan' => 'float',
         'rata_6_mapel' => 'float',
         'tanggal_diproses' => 'datetime',
+        'is_manual_override' => 'boolean',
+        'tanggal_perubahan' => 'datetime',
     ];
 
     public function siswa(): BelongsTo
@@ -43,5 +49,10 @@ class HasilSeleksi extends Model
     public function paketMenuPilihan(): BelongsTo
     {
         return $this->belongsTo(PaketMenuPilihan::class);
+    }
+
+    public function pengubah(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'diubah_oleh');
     }
 }
