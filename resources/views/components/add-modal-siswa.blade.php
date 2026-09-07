@@ -1,4 +1,7 @@
 <x-add-modal subtext="Menambahkan Data baru pada sistem">
+    @php
+        $btn_primary = 'bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg py-2 px-4 transition';
+    @endphp
     <div class="flex flex-row w-full bg-[#EFF6FF] p-1 rounded-md">
         <span @click="showmanual = true; showotomatis = false;"
             :class="showmanual ? 'bg-[#3B82F6] text-[#F9FAFB] shadow-sm' : 'text-[#9CA3AF] hover:text-gray-600'"
@@ -83,23 +86,67 @@
             <button type="button" class="text-red-600 py-1 px-2 text-sm" @click="showaddmodal = false">
                 Batal
             </button>
-            <button class="bg-blue-500 text-white text-xs rounded-lg py-2 px-4" type="submit">
+            <button class="{{ $btn_primary }}" type="submit">
                 Tambahkan
             </button>
         </div>
 
     </form>
 
-    <form :action="addExcelUrl" method="POST" class="flex flex-col gap-3" x-show="showotomatis">
+    <form :action="addExcelUrl" method="POST" enctype="multipart/form-data" class="flex flex-col gap-3"
+        x-show="showotomatis">
         @csrf
         @method('POST')
 
-        <h1>
-            Ini Otomatis
-        </h1>
+        <div x-data="{
+            isDragging: false,
+            fileName: '',
+            handleFileSelect(e) {
+                const files = e.target.files || e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.fileName = files[0].name;
+                    $refs.fileInput.files = files;
+                }
+            }
+        }" class="w-full">
+            <label @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
+                @drop.prevent="isDragging = false; handleFileSelect($event)"
+                :class="isDragging ? 'border-blue-500 bg-blue-100' : 'border-[#BFDBFE] bg-[#EFF6FF]'"
+                class="flex flex-col items-center justify-center w-full aspect-square border-2 border-dashed rounded-lg cursor-pointer transition-all duration-300 ease-in-out p-4 text-center hover:bg-blue-100 hover:scale-105">
 
-        <input>
+                <img src="{{ asset('Icon/Upload_fill.svg') }}" class="w-10 h-10 mb-2">
 
+                <template x-if="!fileName">
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs text-blue-500 font-medium">
+                            klik untuk unggah atau seret file ke sini
+                        </span>
+                        <span class="text-[10px] text-blue-400 mt-1">
+                            format yang didukung: .xlsx, .xls
+                        </span>
+                    </div>
+                </template>
+
+                <template x-if="fileName">
+                    <div class="flex items-center gap-2 text-xs text-emerald-600 font-semibold">
+                        <span>File terpilih:</span>
+                        <span x-text="fileName" class="underline"></span>
+                    </div>
+                </template>
+
+                <input x-ref="fileInput" type="file" name="excel_file" accept=".xlsx, .xls" class="hidden"
+                    @change="handleFileSelect($event)" required>
+            </label>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-2">
+            <button type="button" class="text-red-600 py-1 px-2 text-sm" @click="showaddmodal = false">
+                Batal
+            </button>
+            <button id="btn-primary" class="{{ $btn_primary }}" type="submit">
+                Unggah File
+            </button>
+        </div>
     </form>
 
 </x-add-modal>

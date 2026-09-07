@@ -1,0 +1,508 @@
+[33mcommit b09f1e606cc4ae74385120b2a4ed1a69c9bafa17[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/upload-new-data[m[33m)[m
+Author: mat-te123 <denodelviano@gmail.com>
+Date:   Sat Aug 29 20:29:18 2026 +0700
+
+    feat:add new student form and notification from top
+
+[33mcommit 6fcdf497111b6bf049f7f8574378fd8934cdb900[m[33m ([m[1;31morigin/frontend/dev[m[33m, [m[1;32mfrontend/dev[m[33m, [m[1;32mfeat/siswa-pagination[m[33m)[m
+Author: mat-te123 <denodelviano@gmail.com>
+Date:   Fri Aug 28 03:07:46 2026 +0700
+
+    feat: implement siswa pagination
+
+[33mcommit 221b7ba6b7cf3fb8ff11696e0ccbb092ecc5bd29[m
+Author: mat-te123 <denodelviano@gmail.com>
+Date:   Fri Aug 28 01:45:54 2026 +0700
+
+    feat : fitur update data siswa, masih error dari panjang data backend
+
+[33mcommit 16a7035ea870e4ba2ccd9fac66784b3a3ec887c4[m
+Merge: b67623b e3050b9
+Author: mat-te123 <denodelviano@gmail.com>
+Date:   Mon Aug 24 17:00:54 2026 +0700
+
+    fix: resolve merge conflicts using backend code
+
+[33mcommit b67623bb9fddf1d9e479261bae53e358ce4d4e2b[m
+Author: mat-te123 <denodelviano@gmail.com>
+Date:   Mon Aug 24 12:33:52 2026 +0700
+
+    feat: Siswa page CRUD
+
+[33mcommit e3050b994d8dc9f89fb26e2f219db7fa91b06b6e[m[33m ([m[1;31morigin/backend/dev[m[33m)[m
+Author: Developer <dev@school-class-system.local>
+Date:   Fri Aug 21 13:46:15 2026 +0700
+
+    feat(leger): add 5MB file size limit validation
+
+[33mcommit 4fe2c51553e87c992b28d0831927742006183e18[m
+Author: Developer <dev@school-class-system.local>
+Date:   Fri Aug 21 08:28:30 2026 +0700
+
+    refactor(kelas-asal): drop kapasitas and is_active columns while retaining tingkat
+    
+    - Add migration to drop kapasitas and is_active columns from kelas_asal table
+    
+    - Update KelasAsal model fillable and remove unused casts
+    
+    - Update KelasAsalController to support tingkat filtering and remove is_active/kapasitas handling
+    
+    - Update KelasAsalSeeder, LegerImportService, and related feature tests
+
+[33mcommit 36a8380d5cdb8ed543e33b747151b90738021026[m
+Author: Developer <dev@school-class-system.local>
+Date:   Fri Aug 21 07:50:21 2026 +0700
+
+    feat(admin): add endpoint to view student priority choices by student ID (FR-22)
+    
+    - Add prioritasPilihanSiswa method in AdminPendaftaranReviewController to show student details and application priority history
+    
+    - Register GET /admin/siswa/{siswaId}/pilihan route under auth:web middleware
+    
+    - Add feature test in AdminPendaftaranReviewTest
+
+[33mcommit edd6bc7a1666cd65a8c54cf3a3c06055faf73048[m
+Author: Developer <dev@school-class-system.local>
+Date:   Thu Aug 20 16:53:27 2026 +0700
+
+    chore: remove unused blade views
+    
+    - Delete legacy Blade templates no longer referenced by routes
+    - Keep resources clean for future frontend rebuild
+
+[33mcommit 5010f32c87d01c4e209de438241dc637baefe756[m
+Author: Developer <dev@school-class-system.local>
+Date:   Thu Aug 20 16:53:07 2026 +0700
+
+    feat: add admin review and student submission status features (FR-19, FR-20, FR-40 to FR-44)
+    
+    - Register admin routes for pendaftaran-pilihan review (list, detail, approve, reject, download dokumen)
+    - Add statusPilihan method to show students who have/have not submitted choices (FR-20)
+    - Add feature test for submission status endpoint
+
+[33mcommit 3f900ace84f14a88f5cdde7900601389150af3ae[m
+Author: Developer <dev@school-class-system.local>
+Date:   Thu Aug 20 16:52:09 2026 +0700
+
+    feat: add university projection and study program features (FR-39, FR-57)
+    
+    - Add ProyeksiUniversitas and ProgramStudi models, controllers, migrations
+    - Add HasilSeleksi model
+    - Add unique active constraint for periode_pendaftaran
+    - Register CSRF exemptions for new API routes
+    - Document new endpoints in DOKUMENTASI.md
+
+[33mcommit 4956c29d2f101e66d4c36393621a3f6ebaac638a[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:48:25 2026 +0700
+
+    feat: redirect fallback (PRG) untuk admin review pendaftaran (approve/reject)
+
+[33mcommit c78d496462021c1c1dfc71d149c884a46e89350a[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:46:00 2026 +0700
+
+    feat: redirect fallback (PRG) untuk pendaftaran pilihan siswa
+
+[33mcommit 706a8d220d86971d034c0303c8e361936744616b[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:40:55 2026 +0700
+
+    feat: redirect fallback (PRG) untuk nilai siswa dan leger import
+
+[33mcommit e0e45e88784cf9ba2ad4d1657b27f08001514548[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:38:14 2026 +0700
+
+    feat: redirect fallback (PRG) untuk periode penjurusan
+
+[33mcommit 9aa892215aea7dc84f8a5a3ef7392850a97cd11a[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:36:02 2026 +0700
+
+    feat: redirect fallback (PRG) untuk siswa
+
+[33mcommit bb72d9a1aef80aad222db7cfd1d1e9ff54ca0bea[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:34:08 2026 +0700
+
+    feat: redirect fallback (PRG) untuk paket menu pilihan
+
+[33mcommit 2518312cfb1cbafc4c7b42dd48c28d6328370c3c[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:31:14 2026 +0700
+
+    feat: redirect fallback (PRG) untuk master mata pelajaran
+
+[33mcommit 75166dd4f074549b5ff19c6a701a4f017076fc83[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:29:42 2026 +0700
+
+    feat: redirect fallback (PRG) untuk laporan pesan
+
+[33mcommit 019bec9d0de2b87baa82802e32afc23e860e619c[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:27:07 2026 +0700
+
+    feat: redirect fallback (PRG) untuk kriteria bobot menu, fix deteksi bulk update saat form-urlencoded
+
+[33mcommit 7222703c668237e9ad812131ac11d0ede68a23c5[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:19:06 2026 +0700
+
+    feat: redirect fallback (PRG) untuk method tulis kelas asal
+
+[33mcommit f0977d674660e270b2f495616ae0cc254093cc8c[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:08:17 2026 +0700
+
+    feat: tambahkan view fallback pada endpoint me
+
+[33mcommit f655ff8ba0baf60c6ef4f7bf8e9a7239a8b98ca2[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:05:41 2026 +0700
+
+    feat: tambahkan view fallback pada profil siswa
+
+[33mcommit aa354c416d21dec9af9a93b9db46e4a90f02390b[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 18:01:48 2026 +0700
+
+    feat: tambahkan view fallback pada hasil penempatan siswa
+
+[33mcommit 9f8c68ff17d675a6033a156d968c07b353d4602d[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 17:54:52 2026 +0700
+
+    feat: tambahkan view fallback pada detail paket menu aktif siswa
+
+[33mcommit 31d84878b45488f01c53be4a135e1cd3feec0214[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 17:54:52 2026 +0700
+
+    feat: tambahkan view fallback pada paket menu aktif siswa
+
+[33mcommit f14315761b905f7cbafe4c38e79f970f6c290da0[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 17:54:52 2026 +0700
+
+    feat: tambahkan view fallback pada detail paket menu pilihan
+
+[33mcommit 5f5ce935b78c467cc5c4ddbb972ec04fdbb5d47f[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 17:51:32 2026 +0700
+
+    feat: tambahkan view fallback pada detail periode penjurusan
+
+[33mcommit 0f51dfc204c18e289b3503e96de160f938a8b07d[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 17:49:17 2026 +0700
+
+    feat: tambahkan view fallback pada detail siswa
+
+[33mcommit 8733072d0938bed1cfee4d8ea321307c86c53bb8[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 17:46:07 2026 +0700
+
+    fix: TypeError pada indexSiswa nilai siswa saat request browser
+
+[33mcommit c25b662c8a210a7e7642a3351ef73dae14f8bf52[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 16:51:11 2026 +0700
+
+    feat: apply wantsJson/ajax + view fallback pattern to all GET index/show endpoints (nilai, mapel, kriteria, laporan, pendaftaran, admin-review)
+
+[33mcommit 316aefa830cc54e3cd0b532e200c3ebc4090b006[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 16:40:02 2026 +0700
+
+    feat: paginate & search GET /paket-menu-pilihan with wantsJson/ajax JSON + placeholder blade view; adapt tests to paginator shape
+
+[33mcommit 29822d66fd4d8337620ab7ea2c9390e56e5e5be9[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 16:34:23 2026 +0700
+
+    feat: add wantsJson/ajax check to show() method on KelasAsalController and simple placeholder blade view fallback
+
+[33mcommit 0e5125657a3f45070b9308a26d59b52a47e19622[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 16:28:53 2026 +0700
+
+    feat: add wantsJson/ajax check to history() and simple placeholder blade view fallback
+
+[33mcommit 200db3270e4498d835367d94835189120aa8f621[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 16:25:08 2026 +0700
+
+    feat: paginate & search GET /leger/history JSON response (no HTML view created)
+
+[33mcommit 72441f5f770c751bc4e5ea75d890c2015179d070[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 16:09:12 2026 +0700
+
+    revert: kembalikan view index siswa/periode/kelas ke placeholder (backend pagination API tetap dipertahankan)
+
+[33mcommit 591d55f523adb68b7ceeadbe34bdccea4938d159[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 16:01:18 2026 +0700
+
+    test: add kelas-asal pagination/search/blade tests and adapt legacy JSON shape to paginator
+
+[33mcommit 6c772f429efe95754cbaf4de8bcc59ce93b73e0e[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 15:51:53 2026 +0700
+
+    feat: paginate & search GET /kelas-asal with JSON response for AJAX + premium datatable UI
+
+[33mcommit 69688c63b1ac0659d82ae44e6b509254cb6443bc[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 15:39:59 2026 +0700
+
+    test: add periode pagination/search/blade/auth tests and adapt legacy JSON shape to paginator
+
+[33mcommit e88d82fa44986f76d06ffefc25c8cd4883d68827[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 15:39:51 2026 +0700
+
+    feat: paginate & search GET /periode-penjurusan with JSON response for AJAX + premium datatable UI
+
+[33mcommit 2b08a4d068bdb868e501d1d92affa20720b56e2f[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 15:26:07 2026 +0700
+
+    feat: premium datatable UI for siswa admin page (Tailwind + Alpine)
+
+[33mcommit 66af2ac42502546b2404339b36521d2d08dfea41[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 15:25:01 2026 +0700
+
+    feat: paginate & search GET /siswa with JSON response for AJAX
+
+[33mcommit a91c6916dd62f1ac993704572780cc2ee4182ffb[m
+Author: Developer <dev@school-class-system.local>
+Date:   Wed Aug 19 15:23:51 2026 +0700
+
+    test: add SiswaController pagination/search/blade/auth feature tests
+
+[33mcommit 4cb4b2332d3a87718004c04a5fcb646da938b5fd[m
+Author: Developer <dev@school-class-system.local>
+Date:   Tue Aug 18 10:00:12 2026 +0700
+
+    feat: add status, catatan_penolakan, dokumen_wali to pendaftaran_pilihan
+
+[33mcommit 04ea0945b37d63bd28fa2293821b26dbfcfc18d7[m
+Author: Developer <dev@school-class-system.local>
+Date:   Sat Aug 15 14:00:24 2026 +0700
+
+    chore(docs): remove obsolete superpowers plans and specs, add skills lock
+
+[33mcommit f9a37e2d33c4cc611ce83aab350ed4d12c9f401d[m
+Author: Developer <dev@school-class-system.local>
+Date:   Sat Aug 15 13:59:43 2026 +0700
+
+    refactor(siswa): remove unused password hashing in update endpoint
+
+[33mcommit 6c59881785a7c7783a768d405a81fdfe3581dcb1[m
+Author: Developer <dev@school-class-system.local>
+Date:   Sat Aug 15 13:58:55 2026 +0700
+
+    fix(pendaftaran-pilihan): increment kuota_terisi when siswa selects paket
+
+[33mcommit 2cb2ce3a42f47f46fa35c65df32790b67c1880ea[m
+Author: Developer <dev@school-class-system.local>
+Date:   Sat Aug 15 13:54:37 2026 +0700
+
+    feat(laporan-pesan): add report message feature with CRUD and student access
+
+[33mcommit c5f42f02e1ba92cdd6ec9a7b73f5cac5d05c7f3f[m
+Author: Developer <dev@school-class-system.local>
+Date:   Thu Aug 13 13:13:03 2026 +0700
+
+    feat(nilai-siswa): optimize import with background jobs and add siswa endpoint
+
+[33mcommit 6d8f772855f9d1f0e99a0bbd32cadda528d2dd53[m
+Author: Developer <dev@school-class-system.local>
+Date:   Thu Aug 13 13:12:49 2026 +0700
+
+    docs: update API documentation and command guide
+
+[33mcommit 5317640f2d6d764ff4a3be059a64b4471c6a6496[m
+Author: Developer <dev@school-class-system.local>
+Date:   Thu Aug 13 13:12:48 2026 +0700
+
+    feat(siswa): setup portal views, auth routes, and leger import enhancements
+
+[33mcommit d8c7b3f7e02cc6b4b3e2e4685b0a60b227b4d9e3[m
+Author: Developer <dev@school-class-system.local>
+Date:   Thu Aug 13 13:12:37 2026 +0700
+
+    feat(paket-menu): add active paket menu endpoints for siswa
+
+[33mcommit 388ff72de9c5eb871a786c3cf455f0860bf3cfdf[m
+Author: Developer <dev@school-class-system.local>
+Date:   Thu Aug 13 13:12:37 2026 +0700
+
+    feat(pendaftaran-pilihan): implement pendaftaran pilihan for siswa
+
+[33mcommit c0f1a7927542b6ae882543da882229a807aabf1d[m
+Author: Developer <dev@school-class-system.local>
+Date:   Thu Aug 13 13:12:36 2026 +0700
+
+    docs: update gitignore for docs directory
+
+[33mcommit da4649d11d9384723900bf253174adc0567ae4ca[m
+Author: Developer <dev@school-class-system.local>
+Date:   Tue Aug 11 20:14:57 2026 +0700
+
+    feat(siswa): add CRUD, nilai management, and periode penjurusan
+    
+    - Add SiswaController with full CRUD and soft delete support
+    - Add SoftDeletes to Siswa model + migration
+    - Add NilaiSiswaController for import per mapel (FR-13) and nilai edit (FR-14)
+    - Add PeriodePenjurusanController with model and feature tests
+    - Update UserFactory to use username/role fields
+    - Update DOKUMENTASI.md with new endpoint docs
+
+[33mcommit 255280baf566b74e1616cca6c2b907812f7d47e0[m
+Author: Developer <dev@school-class-system.local>
+Date:   Thu Aug 6 12:34:30 2026 +0700
+
+    feat(api): implement master mapel, soft delete conflict resolution, and api docs
+    
+    Add MasterMataPelajaran CRUD endpoints, migrations, and feature tests. Implement soft deletes conflict resolution (409 Conflict with action=restore & action=overwrite) for KelasAsal, MasterMataPelajaran, and PaketMenuPilihan. Simplify PaketMenuPilihan by removing kode_menu and making nama_menu unique. Add PUT endpoint for KriteriaBobotMenu supporting single & bulk array payloads. Create DOKUMENTASI.md for complete API documentation.
+
+[33mcommit f994d2b0cbf21e6195b684529eb807c58322d0b1[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Fri Jul 31 20:09:38 2026 +0700
+
+    docs: add designs, specs, and implementation plans for features
+
+[33mcommit 9fcd4b74ecd1f40995d336d9adaf3c9025bffaaf[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Fri Jul 31 20:08:45 2026 +0700
+
+    chore(routes): register all new routes and update CSRF exceptions
+    
+    - Add auth:web protected routes for leger import, kelas-asal CRUD,
+      paket-menu-pilihan CRUD, and kriteria-bobot-menu endpoints
+    - Add siswa auth routes (check NISN, register, login, logout, profile)
+    - Add UserAuthController routes (login, logout, me)
+    - Update bootstrap/app.php CSRF exception list for all new route groups
+
+[33mcommit 4119d474019607a3744b56a4709a55a91ebea879[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Fri Jul 31 20:08:33 2026 +0700
+
+    feat(leger-import): add admin-only leger excel import with validation
+    
+    - Restrict POST /leger/import to admin role only (403 for non-admin)
+    - Add required kelas_asal_id and angkatan fields from form data
+    - Validate kelas_asal_id exists in kelas_asal table
+    - Check duplicate upload via kelas_asal_id + angkatan in riwayat_upload_leger (409)
+    - Add angkatan param to ProcessLegerImportJob and LegerImportService
+    - Use form data angkatan for riwayat_upload_leger (not Excel metadata)
+    - Add RiwayatUploadLeger model and migration
+    - Fix closure variable scoping bug (Undefined variable angkatan)
+    - Add tests for all validation scenarios (7 cases)
+
+[33mcommit 98d09ac04134a0544c9b2dd5991a78ba573c1ba2[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Fri Jul 31 20:08:19 2026 +0700
+
+    feat(paket-menu): add admin CRUD for paket menu pilihan and kriteria bobot
+    
+    - Add PaketMenuPilihan model and admin-only CRUD controller
+    - Add KriteriaBobotMenu model with bobot_persen relation to master_mata_pelajaran
+    - Add KriteriaBobotMenuController with index, store (single & bulk), destroy
+    - Update MasterMataPelajaran with kriteriaBobots HasMany relation
+    - Add tests for both controllers covering admin enforcement
+
+[33mcommit 005028e7355bb0abf9cd55151166bbb10ece554c[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Fri Jul 31 20:08:08 2026 +0700
+
+    feat(kelas-asal): add admin-only CRUD for kelas asal (Kelas X)
+    
+    - Add KelasAsal model with UUID primary key and relations
+    - Add KelasAsalController with index, show, store, update, destroy
+    - Add kelas_asal migration and KelasAsalSeeder with initial data
+    - Restrict store/update/destroy to admin role only (403 for non-admin)
+    - Add KelasAsalControllerTest covering CRUD and role enforcement
+
+[33mcommit 3ad4d31b8c473e4ab5ec7107833671c7b4990867[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Fri Jul 31 20:07:56 2026 +0700
+
+    feat(siswa): add siswa authentication with NISN and add angkatan field
+    
+    - Rename SiswaController to SiswaAuthController with auth endpoints
+    - Add checkNisn, register, login, logout, profile methods
+    - Add angkatan column to siswa table via new migration
+    - Update Siswa model with angkatan fillable and siswa guard support
+    - Add comprehensive SiswaAuthControllerTest
+
+[33mcommit 62bd7a9aa5a60ac3ea48aec8e58c19a2bdb5dc0b[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Fri Jul 31 20:07:45 2026 +0700
+
+    feat(auth): add role-based user authentication with web guard
+    
+    - Add Role model and roles migration table
+    - Add UserAuthController with login/logout/me endpoints
+    - Add UserSeeder and RoleSeeder with admin and guru_bk roles
+    - Add UserAuthControllerTest covering login, logout, and profile
+    - Update User model with role relation and web guard support
+
+[33mcommit a332161d830ee08a6674b3f7cc7303b5f244d625[m
+Author: Developer <dev@school-class-system.local>
+Date:   Sun Jul 26 19:13:38 2026 +0700
+
+    feat(backend): implement siswa auth, leger xlsx import, and docker queue worker
+    
+    - Add Siswa authentication (login with password, profile, logout)
+    - Implement Leger XLSX import service and async background job
+    - Add Docker queue worker service and updated documentation
+    - Update Siswa migration schema with password, tanggal_lahir, and nullable jenis_kelamin
+    - Clean up database seeders and migrations
+
+[33mcommit bed5b16a2c5336ea07295de42ad43469d87a5010[m[33m ([m[1;31morigin/dev[m[33m)[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Sat Jul 25 12:29:40 2026 +0700
+
+    chore(git): remove unused files and clean .gitignore
+
+[33mcommit 53a98176749df7523016149ece00cb056d2beb06[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Sat Jul 25 12:28:57 2026 +0700
+
+    chore(git): remove database_schema files and prompt.text from tracking
+
+[33mcommit 42df4ad31b7aad0615e77b616912733e6062eb97[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Sat Jul 25 12:27:59 2026 +0700
+
+    chore(git): remove PRD.md from tracking and add to .gitignore
+
+[33mcommit 06e21aa4f4d05d458c13a68b9c96b9371cad0520[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Sat Jul 25 12:27:20 2026 +0700
+
+    feat(database): setup migrations and seeders for SISPAM-XI schema
+
+[33mcommit 42f6f6285d0324625a0ca718c6153ba548c0f4df[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Fri Jul 24 23:20:57 2026 +0700
+
+    docs(schema): add PRD, database ERD XML files, and design spec
+
+[33mcommit 7a3963489582bcb9e7291c22108af7be615838af[m
+Author: FadlanBM <fadlankurahan2@gmail.com>
+Date:   Fri Jul 24 23:06:24 2026 +0700
+
+    feat(docker): add FrankenPHP container setup with PostgreSQL and SQLite support
+
+[33mcommit da6fedd5692ddc961c22758a74fea3d65177c55b[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m
+Author: mat-te123 <denodelviano@gmail.com>
+Date:   Thu Jul 23 23:10:53 2026 +0700
+
+    first commit
