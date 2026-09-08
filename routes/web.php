@@ -116,6 +116,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::post('/nilai-siswa/import-mapel', [NilaiSiswaController::class, 'importMapel'])->name('nilai-siswa.import-mapel');
     Route::put('/nilai-siswa/{id}', [NilaiSiswaController::class, 'update'])->name('nilai-siswa.update');
 
+    Route::get('admin/periode-penjurusan', [PeriodePenjurusanController::class, 'index'])->name('admin-periode-penjurusan.index');
     Route::post('/periode-penjurusan', [PeriodePenjurusanController::class, 'store'])->name('periode-penjurusan.store');
     Route::put('/periode-penjurusan/{id}', [PeriodePenjurusanController::class, 'update'])->name('periode-penjurusan.update');
 
@@ -137,7 +138,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::delete('/master-mata-pelajaran/{id}', [MasterMataPelajaranController::class, 'destroy'])->name('master-mapel.destroy');
 
     // Siswa CRUD (Khusus Admin)
-    Route::get('/siswa', [SiswaController::class, 'index'])->name('siswa.index');
+    Route::get('admin/siswa', [SiswaController::class, 'index'])->name('admin-siswa.index');
     Route::get('/siswa/{id}', [SiswaController::class, 'show'])->name('siswa.show');
     Route::post('/siswa', [SiswaController::class, 'store'])->name('siswa.store');
     Route::put('/siswa/{id}', [SiswaController::class, 'update'])->name('siswa.update');
@@ -221,4 +222,3 @@ Route::middleware(['auth:web'])->group(function () {
     Route::put('/program-studi/{id}', [ProgramStudiController::class, 'update'])->name('program-studi.update');
     Route::delete('/program-studi/{id}', [ProgramStudiController::class, 'destroy'])->name('program-studi.destroy');
 });
-
