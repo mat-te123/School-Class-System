@@ -42,7 +42,7 @@
         <div class="flex flex-row gap-2" id="KelasKelaminFormGroup">
             <div class="flex flex-col gap-1 w-full">
                 <label for="fkelas" class="text-sm leading-4 font-semibold">Kelas Asal</label>
-                <select id="fkelas" name="kelas_asal_id" class="border border-black rounded-lg py-1 px-4 w-full text-base">
+                <select id="fkelas" name="kelas_asal_id" class="border border-black rounded-lg py-1 px-4 w-full text-base" required>
                     <option value=""> - Pilih Kelas -</option>
                     @foreach ($kelasAsal as $kelas)
                         <option value="{{ $kelas->id }}">
@@ -62,7 +62,7 @@
         <div class="flex flex-col gap-1">
             <label for="fangkatan" class="text-sm leading-4 font-semibold">Angkatan</label>
             <select name="angkatan" id="fangkatan" x-model="studentData.angkatan"
-                class="border border-black rounded-lg py-1 px-4 text-base">
+                class="border border-black rounded-lg py-1 px-4 text-base" required>
                 <option value="">- Pilih angkatan -</option>
 
                 @for ($year = $endyear; $year >= $startyear; $year--)
