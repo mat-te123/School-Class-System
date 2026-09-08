@@ -32,7 +32,6 @@ class Siswa extends Authenticatable
         'nis',
         'nama_lengkap',
         'kelas_asal_id',
-        'kelas_asal',
         'jenis_kelamin',
         'tanggal_lahir',
         'angkatan',

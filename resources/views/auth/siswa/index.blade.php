@@ -88,7 +88,7 @@
                                 </td>
                                 <td>{{ $item->nisn }}</td>
                                 <td>{{ $item->nis }}</td>
-                                <td>{{ $item->kelas_asal }}</td>
+                                <td>{{ optional($item->kelasAsalRelation)->nama_kelas ?? '-' }}</td>
                                 <td>{{ $item->jenis_kelamin ?? '-' }}</td>
                                 <td>{{ $item->angkatan }}</td>
                                 <td>

@@ -42,8 +42,7 @@
         <div class="flex flex-row gap-2" id="KelasKelaminFormGroup">
             <div class="flex flex-col gap-1 w-full">
                 <label for="fkelas" class="text-sm leading-4 font-semibold">Kelas Asal</label>
-                <select id="fkelas" name="kelas_asal_id" class="border border-black rounded-lg py-1 px-4 w-full text-base"
-                    onchange="document.getElementById('kelas_asal_nama').value = this.options[this.selectedIndex].text.trim();">
+                <select id="fkelas" name="kelas_asal_id" class="border border-black rounded-lg py-1 px-4 w-full text-base">
                     <option value=""> - Pilih Kelas -</option>
                     @foreach ($kelasAsal as $kelas)
                         <option value="{{ $kelas->id }}">
@@ -51,7 +50,6 @@
                         </option>
                     @endforeach
                 </select>
-                <input type="hidden" name="kelas_asal" id="kelas_asal_nama" value="">
             </div>
             <div class="flex flex-col gap-1 w-full">
                 <label for="fjeniskelamin" class="text-sm leading-4 font-semibold">Jenis Kelamin</label>
@@ -101,8 +99,7 @@
         <div class="flex flex-row gap-2">
             <div class="flex flex-col gap-1 w-full">
                 <label for="fkelas_excel" class="text-sm leading-4 font-semibold">Kelas Asal</label>
-                <select id="fkelas_excel" name="kelas_asal_id" class="border border-black rounded-lg py-1 px-4 w-full text-base"
-                    onchange="document.getElementById('kelas_asal_nama_excel').value = this.options[this.selectedIndex].text.trim();" required>
+                <select id="fkelas_excel" name="kelas_asal_id" class="border border-black rounded-lg py-1 px-4 w-full text-base" required>
                     <option value=""> - Pilih Kelas -</option>
                     @foreach ($kelasAsal as $kelas)
                         <option value="{{ $kelas->id }}">
@@ -110,7 +107,6 @@
                         </option>
                     @endforeach
                 </select>
-                <input type="hidden" name="kelas_asal" id="kelas_asal_nama_excel" value="">
             </div>
             
             <div class="flex flex-col gap-1 w-full">
