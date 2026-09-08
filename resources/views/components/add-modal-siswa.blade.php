@@ -1,3 +1,4 @@
+@props(['kelasAsal' => []])
 <x-add-modal subtext="Menambahkan Data baru pada sistem">
     @php
         $btn_primary = 'bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg py-2 px-4 transition';
@@ -40,18 +41,17 @@
 
         <div class="flex flex-row gap-2" id="KelasKelaminFormGroup">
             <div class="flex flex-col gap-1 w-full">
-                <label for="fkelas" class="text-sm leading-4 font-semibold">Nama Lengkap</label>
-                <select id="fkelas" name="kelas" class="border border-black rounded-lg py-1 px-4 w-full text-base">
+                <label for="fkelas" class="text-sm leading-4 font-semibold">Kelas Asal</label>
+                <select id="fkelas" name="kelas_asal_id" class="border border-black rounded-lg py-1 px-4 w-full text-base"
+                    onchange="document.getElementById('kelas_asal_nama').value = this.options[this.selectedIndex].text.trim();">
                     <option value=""> - Pilih Kelas -</option>
-                    @php
-                        $listKelas = ['A', 'B', 'C', 'D'];
-                    @endphp
-                    @foreach ($listKelas as $kelas)
-                        <option value="X-{{ $kelas }}">
-                            X-{{ $kelas }}
+                    @foreach ($kelasAsal as $kelas)
+                        <option value="{{ $kelas->id }}">
+                            {{ $kelas->nama_kelas }}
                         </option>
                     @endforeach
                 </select>
+                <input type="hidden" name="kelas_asal" id="kelas_asal_nama" value="">
             </div>
             <div class="flex flex-col gap-1 w-full">
                 <label for="fjeniskelamin" class="text-sm leading-4 font-semibold">Jenis Kelamin</label>
@@ -97,6 +97,33 @@
         x-show="showotomatis">
         @csrf
         @method('POST')
+
+        <div class="flex flex-row gap-2">
+            <div class="flex flex-col gap-1 w-full">
+                <label for="fkelas_excel" class="text-sm leading-4 font-semibold">Kelas Asal</label>
+                <select id="fkelas_excel" name="kelas_asal_id" class="border border-black rounded-lg py-1 px-4 w-full text-base"
+                    onchange="document.getElementById('kelas_asal_nama_excel').value = this.options[this.selectedIndex].text.trim();" required>
+                    <option value=""> - Pilih Kelas -</option>
+                    @foreach ($kelasAsal as $kelas)
+                        <option value="{{ $kelas->id }}">
+                            {{ $kelas->nama_kelas }}
+                        </option>
+                    @endforeach
+                </select>
+                <input type="hidden" name="kelas_asal" id="kelas_asal_nama_excel" value="">
+            </div>
+            
+            <div class="flex flex-col gap-1 w-full">
+                <label for="fangkatan_excel" class="text-sm leading-4 font-semibold">Angkatan</label>
+                <select name="angkatan" id="fangkatan_excel" class="border border-black rounded-lg py-1 px-4 text-base" required>
+                    <option value="">- Pilih angkatan -</option>
+                    @for ($year = $endyear; $year >= $startyear; $year--)
+                        <option value="{{ $year }}/{{ $year + 1 }}">{{ $year }}/{{ $year + 1 }}
+                        </option>
+                    @endfor
+                </select>
+            </div>
+        </div>
 
         <div x-data="{
             isDragging: false,

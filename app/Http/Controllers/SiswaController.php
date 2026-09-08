@@ -50,7 +50,7 @@ class SiswaController extends Controller
             'kelas_asal' => 'nullable|string|max:50',
             'jenis_kelamin' => 'nullable|in:L,P',
             'tanggal_lahir' => 'nullable|date',
-            'angkatan' => 'nullable|string|max:4',
+            'angkatan' => 'nullable|string|max:9',
         ]);
 
         // is_active selalu false saat pembuatan (default)
@@ -91,7 +91,7 @@ class SiswaController extends Controller
             'kelas_asal' => 'nullable|string|max:50',
             'jenis_kelamin' => 'nullable|in:L,P',
             'tanggal_lahir' => 'nullable|date',
-            'angkatan' => 'nullable|string|max:4',
+            'angkatan' => 'nullable|string|max:9',
             'is_active' => 'boolean',
         ]);
 
