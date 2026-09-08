@@ -51,15 +51,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="flex flex-col gap-1 w-full">
-                <label for="fjeniskelamin" class="text-sm leading-4 font-semibold">Jenis Kelamin</label>
-                <select name="jenis_kelamin" id="fjeniskelamin" x-model="studentData.jenis_kelamin"
-                    class="border border-black rounded-lg py-1 px-4 w-full text-base">
-                    <option value="">- Jenis Kelamin - </option>
-                    <option value="L">Laki-laki (L)</option>
-                    <option value="P">Perempuan (P)</option>
-                </select>
-            </div>
+
         </div>
 
         @php
