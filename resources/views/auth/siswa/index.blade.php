@@ -3,9 +3,9 @@
     <div x-data="{
         showDeleteModal: false,
         showupdateModal: false,
-        showaddmodal: true,
-        showmanual: false,
-        showotomatis: true,
+        showaddmodal: false,
+        showmanual: true,
+        showotomatis: false,
         studentData: {},
         studentName: '',
         deleteUrl: '',
