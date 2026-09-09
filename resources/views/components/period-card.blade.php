@@ -6,15 +6,28 @@
     'is_active' => true,
 ])
 
-<div class="bg-gray-50 border border-gray-300 p-3 rounded-lg flex flex-col gap-2">
-    <div class="flex flex-col gap-1">
-        <h2 class="text-lg leading-7 font-bold">
-            {{ $nama_periode }}
-        </h2>
-        <span class="text-xs leading-4 font-medium">
-            T.A {{ $tahun_ajaran }}
-        </span>
+
+<div class="bg-gray-50 border border-gray-300 p-3 rounded-lg flex flex-col gap-2" x-data="{ showeditdeletepopup: false, deleteUrl: '', }">
+    <div class="flex flex-row w-full justify-between relative">
+        <div class="flex flex-col gap-1">
+            <h2 class="text-lg leading-7 font-bold">
+                {{ $nama_periode }}
+            </h2>
+            <span class="text-xs leading-4 font-medium">
+                T.A {{ $tahun_ajaran }}
+            </span>
+        </div>
+        <div class="hover:bg-gray-200 active:bg-gray-200 cursor-pointer h-fit py-1 rounded-2xl"
+            @click="
+                showeditdeletepopup=true;
+            ">
+            <img src="{{ asset('Icon/Meatballs_menu.svg') }}" />
+        </div>
+        <div class="absolute top-0 right-0 z-10">
+            <x-delete-edit-popup :confirmationData="$nama_periode" />
+        </div>
     </div>
+
     @if ($is_active)
         <span class="text-xs leading-4 font-semibold text-green-600 px-3 py-1 rounded-lg bg-green-50 w-fit">
             Aktif
