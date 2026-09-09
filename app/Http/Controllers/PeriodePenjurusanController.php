@@ -37,7 +37,7 @@ class PeriodePenjurusanController extends Controller
             ]);
         }
 
-        return view('periode-penjurusan.index', compact('periode'));
+        return view('auth.period.index', compact('periode'));
     }
 
     public function show(Request $request, string $id)
