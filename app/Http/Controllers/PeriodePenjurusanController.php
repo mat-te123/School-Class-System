@@ -103,6 +103,19 @@ class PeriodePenjurusanController extends Controller
         ]);
     }
 
+    public function destroy(Request $request, string $id)
+    {
+        $this->ensureAdmin();
+        $periode = PeriodePendaftaran::findOrFail($id);
+
+        $periode->delete();
+
+        return $this->handleWriteResponse($request, [
+            'success' => true,
+            'message' => 'Periode penjurusan berhasil dihapus.',
+        ]);
+    }
+
     /**
      * Non-aktifkan semua periode yang sedang aktif, opsional kecualikan satu ID.
      */
