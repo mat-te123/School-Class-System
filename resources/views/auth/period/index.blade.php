@@ -3,6 +3,7 @@
         showDeleteModal: false,
         showupdateModal: false,
         showaddmodal: false,
+        addUrl: '',
     }">
         <div class="flex flex-col py-6 px-8 border border-b-black">
             <h1 class="text-4xl leading-9 font-semibold">
@@ -42,21 +43,19 @@
                 </button>
 
             </div>
-            @for ($i = 0; $i < 6; $i++)
-                @foreach ($periode as $item)
-                    @php
-                        $tanggal_buka = new DateTimeImmutable($item->tanggal_buka);
-                        $tanggal_tutup = new DateTimeImmutable($item->tanggal_tutup);
-                        $nama_periode =
-                            strlen($item->nama_periode) > 20
-                                ? substr($item->nama_periode, 0, 20) . '...'
-                                : $item->nama_periode;
-                    @endphp
-                    <x-period-card :nama_periode="$nama_periode" :tahun_ajaran="$item->tahun_ajaran" :tanggal_buka="$tanggal_buka->format('d F Y')" :tanggal_tutup="$tanggal_tutup->format('d F Y')"
-                        :is_active="$item->is_active" />
-                @endforeach
+            @foreach ($periode as $item)
+                @php
+                    $tanggal_buka = new DateTimeImmutable($item->tanggal_buka);
+                    $tanggal_tutup = new DateTimeImmutable($item->tanggal_tutup);
+                    $nama_periode =
+                        strlen($item->nama_periode) > 20
+                            ? substr($item->nama_periode, 0, 20) . '...'
+                            : $item->nama_periode;
+                @endphp
+                <x-period-card :nama_periode="$nama_periode" :tahun_ajaran="$item->tahun_ajaran" :tanggal_buka="$tanggal_buka->format('d F Y')" :tanggal_tutup="$tanggal_tutup->format('d F Y')"
+                    :is_active="$item->is_active" />
+            @endforeach
 
-            @endfor
 
         </div>
 
@@ -65,10 +64,6 @@
                 {{ json_encode($periode, JSON_PRETTY_PRINT) }}
             </p>
         </div>
-    </div>
-
-    
-
-
-
+        <x-add-modal-periode />
+        <x-flash-message />
 </x-app-layout>
