@@ -61,10 +61,14 @@
 
 
         <div class="flex flex-row justify-end mt-4">
+            <button type="button" class="text-red-600 py-1 px-2 text-sm" @click="showaddmodal = false">
+                Batal
+            </button>
             <button type="submit" class="{{ $btn_primary }}">
                 Tambahkan Periode
             </button>
         </div>
+    </form> 
 
 
 </x-add-modal>
