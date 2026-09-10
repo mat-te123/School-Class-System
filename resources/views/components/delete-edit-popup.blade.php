@@ -10,7 +10,7 @@
         showDeleteModal= true;
         showeditdeletepopup= false;
         confirmationData='{{ addslashes($confirmationData) }}';
-        deleteUrl='#';  
+        deleteUrl='{{ route('periode-penjurusan.destroy', ['id' => $item->id]) }}';  
          ">
         delete
     </span>
