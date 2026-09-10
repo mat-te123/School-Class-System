@@ -1,4 +1,5 @@
 @props([
+    'item' => null,
     'confirmationData' => '',
 ])
 {{-- test URL --}}
@@ -9,11 +10,23 @@
         showDeleteModal= true;
         showeditdeletepopup= false;
         confirmationData='{{ addslashes($confirmationData) }}';
-        {{-- deleteUrl='{{ route('periode-penjurusan.delete') }}';   --}}
+        deleteUrl='#';  
          ">
         delete
     </span>
-    <span class="w-full text-blue-500 bg-blue-50 py-0.5 px-3 text-center rounded-md hover:bg-blue-100 cursor-pointer">
+    <span class="w-full text-blue-500 bg-blue-50 py-0.5 px-3 text-center rounded-md hover:bg-blue-100 cursor-pointer"
+        @click="
+        showupdateModal= true;
+        showeditdeletepopup= false;
+        periodeData={ 
+            ...{{ json_encode($item) }},
+            is_active: {{ $item->is_active ? '1' : '0' }}, 
+            tanggal_buka: '{{ $item->tanggal_buka }}'.split(' ')[0],
+            tanggal_tutup: '{{ $item->tanggal_tutup }}'.split(' ')[0],
+        };
+        editUrl='{{ route('periode-penjurusan.update', ['id' => $item->id]) }}';
+
+    ">
         edit
     </span>
 </div>

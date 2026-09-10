@@ -1,4 +1,5 @@
 @props([
+    'item' => null,
     'nama_periode' => 'Periode Penjurusan',
     'tahun_ajaran' => '2026',
     'tanggal_buka' => '11 Agustus 2026',
@@ -7,7 +8,7 @@
 ])
 
 
-<div class="bg-gray-50 border border-gray-300 p-3 rounded-lg flex flex-col gap-2" x-data="{ showeditdeletepopup: false, deleteUrl: '', }">
+<div class="bg-gray-50 border border-gray-300 p-3 rounded-lg flex flex-col gap-2" x-data="{ showeditdeletepopup: false, }">
     <div class="flex flex-row w-full justify-between relative">
         <div class="flex flex-col gap-1">
             <h2 class="text-lg leading-7 font-bold">
@@ -24,7 +25,7 @@
             <img src="{{ asset('Icon/Meatballs_menu.svg') }}" />
         </div>
         <div class="absolute top-0 right-0 z-10">
-            <x-delete-edit-popup :confirmationData="$nama_periode" />
+            <x-delete-edit-popup :item="$item" :confirmationData="$nama_periode" />
         </div>
     </div>
 
