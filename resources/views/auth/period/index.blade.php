@@ -65,12 +65,6 @@
 
 
         </div>
-
-        <div>
-            <p>
-                {{ json_encode($periode, JSON_PRETTY_PRINT) }}
-            </p>
-        </div>
         <x-delete-modal />
         <x-add-modal-periode />
         <x-update-modal-periode />
