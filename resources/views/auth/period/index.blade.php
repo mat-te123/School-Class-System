@@ -5,6 +5,9 @@
         showaddmodal: false,
         confirmationData: '',
         addUrl: '',
+        deleteUrl: '',
+        editUrl: '',
+        periodeData: {},
     }">
         <div class="flex flex-col py-6 px-8 border border-b-black">
             <h1 class="text-4xl leading-9 font-semibold">
@@ -55,7 +58,7 @@
                                 : $item->nama_periode;
                     @endphp
                     <x-period-card :nama_periode="$nama_periode" :tahun_ajaran="$item->tahun_ajaran" :tanggal_buka="$tanggal_buka->format('d F Y')" :tanggal_tutup="$tanggal_tutup->format('d F Y')"
-                        :is_active="$item->is_active" />
+                        :is_active="$item->is_active" :item="$item" />
                 @endforeach
             @endfor
 
@@ -70,5 +73,6 @@
         </div>
         <x-delete-modal />
         <x-add-modal-periode />
+        <x-update-modal-periode />
         <x-flash-message />
 </x-app-layout>
