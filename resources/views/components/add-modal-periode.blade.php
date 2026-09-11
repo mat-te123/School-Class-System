@@ -34,8 +34,11 @@
         <div class="flex flex-row justify-between gap-3">
             <div class="flex flex-col gap-1 w-full">
                 <label for="fgelombang" class="text-sm leading-4 font-semibold">Gelombang</label>
-                <input name="gelombang" id="ftanggal_buka" type="text" maxlength="20" required
-                    placeholder="Cth. utama" class="border border-black rounded-lg py-1 px-4 text-base w-full">
+                <select name="gelombang" id="fgelombang" required class="border border-black rounded-lg py-1 px-4 text-base w-full">
+                    <option value="" disabled selected>Pilih gelombang</option>
+                    <option value="Utama">Utama</option>
+                    <option value="Susulan">Susulan</option>
+                </select>
             </div>
 
             <div class="flex flex-col gap-1 w-full">

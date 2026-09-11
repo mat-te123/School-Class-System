@@ -37,7 +37,7 @@ class KelasAsalController extends Controller
         }
 
         // Urutkan berdasarkan nama_kelas ascending
-        $kelases = $query->orderBy('nama_kelas', 'asc')->paginate((int) $request->input('per_page', 10));
+        $kelases = $query->orderBy('nama_kelas', 'asc')->paginate((int) $request->input('per_page', 4));
 
         if ($request->wantsJson() || $request->ajax() || !view()->exists('kelas-asal.index')) {
             return response()->json([

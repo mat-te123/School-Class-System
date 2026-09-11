@@ -147,7 +147,7 @@ class PeriodePenjurusanController extends Controller
         return [
             'nama_periode' => [$periode ? 'sometimes' : 'required', 'string', 'max:100'],
             'tahun_ajaran' => [$periode ? 'sometimes' : 'required', 'string', 'max:10'],
-            'gelombang' => ['nullable', 'string', 'max:20'],
+            'gelombang' => ['nullable', 'string', 'in:Utama,Susulan'],
             'max_pilihan_siswa' => ['nullable', 'integer', 'min:1'],
             'tanggal_buka' => [$periode ? 'sometimes' : 'required', 'date'],
             'tanggal_tutup' => [
