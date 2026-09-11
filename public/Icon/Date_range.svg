@@ -1,0 +1,10 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="11.52" height="9.6" rx="1.28" transform="matrix(-1 0 0 1 13.44 3.83984)" stroke="#33363F" stroke-width="1.28"/>
+<path d="M13.44 6.39984C13.44 5.19305 13.44 4.58965 13.0651 4.21475C13.0651 4.21475 13.0651 4.21475 13.0651 4.21475C12.6901 3.83984 12.0868 3.83984 10.88 3.83984H4.47996C3.27316 3.83984 2.66976 3.83984 2.29486 4.21475C2.29486 4.21475 2.29486 4.21475 2.29486 4.21475C1.91996 4.58965 1.91996 5.19305 1.91996 6.39984V6.39984H13.44V6.39984Z" fill="#33363F"/>
+<path d="M10.88 1.91992L10.88 3.83992" stroke="#33363F" stroke-width="1.28" stroke-linecap="round"/>
+<path d="M4.48 1.91992L4.48 3.83992" stroke="#33363F" stroke-width="1.28" stroke-linecap="round"/>
+<rect width="2.56" height="1.28" rx="0.32" transform="matrix(-1 0 0 1 10.88 7.68018)" fill="#33363F"/>
+<rect width="2.56" height="1.28" rx="0.32" transform="matrix(-1 0 0 1 10.88 10.2402)" fill="#33363F"/>
+<rect width="2.56" height="1.28" rx="0.32" transform="matrix(-1 0 0 1 7.04005 7.68018)" fill="#33363F"/>
+<rect width="2.56" height="1.28" rx="0.32" transform="matrix(-1 0 0 1 7.04005 10.2402)" fill="#33363F"/>
+</svg>

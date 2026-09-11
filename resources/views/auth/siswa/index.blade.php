@@ -11,6 +11,7 @@
         deleteUrl: '',
         editUrl: '',
         addUrl: '',
+        confirmationData: '',
         addExcelUrl: '',
     }">
 
@@ -108,8 +109,8 @@
                                         <button type="button"
                                             @click="
                                                 showDeleteModal = true;
-                                                studentName = '{{ addslashes($item->nama_lengkap) }}';
                                                 deleteUrl = '{{ route('siswa.destroy', $item->id ?? 1) }}';
+                                                confirmationData='{{ addslashes($item->nama_lengkap) }}';
                                             "
                                             class="p-1 bg-red-50 hover:bg-red-300 rounded-lg transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
                                             <img src="{{ asset('Icon/Trash.svg') }}" alt="trash icon">

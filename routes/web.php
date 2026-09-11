@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminHasilPenjurusanController;
+use App\Http\Controllers\AdminLaporanController;
 use App\Http\Controllers\AdminPendaftaranReviewController;
+use App\Http\Controllers\AdminPertukaranController;
 use App\Http\Controllers\KelasAsalController;
 use App\Http\Controllers\KriteriaBobotMenuController;
 use App\Http\Controllers\LaporanPesanController;
@@ -10,16 +13,13 @@ use App\Http\Controllers\NilaiSiswaController;
 use App\Http\Controllers\PaketMenuPilihanController;
 use App\Http\Controllers\PendaftaranPilihanController;
 use App\Http\Controllers\PeriodePenjurusanController;
+use App\Http\Controllers\ProgramStudiController;
+use App\Http\Controllers\ProyeksiUniversitasController;
+use App\Http\Controllers\ServerClockController;
 use App\Http\Controllers\SiswaAuthController;
 use App\Http\Controllers\SiswaController;
-use App\Http\Controllers\UserAuthController;
-use App\Http\Controllers\ProyeksiUniversitasController;
-use App\Http\Controllers\ProgramStudiController;
-use App\Http\Controllers\AdminHasilPenjurusanController;
-use App\Http\Controllers\AdminPertukaranController;
-use App\Http\Controllers\AdminLaporanController;
 use App\Http\Controllers\SiswaPertukaranController;
-use App\Http\Controllers\ServerClockController;
+use App\Http\Controllers\UserAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -119,11 +119,13 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('admin/periode-penjurusan', [PeriodePenjurusanController::class, 'index'])->name('admin-periode-penjurusan.index');
     Route::post('/periode-penjurusan', [PeriodePenjurusanController::class, 'store'])->name('periode-penjurusan.store');
     Route::put('/periode-penjurusan/{id}', [PeriodePenjurusanController::class, 'update'])->name('periode-penjurusan.update');
+    Route::delete('/periode-penjurusan/{id}', [PeriodePenjurusanController::class, 'destroy'])->name('periode-penjurusan.destroy');
 
     Route::post('/kelas-asal', [KelasAsalController::class, 'store'])->name('kelas-asal.store');
     Route::put('/kelas-asal/{id}', [KelasAsalController::class, 'update'])->name('kelas-asal.update');
     Route::delete('/kelas-asal/{id}', [KelasAsalController::class, 'destroy'])->name('kelas-asal.destroy');
 
+    Route::get('/paket-menu-pilihan', [PaketMenuPilihanController::class, 'index'])->name('admin-paket-menu.index');
     Route::post('/paket-menu-pilihan', [PaketMenuPilihanController::class, 'store'])->name('paket-menu.store');
     Route::put('/paket-menu-pilihan/{identifier}', [PaketMenuPilihanController::class, 'update'])->name('paket-menu.update');
     Route::delete('/paket-menu-pilihan/{identifier}', [PaketMenuPilihanController::class, 'destroy'])->name('paket-menu.destroy');
