@@ -54,11 +54,11 @@
 
     </form>
     <button @click="toggleSidebar()"
-        class="absolute top-1/2 -right-3 transform -translate-y-1/2 bg-slate-800 hover:bg-blue-500 scale-100 active:scale-105 text-white p-1 rounded-full transition-all ease-in-out duration-300 group"
+        class="border border-white absolute top-1/2 -right-3 transform -translate-y-1/2 bg-slate-800 hover:bg-blue-500 scale-100 active:scale-105 text-white p-1 rounded-full transition-all ease-in-out duration-300 group"
         :class="{ 'rotate-180': !isSidebarOpen }">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
             stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            <path stroke-linecap="round" stroke-linejoin="round"  stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
     </button>
 </aside>
