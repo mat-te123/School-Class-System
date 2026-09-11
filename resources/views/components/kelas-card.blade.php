@@ -2,16 +2,30 @@
     'item' => null,
 ])
 
-<div class=" flex flex-col p-2 border border-gray-300 rounded-lg gap-4" x-data="{ showeditdeletepopup: false, }">
+<div class="bg-gray-50 flex flex-col p-2 border border-gray-300 rounded-lg gap-4" x-data="{ showeditdeletepopup: false, }">
     <div class="relative flex flex-row justify-between border-b border-gray-300 pb-2">
         <div class="flex flex-row gap-2">
             <div class="bg-gray-300 h-fit p-1 rounded-lg">
                 <img src="{{ asset('Icon/Group_duotone_fill.svg') }}" alt="book_icon" />
             </div>
             <div class="flex flex-col">
-                <h2 class="text-base font-bold leading-6">
-                    {{ $item['nama_menu'] }}
-                </h2>
+                <div class="flex flex-row gap-2 items-center ">
+                    <h2 class="text-base font-bold leading-6">
+                        {{ $item['nama_menu'] }}
+                    </h2>
+                    @if ($item['is_active'])
+                        <span
+                            class="text-xs leading-4 font-semibold text-green-600 px-2 py-0.5 rounded-md bg-green-50 w-fit">
+                            Aktif
+                        </span>
+                    @else
+                        <span
+                            class="text-xs leading-4 font-semibold text-red-600 px-2 py-0.5 rounded-md bg-red-50 w-fit">
+                            Tidak Aktif
+                        </span>
+                    @endif
+                </div>
+
                 <span class="text-xs leading-4 font-normal">
                     rumpun {{ $item['rumpun'] }}
                 </span>
