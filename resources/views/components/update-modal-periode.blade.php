@@ -37,8 +37,11 @@
         <div class="flex flex-row justify-between gap-3">
             <div class="flex flex-col gap-1 w-full">
                 <label for="fgelombang_edit" class="text-sm leading-4 font-semibold">Gelombang</label>
-                <input name="gelombang" id="fgelombang_edit" type="text" maxlength="20" placeholder="Cth. utama"
+                <select name="gelombang" id="fgelombang_edit"
                     class="border border-black rounded-lg py-1 px-4 text-base w-full" x-model="Data.gelombang">
+                    <option value="Utama">Utama</option>
+                    <option value="Susulan">Susulan</option>
+                </select>
             </div>
 
             <div class="flex flex-col gap-1 w-full">
