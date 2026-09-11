@@ -125,6 +125,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::put('/kelas-asal/{id}', [KelasAsalController::class, 'update'])->name('kelas-asal.update');
     Route::delete('/kelas-asal/{id}', [KelasAsalController::class, 'destroy'])->name('kelas-asal.destroy');
 
+    Route::get('/paket-menu-pilihan', [PaketMenuPilihanController::class, 'index'])->name('admin-paket-menu.index');
     Route::post('/paket-menu-pilihan', [PaketMenuPilihanController::class, 'store'])->name('paket-menu.store');
     Route::put('/paket-menu-pilihan/{identifier}', [PaketMenuPilihanController::class, 'update'])->name('paket-menu.update');
     Route::delete('/paket-menu-pilihan/{identifier}', [PaketMenuPilihanController::class, 'destroy'])->name('paket-menu.destroy');

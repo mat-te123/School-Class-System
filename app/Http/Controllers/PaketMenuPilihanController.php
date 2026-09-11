@@ -70,7 +70,7 @@ class PaketMenuPilihanController extends Controller
             ]);
         }
 
-        return view('paket-menu-pilihan.index', compact('paginator'));
+        return view('auth.kelas.index', compact('paginator'));
     }
 
     /**
