@@ -45,6 +45,16 @@ class PeriodePendaftaran extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::deleting(function (PeriodePendaftaran $periode) {
+            if ($periode->is_active) {
+                $periode->is_active = false;
+                $periode->save();
+            }
+        });
+    }
+
     /**
      * Mengecek apakah pengumuman hasil seleksi pada periode ini sudah terbuka untuk siswa.
      */
