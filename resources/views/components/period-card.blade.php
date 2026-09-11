@@ -24,8 +24,16 @@
             ">
             <img src="{{ asset('Icon/Meatballs_menu.svg') }}" />
         </div>
+        @php
+            $formattedData = array_merge($item->toArray(), [
+                'is_active' => $item->is_active ? 1 : 0,
+                'tanggal_buka' => \Illuminate\Support\Str::before($item->tanggal_buka, ' '),
+                'tanggal_tutup' => \Illuminate\Support\Str::before($item->tanggal_tutup, ' '),
+            ]);
+        @endphp
         <div class="absolute top-0 right-0 z-10">
-            <x-delete-edit-popup :item="$item" :confirmationData="$nama_periode" />
+            <x-delete-edit-popup :item="$item" :confirmationData="$nama_periode" :updateUrl="route('periode-penjurusan.update', ['id' => $item->id])" :deleteUrl="route('periode-penjurusan.destroy', ['id' => $item->id])"
+                :data="$formattedData" />
         </div>
     </div>
 
