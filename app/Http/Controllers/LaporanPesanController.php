@@ -82,7 +82,6 @@ class LaporanPesanController extends Controller
             'kategori' => 'nullable|string|max:50',
             'pesan' => 'required|string',
             'lampiran_path' => 'nullable|string|max:255',
-            // Field khusus guest (opsional jika login)
             'nisn' => 'nullable|string|max:20',
             'nama' => 'nullable|string|max:100',
             'kelas' => 'nullable|string|max:50',
