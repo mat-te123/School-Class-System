@@ -65,17 +65,39 @@ class AdminHasilPenjurusanController extends Controller
             });
         }
 
+        $totalSiswa = (clone $query)->count();
+        $totalKelas = (clone $query)->distinct('paket_menu_pilihan_id')->count('paket_menu_pilihan_id');
+        
+        $detailKelas = (clone $query)
+            ->without(['siswa', 'pengubah'])
+            ->select('paket_menu_pilihan_id', DB::raw('count(*) as total'))
+            ->groupBy('paket_menu_pilihan_id')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'nama_menu' => $item->paketMenuPilihan ? $item->paketMenuPilihan->nama_menu : 'Belum Ditentukan',
+                    'total' => $item->total,
+                ];
+            });
+
         $results = $query->orderByDesc('skor_penempatan')
             ->paginate((int) $request->input('per_page', 20));
+
+        $summary = [
+            'total_siswa' => $totalSiswa,
+            'total_kelas' => $totalKelas,
+            'detail_kelas' => $detailKelas,
+        ];
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'data' => $results,
+                'summary' => $summary,
             ]);
         }
 
-        return view('admin-hasil-penjurusan.index', compact('results'));
+        return view('admin-hasil-penjurusan.index', compact('results', 'summary'));
     }
 
     /**

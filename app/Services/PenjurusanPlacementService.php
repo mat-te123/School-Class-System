@@ -49,9 +49,9 @@ class PenjurusanPlacementService
             ->groupBy('paket_menu_pilihan_id');
 
         // Track kuota per paket (inisialisasi terisi = 0 untuk penempatan periode ini)
-        $kuota = PaketMenuPilihan::whereIn('id', $paketIds)
-            ->get()
-            ->mapWithKeys(fn ($p) => [
+        $paketModels = PaketMenuPilihan::whereIn('id', $paketIds)->get();
+        $paketNames = $paketModels->pluck('nama_menu', 'id')->toArray();
+        $kuota = $paketModels->mapWithKeys(fn ($p) => [
                 $p->id => [
                     'kapasitas' => (int) $p->kuota_kapasitas,
                     'terisi' => 0,
@@ -59,13 +59,22 @@ class PenjurusanPlacementService
             ])
             ->all();
 
+        $studentLogs = [];
+
         // Calculate scores for each student for each of their choices, grouped by urutan_pilihan
         $choicesByRound = [];
         $maxRound = (int) ($periode->max_pilihan_siswa ?? 3);
+        $tiebreakerMapels = \App\Models\MasterMataPelajaran::where('is_tiebreaker_default', true)->pluck('nama_mapel')->toArray();
 
         foreach ($pendaftaranList as $pendaftaran) {
             $siswaId = $pendaftaran->siswa_id;
             $leger = $nilaiLeger->get($siswaId);
+
+            $tiebreakerScore = 0;
+            $nilaiJson = $leger->nilai_json ?? [];
+            foreach ($tiebreakerMapels as $mapel) {
+                $tiebreakerScore += (float) ($nilaiJson[$mapel] ?? 0);
+            }
 
             foreach ($pendaftaran->detailPendaftaran as $detail) {
                 $paketId = $detail->paket_menu_pilihan_id;
@@ -77,7 +86,9 @@ class PenjurusanPlacementService
                     'paket_id' => $paketId,
                     'urutan_pilihan' => $round,
                     'skor_penempatan' => $skor,
+                    'tiebreaker_score' => $tiebreakerScore,
                     'rata_6_mapel' => $leger?->rata_6_mapel ?? 0,
+                    'tanggal_submit' => $pendaftaran->tanggal_submit,
                 ];
             }
         }
@@ -98,23 +109,42 @@ class PenjurusanPlacementService
                 fn ($c) => !isset($placedStudents[$c['siswa_id']])
             );
 
-            // Urutkan kandidat pada round ini: skor_penempatan DESC, lalu rata_6_mapel DESC (tie-breaker)
+            // Urutkan kandidat pada round ini dengan urutan tiebreaker yang deterministik
             usort($roundCandidates, function ($a, $b) {
+                // 1. Skor Penempatan (Tertinggi menang)
                 if ($a['skor_penempatan'] !== $b['skor_penempatan']) {
                     return $b['skor_penempatan'] <=> $a['skor_penempatan'];
                 }
-                return $b['rata_6_mapel'] <=> $a['rata_6_mapel'];
+                // 2. Skor Mapel Tie-Breaker (Tertinggi menang)
+                if ($a['tiebreaker_score'] !== $b['tiebreaker_score']) {
+                    return $b['tiebreaker_score'] <=> $a['tiebreaker_score'];
+                }
+                // 3. Rata-rata 6 Mapel (Tertinggi menang)
+                if ($a['rata_6_mapel'] !== $b['rata_6_mapel']) {
+                    return $b['rata_6_mapel'] <=> $a['rata_6_mapel'];
+                }
+                // 4. Waktu Daftar/Submit (Tercepat/Lebih awal menang)
+                if ($a['tanggal_submit'] !== $b['tanggal_submit']) {
+                    return $a['tanggal_submit'] <=> $b['tanggal_submit'];
+                }
+                // 5. Deterministik murni (Fallback terakhir)
+                return $a['siswa_id'] <=> $b['siswa_id'];
             });
 
             // Alokasikan siswa pada round ini ke kuota paket yang masih tersedia
             foreach ($roundCandidates as $candidate) {
                 $siswaId = $candidate['siswa_id'];
+                $paketId = $candidate['paket_id'];
+                $namaPaket = $paketNames[$paketId] ?? 'Paket';
+
+                if (!isset($studentLogs[$siswaId])) {
+                    $studentLogs[$siswaId] = [];
+                }
 
                 if (isset($placedStudents[$siswaId])) {
                     continue;
                 }
 
-                $paketId = $candidate['paket_id'];
                 $kuotaData = $kuota[$paketId] ?? null;
 
                 if (!$kuotaData) {
@@ -124,19 +154,25 @@ class PenjurusanPlacementService
                 // Check if quota available
                 if ($kuotaData['terisi'] < $kuotaData['kapasitas']) {
                     $rankPerPaket[$paketId] = ($rankPerPaket[$paketId] ?? 0) + 1;
+                    $rank = $rankPerPaket[$paketId];
+
+                    $studentLogs[$siswaId][] = "Evaluasi Pilihan {$candidate['urutan_pilihan']} ({$namaPaket}): Skor Utama {$candidate['skor_penempatan']}. Berhasil menempati peringkat {$rank} dari kuota {$kuotaData['kapasitas']}. Status: DITERIMA.";
 
                     $results[] = [
                         'siswa_id' => $siswaId,
                         'paket_menu_pilihan_id' => $paketId,
                         'pilihan_ke_diterima' => $candidate['urutan_pilihan'],
-                        'rank_pada_pilihan' => $rankPerPaket[$paketId],
+                        'rank_pada_pilihan' => $rank,
                         'skor_penempatan' => $candidate['skor_penempatan'],
                         'rata_6_mapel' => $candidate['rata_6_mapel'],
                         'mekanisme' => "Pilihan {$candidate['urutan_pilihan']}",
+                        'riwayat_proses' => json_encode($studentLogs[$siswaId]),
                     ];
 
                     $placedStudents[$siswaId] = true;
                     $kuota[$paketId]['terisi']++;
+                } else {
+                    $studentLogs[$siswaId][] = "Evaluasi Pilihan {$candidate['urutan_pilihan']} ({$namaPaket}): Skor Utama {$candidate['skor_penempatan']}. Kuota maksimal {$kuotaData['kapasitas']} telah terisi penuh oleh pendaftar dengan kriteria lebih tinggi. Status: TERGESER.";
                 }
             }
         }
@@ -147,6 +183,7 @@ class PenjurusanPlacementService
             if (!isset($placedStudents[$siswaId])) {
                 $leger = $nilaiLeger->get($siswaId);
                 $firstChoice = $pendaftaran->detailPendaftaran->first();
+                $studentLogs[$siswaId][] = "Siswa tidak berhasil lolos di semua pilihan prioritas. Status: TERLEMPAR / KUOTA PENUH.";
 
                 if ($firstChoice) {
                     $results[] = [
@@ -157,6 +194,7 @@ class PenjurusanPlacementService
                         'skor_penempatan' => $this->calculateScore($leger, $kriteriaBobot->get($firstChoice->paket_menu_pilihan_id, collect())),
                         'rata_6_mapel' => $leger?->rata_6_mapel ?? 0,
                         'mekanisme' => 'Kuota Penuh',
+                        'riwayat_proses' => json_encode($studentLogs[$siswaId] ?? []),
                     ];
                 }
             }

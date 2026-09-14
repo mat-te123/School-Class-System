@@ -29,6 +29,7 @@ class HasilSeleksi extends Model
         'catatan_perubahan',
         'diubah_oleh',
         'tanggal_perubahan',
+        'riwayat_proses',
     ];
 
     protected $casts = [
@@ -39,6 +40,7 @@ class HasilSeleksi extends Model
         'tanggal_diproses' => 'datetime',
         'is_manual_override' => 'boolean',
         'tanggal_perubahan' => 'datetime',
+        'riwayat_proses' => 'array',
     ];
 
     public function siswa(): BelongsTo
