@@ -65,6 +65,7 @@ Route::middleware(['auth:siswa'])->group(function () {
 
     // FR-54 s/d FR-56: Siswa melihat hasil penempatan & status pengumuman
     Route::get('/siswa/hasil-penempatan', [PendaftaranPilihanController::class, 'hasilPenempatanSiswa'])->name('siswa.hasil-penempatan');
+    Route::get('/siswa/live-ranking', [PendaftaranPilihanController::class, 'liveRankingSiswa'])->name('siswa.live-ranking');
 
     // Dashboard siswa (render Blade view)
     Route::get('/siswa/dashboard', function () {
@@ -174,6 +175,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::put('/admin/pertukaran/{id}/reject', [AdminPertukaranController::class, 'reject'])->name('admin.pertukaran.reject');
 
     // ===== Route Laporan & Ekspor (Admin) =====
+    Route::get('/admin/pemantauan-minat', [\App\Http\Controllers\PemantauanMinatController::class, 'index'])->name('admin.pemantauan-minat.index');
     Route::get('/admin/laporan/hasil-penjurusan', [AdminLaporanController::class, 'hasilPenjurusan'])->name('admin.laporan.hasil-penjurusan');
     Route::get('/admin/laporan/minat-siswa', [AdminLaporanController::class, 'minatSiswa'])->name('admin.laporan.minat-siswa');
     Route::get('/admin/laporan/peminat-vs-kuota', [AdminLaporanController::class, 'peminatVsKuota'])->name('admin.laporan.peminat-vs-kuota');

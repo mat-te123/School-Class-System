@@ -185,11 +185,13 @@ class PendaftaranPilihanController extends Controller
             return $pendaftaranRecord;
         });
 
-        // Load relasi lengkap untuk response
         $pendaftaran->load([
             'detailPendaftaran.paketMenuPilihan',
             'periodePendaftaran',
         ]);
+
+        // Dispatch job untuk kalkulasi ulang klasemen secara background
+        \App\Jobs\RunPlacementJob::dispatch($pendaftaran->periode_pendaftaran_id);
 
         return $this->handleWriteResponse($request, [
             'success' => true,
@@ -443,6 +445,9 @@ class PendaftaranPilihanController extends Controller
             'periodePendaftaran',
         ]);
 
+        // Dispatch job untuk kalkulasi ulang klasemen secara background
+        \App\Jobs\RunPlacementJob::dispatch($pendaftaran->periode_pendaftaran_id);
+
         return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Pilihan paket prioritas Anda berhasil diperbarui.',
@@ -511,5 +516,77 @@ class PendaftaranPilihanController extends Controller
         }
 
         return view('pendaftaran-pilihan.hasil-penempatan', compact('hasil'));
+    }
+
+    /**
+     * Endpoint untuk fitur Live Ranking. Menampilkan status tiap pilihan paket siswa
+     * secara realtime (Lolos Sementara, Tergeser, atau Tidak Dievaluasi).
+     */
+    public function liveRankingSiswa(Request $request)
+    {
+        $siswa = Auth::guard('siswa')->user();
+        if (!$siswa) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+            }
+            abort(401, 'Unauthenticated.');
+        }
+
+        $periode = PeriodePendaftaran::where('is_active', true)->first();
+        if (!$periode) {
+            return response()->json(['success' => false, 'message' => 'Tidak ada periode pendaftaran aktif.'], 400);
+        }
+
+        $pendaftaran = PendaftaranPilihan::with('detailPendaftaran.paketMenuPilihan')
+            ->where('siswa_id', $siswa->id)
+            ->where('periode_pendaftaran_id', $periode->id)
+            ->first();
+
+        if (!$pendaftaran) {
+            return response()->json(['success' => false, 'message' => 'Anda belum mengirimkan pendaftaran pilihan.'], 404);
+        }
+
+        $hasil = HasilSeleksi::where('siswa_id', $siswa->id)->first();
+        $isFinal = $periode->isPengumumanDibuka();
+
+        $responsePilihan = [];
+        foreach ($pendaftaran->detailPendaftaran as $detail) {
+            $status = 'Sedang Dikalkulasi';
+            $rank = null;
+            $kuota = $detail->paketMenuPilihan->kuota_maksimal;
+
+            if ($hasil) {
+                if ($hasil->paket_menu_pilihan_id === null) {
+                    $status = 'Tergeser (Tidak Masuk Kuota)';
+                } elseif ($hasil->pilihan_ke_diterima === $detail->urutan_pilihan) {
+                    $status = $isFinal ? 'Lolos Final' : 'Lolos Sementara';
+                    $rank = $hasil->rank_pada_pilihan;
+                } elseif ($detail->urutan_pilihan < $hasil->pilihan_ke_diterima) {
+                    $status = 'Tergeser (Tidak Masuk Kuota)';
+                } elseif ($detail->urutan_pilihan > $hasil->pilihan_ke_diterima) {
+                    $status = 'Tidak Dievaluasi';
+                }
+            }
+
+            $responsePilihan[] = [
+                'urutan' => $detail->urutan_pilihan,
+                'paket_menu' => $detail->paketMenuPilihan->nama_menu,
+                'kuota_maksimal' => $kuota,
+                'status' => $status,
+                'rank' => $rank
+            ];
+        }
+
+        $riwayatProses = [];
+        if ($hasil && $hasil->riwayat_proses) {
+            $riwayatProses = is_array($hasil->riwayat_proses) ? $hasil->riwayat_proses : json_decode($hasil->riwayat_proses, true);
+        }
+
+        return response()->json([
+            'success' => true,
+            'is_final' => $isFinal,
+            'data' => $responsePilihan,
+            'riwayat_proses' => $riwayatProses
+        ]);
     }
 }
