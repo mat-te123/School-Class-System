@@ -84,4 +84,14 @@ class PeriodePendaftaran extends Model
               });
         });
     }
+
+    /**
+     * Relasi ke paket menu pilihan yang ditawarkan pada periode ini.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function paketMenuPilihans(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PaketMenuPilihan::class, 'periode_id');
+    }
 }

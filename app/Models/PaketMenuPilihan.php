@@ -31,6 +31,7 @@ class PaketMenuPilihan extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'periode_id',
         'nama_menu',
         'rumpun',
         'kuota_kapasitas',
@@ -70,5 +71,15 @@ class PaketMenuPilihan extends Model
     public function kriteriaBobots(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(KriteriaBobotMenu::class, 'paket_menu_pilihan_id');
+    }
+
+    /**
+     * Relasi ke periode pendaftaran.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function periode(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(PeriodePendaftaran::class, 'periode_id');
     }
 }

@@ -57,6 +57,13 @@ class PeriodePenjurusanController extends Controller
     public function store(Request $request)
     {
         $this->ensureAdmin();
+
+        // Hitung tahun ajaran dari date now (Juli - Juni)
+        $year = now()->month >= 7 ? now()->year : now()->year - 1;
+        $tahunAjaran = $year . '/' . ($year + 1);
+        
+        $request->merge(['tahun_ajaran' => $tahunAjaran]);
+
         $validated = $request->validate($this->rules());
         $isActive = $validated['is_active'] ?? true;
 
@@ -65,8 +72,10 @@ class PeriodePenjurusanController extends Controller
                 // Non-aktifkan semua periode lain sebelum create yang baru
                 $this->deactivateOtherPeriods();
             }
+
             return PeriodePendaftaran::create([
                 ...$validated,
+                'tahun_ajaran' => $validated['tahun_ajaran'],
                 'gelombang' => $validated['gelombang'] ?? 'Utama',
                 'max_pilihan_siswa' => $validated['max_pilihan_siswa'] ?? 3,
                 'status_pengumuman' => $validated['status_pengumuman'] ?? 'NON-AKTIF',
@@ -146,7 +155,14 @@ class PeriodePenjurusanController extends Controller
 
         return [
             'nama_periode' => [$periode ? 'sometimes' : 'required', 'string', 'max:100'],
-            'tahun_ajaran' => [$periode ? 'sometimes' : 'required', 'string', 'max:10'],
+            'tahun_ajaran' => [
+                $periode ? 'sometimes' : 'required',
+                'string',
+                Rule::unique('periode_pendaftaran', 'tahun_ajaran')
+                    ->where(fn ($query) => $query->where('gelombang', request('gelombang', $periode?->gelombang ?? 'Utama')))
+                    ->ignore($periode?->id)
+                    ->whereNull('deleted_at')
+            ],
             'gelombang' => ['nullable', 'string', 'in:Utama,Susulan'],
             'max_pilihan_siswa' => ['nullable', 'integer', 'min:1'],
             'tanggal_buka' => [$periode ? 'sometimes' : 'required', 'date'],

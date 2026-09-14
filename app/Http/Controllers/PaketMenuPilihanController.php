@@ -26,12 +26,23 @@ class PaketMenuPilihanController extends Controller
 
         $query = PaketMenuPilihan::query();
 
-        // 1. Filter Rumpun (eksakta / sosial)
+        // 1. Filter Periode (angkatan)
+        if ($request->has('periode_id') && !empty($request->periode_id)) {
+            $query->where('periode_id', $request->periode_id);
+        } else {
+            // Default mengambil menu dari periode yang sedang aktif
+            $activePeriode = \App\Models\PeriodePendaftaran::where('is_active', true)->first();
+            if ($activePeriode) {
+                $query->where('periode_id', $activePeriode->id);
+            }
+        }
+
+        // 2. Filter Rumpun (eksakta / sosial)
         if ($request->has('rumpun') && !empty($request->rumpun)) {
             $query->where('rumpun', strtolower($request->rumpun));
         }
 
-        // 2. Filter status aktif (default true jika tidak ditentukan, atau bisa 'all')
+        // 3. Filter status aktif (default true jika tidak ditentukan, atau bisa 'all')
         if ($request->has('is_active')) {
             if ($request->is_active !== 'all') {
                 $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
@@ -41,7 +52,7 @@ class PaketMenuPilihanController extends Controller
             $query->where('is_active', true);
         }
 
-        // 3. Pencarian berdasarkan nama menu
+        // 4. Pencarian berdasarkan nama menu
         if (!empty($validated['search'])) {
             $search = trim($validated['search']);
             $query->where('nama_menu', 'like', "%{$search}%");
@@ -63,14 +74,19 @@ class PaketMenuPilihanController extends Controller
             ];
         });
 
+        $periodes = \App\Models\PeriodePendaftaran::select('id', 'tahun_ajaran')
+            ->orderBy('tahun_ajaran', 'desc')
+            ->get();
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'data'    => $paginator,
+                'periodes' => $periodes,
             ]);
         }
 
-        return view('auth.kelas.index', compact('paginator'));
+        return view('auth.kelas.index', compact('paginator', 'periodes'));
     }
 
     /**
@@ -314,13 +330,30 @@ class PaketMenuPilihanController extends Controller
             abort(403, 'Akses ditolak. Hanya Admin yang dapat menambah Paket Menu Pilihan.');
         }
 
+        // Ambil periode_id dari periode yang sedang aktif
+        $activePeriode = \App\Models\PeriodePendaftaran::where('is_active', true)->first();
+        if (!$activePeriode) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada periode pendaftaran yang aktif saat ini.',
+                ], 400);
+            }
+            abort(400, 'Tidak ada periode pendaftaran yang aktif saat ini.');
+        }
+        
+        $request->merge(['periode_id' => $activePeriode->id]);
+
         $namaMenu    = trim($request->input('nama_menu', ''));
         $action      = $request->input('action');
         $isRestore   = $action === 'restore' || $request->boolean('restore');
         $isOverwrite = $action === 'overwrite' || $action === 'replace' || $request->boolean('overwrite');
 
-        // Cek apakah ada paket menu dengan nama yang sama yang telah di-soft delete
-        $trashed = PaketMenuPilihan::onlyTrashed()->where('nama_menu', $namaMenu)->first();
+        // Cek apakah ada paket menu dengan nama yang sama yang telah di-soft delete pada periode yang sama
+        $trashed = PaketMenuPilihan::onlyTrashed()
+            ->where('nama_menu', $namaMenu)
+            ->where('periode_id', $request->periode_id)
+            ->first();
 
         if ($trashed) {
             // Opsi 1: Restore dan update data yang ada
@@ -352,13 +385,17 @@ class PaketMenuPilihanController extends Controller
                 $trashed->forceDelete();
 
                 $validated = $request->validate([
-                    'nama_menu'       => ['required', 'string', 'max:50', Rule::unique('paket_menu_pilihan', 'nama_menu')->whereNull('deleted_at')],
+                    'periode_id'      => ['required', 'uuid', 'exists:periode_pendaftaran,id'],
+                    'nama_menu'       => ['required', 'string', 'max:50', Rule::unique('paket_menu_pilihan', 'nama_menu')
+                                            ->where(fn($q) => $q->where('periode_id', $request->periode_id))
+                                            ->whereNull('deleted_at')],
                     'rumpun'          => ['required', 'string', 'in:eksakta,sosial'],
                     'kuota_kapasitas' => ['nullable', 'integer', 'min:1'],
                     'is_active'       => ['nullable', 'boolean'],
                 ]);
 
                 $paketMenu = PaketMenuPilihan::create([
+                    'periode_id'      => $validated['periode_id'],
                     'nama_menu'       => $validated['nama_menu'],
                     'rumpun'          => strtolower($validated['rumpun']),
                     'kuota_kapasitas' => $validated['kuota_kapasitas'] ?? 36,
@@ -402,13 +439,18 @@ class PaketMenuPilihanController extends Controller
         }
 
         $validated = $request->validate([
-            'nama_menu' => ['required', 'string', 'max:50', Rule::unique('paket_menu_pilihan', 'nama_menu')->whereNull('deleted_at')],
+            'periode_id' => ['required', 'uuid', 'exists:periode_pendaftaran,id'],
+            'nama_menu' => ['required', 'string', 'max:50', Rule::unique('paket_menu_pilihan', 'nama_menu')
+                                ->where(fn($q) => $q->where('periode_id', $request->periode_id))
+                                ->whereNull('deleted_at')],
             'rumpun' => ['required', 'string', 'in:eksakta,sosial'],
             'kuota_kapasitas' => ['nullable', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
         ], [
+            'periode_id.required' => 'Periode wajib dipilih.',
+            'periode_id.exists' => 'Periode tidak ditemukan.',
             'nama_menu.required' => 'Nama menu wajib diisi.',
-            'nama_menu.unique' => 'Nama menu sudah terdaftar.',
+            'nama_menu.unique' => 'Nama menu sudah terdaftar pada periode tersebut.',
             'rumpun.required' => 'Rumpun wajib diisi.',
             'rumpun.in' => 'Rumpun harus berupa eksakta atau sosial.',
             'kuota_kapasitas.integer' => 'Kuota kapasitas harus berupa angka.',
@@ -416,6 +458,7 @@ class PaketMenuPilihanController extends Controller
         ]);
 
         $paketMenu = PaketMenuPilihan::create([
+            'periode_id' => $validated['periode_id'],
             'nama_menu' => $validated['nama_menu'],
             'rumpun' => strtolower($validated['rumpun']),
             'kuota_kapasitas' => $validated['kuota_kapasitas'] ?? 36,
@@ -484,7 +527,11 @@ class PaketMenuPilihanController extends Controller
         }
 
         $validated = $request->validate([
-            'nama_menu' => ['sometimes', 'required', 'string', 'max:50', Rule::unique('paket_menu_pilihan', 'nama_menu')->ignore($paketMenu->id)->whereNull('deleted_at')],
+            'periode_id' => ['sometimes', 'required', 'uuid', 'exists:periode_pendaftaran,id'],
+            'nama_menu' => ['sometimes', 'required', 'string', 'max:50', Rule::unique('paket_menu_pilihan', 'nama_menu')
+                                ->ignore($paketMenu->id)
+                                ->where(fn($q) => $q->where('periode_id', $request->periode_id ?? $paketMenu->periode_id))
+                                ->whereNull('deleted_at')],
             'rumpun' => ['sometimes', 'required', 'string', 'in:eksakta,sosial'],
             'kuota_kapasitas' => ['sometimes', 'required', 'integer', 'min:1'],
             'is_active' => ['sometimes', 'boolean'],
