@@ -86,6 +86,7 @@ class LaporanPesanController extends Controller
             'nisn' => 'nullable|string|max:20',
             'nama' => 'nullable|string|max:100',
             'kelas' => 'nullable|string|max:50',
+            'target_paket_id' => 'nullable|uuid|exists:paket_menu_pilihan,id',
         ]);
 
         // Auto-assign ID pelapor jika terautentikasi
@@ -99,7 +100,17 @@ class LaporanPesanController extends Controller
             $validated['kelas'] = $siswa->kelas_asal ?? $validated['kelas'];
         }
 
+        $payload = null;
+        if ($request->filled('target_paket_id')) {
+            $payload = [
+                'target_paket_id' => $request->target_paket_id
+            ];
+        }
+
         $validated['status'] = 'pending';
+        $validated['payload'] = $payload;
+
+        unset($validated['target_paket_id']);
 
         $laporan = LaporanPesan::create($validated);
 
