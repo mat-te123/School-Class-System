@@ -163,7 +163,34 @@ class LaporanPesanController extends Controller
 
         $validated['ditangani_oleh'] = Auth::guard('web')->id();
 
-        $laporan->update($validated);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($laporan, $validated) {
+            $laporan->update($validated);
+
+            // Logika Otomatisasi
+            if ($validated['status'] === 'selesai' && $laporan->kategori === 'Pindah Paket' && !empty($laporan->payload['target_paket_id'])) {
+                $hasilSeleksi = \App\Models\HasilSeleksi::where('siswa_id', $laporan->siswa_id)->first();
+                
+                if ($hasilSeleksi) {
+                    $riwayat = $hasilSeleksi->riwayat_proses ?? [];
+                    $riwayat[] = [
+                        'waktu' => now()->toIso8601String(),
+                        'aksi' => 'Pindah Paket melalui Laporan',
+                        'dari' => $hasilSeleksi->paket_menu_pilihan_id,
+                        'ke' => $laporan->payload['target_paket_id'],
+                        'admin_id' => $validated['ditangani_oleh']
+                    ];
+
+                    $hasilSeleksi->update([
+                        'paket_menu_pilihan_id' => $laporan->payload['target_paket_id'],
+                        'is_manual_override' => true,
+                        'diubah_oleh' => $validated['ditangani_oleh'],
+                        'catatan_perubahan' => "Disetujui melalui laporan pindah paket (ID Laporan: {$laporan->id})",
+                        'tanggal_perubahan' => now(),
+                        'riwayat_proses' => $riwayat,
+                    ]);
+                }
+            }
+        });
 
         return $this->handleWriteResponse($request, [
             'success' => true,
