@@ -26,12 +26,14 @@ class LaporanPesan extends Model
         'status',
         'catatan_penanganan',
         'ditangani_oleh',
+        'payload',
     ];
 
     protected function casts(): array
     {
         return [
             'status' => 'string',
+            'payload' => 'array',
         ];
     }
 
