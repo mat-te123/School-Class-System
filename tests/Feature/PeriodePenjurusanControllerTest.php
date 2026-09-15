@@ -306,4 +306,20 @@ class PeriodePenjurusanControllerTest extends TestCase
         $response->assertSessionHas('success', 'Periode penjurusan berhasil diperbarui.');
         $this->assertDatabaseHas('periode_pendaftaran', ['id' => $periode->id, 'nama_periode' => 'Penjurusan Update Redirect Edited']);
     }
+
+    public function test_admin_cannot_set_pertukaran_before_tanggal_tutup(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->postJson('/periode-penjurusan', [
+            'nama_periode' => 'Penjurusan Pertukaran Test',
+            'tahun_ajaran' => '2026/2027',
+            'tanggal_buka' => '2026-08-11 08:00:00',
+            'tanggal_tutup' => '2026-08-20 23:59:59',
+            'tanggal_mulai_pertukaran' => '2026-08-15 00:00:00', // Invalid, sebelum tanggal tutup
+            'tanggal_selesai_pertukaran' => '2026-08-25 00:00:00',
+        ]);
+
+        $response->assertUnprocessable()->assertJsonValidationErrors('tanggal_mulai_pertukaran');
+    }
 }
