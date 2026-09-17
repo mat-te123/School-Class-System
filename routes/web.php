@@ -88,8 +88,6 @@ Route::middleware(['auth.any'])->group(function () {
     Route::get('/kelas-asal', [KelasAsalController::class, 'index'])->name('kelas-asal.index');
     Route::get('/kelas-asal/{identifier}', [KelasAsalController::class, 'show'])->name('kelas-asal.show');
 
-    // Route Kriteria Bobot Menu
-    Route::get('/kriteria-bobot-menu', [KriteriaBobotMenuController::class, 'index'])->name('kriteria-bobot.index');
 
     // Route Siswa (Read Only untuk admin & mungkin siswa? Oh wait, Siswa is admin only for CRUD)
     // We will place GET /siswa in auth:web below instead.
