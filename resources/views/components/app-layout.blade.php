@@ -15,7 +15,7 @@
 
 <body class="bg-gray-100 min-h-screen flex">
     <x-sidebar />
-    <main class="flex-1 relative">
+    <main class="flex-1 h-screen flex flex-col overflow-y-auto">
         {{ $slot }}
     </main>
 
