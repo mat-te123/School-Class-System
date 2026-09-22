@@ -50,10 +50,13 @@
         <img src="{{ asset('Icon/Date_range.svg') }}" />
         {{ $tanggal_buka }} - {{ $tanggal_tutup }}
     </span>
-    <div class="flex flex-row w-full justify-end border-t border-gray-300 pt-2">
-        <span class="text-xs leading-4 font-medium  cursor-pointer hover:underline text-right">
-            lihat detail
-        </span>
+    <div class="flex flex-row w-full justify-end border-t border-gray-300 pt-2 gap-3">
+        <button class="text-sm leading-4 w-full border border-gray-950 rounded-md text-gray-950 p-2">
+            Cek persebaran kelas
+        </button>
+        <button class="text-sm leading-4 w-full border bg-gray-950 rounded-md text-white p-2">
+            Cek hasil seleksi
+        </button>
     </div>
 
 
