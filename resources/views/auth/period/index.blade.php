@@ -21,20 +21,18 @@
 
         </div>
         <div class="grid grid-cols-3 grid-rows-2 py-6 px-8 gap-3">
-            <div class="col-span-3 row-span-2 flex flex-row justify-between w-full h-fit">
-                <div class="flex flex-row gap-4">
-                    <select id="fterbaru" class="px-2 bg-[#F9FAFB] border border-gray-400 rounded-lg text-gray-400">
-                        <option value="terbaru">terbaru</option>
-                        <option value="terlama">terlama</option>
+            <div class="col-span-3 row-span-2 flex flex-row justify-end w-full h-fit">
+                {{-- <div class="flex flex-row gap-4">
+                    <select id="fterbaru" class="px-1 bg-[#F9FAFB] border border-gray-400 rounded-lg text-gray-400">
+                        <option value="terbaru">new</option>
+                        <option value="terlama">old</option>
                     </select>
-                    <select id="faktif" class="px-2 bg-[#F9FAFB] border border-gray-400 rounded-lg text-gray-400">
-                        <option value="active">aktif</option>
-                        <option value="not active">tidak aktif</option>
+                    <select id="faktif" class="px-1 bg-[#F9FAFB] border border-gray-400 rounded-lg text-gray-400">
+                        <option value="">Status : semua(aktif/tidak aktif)</option>
+                        <option value="active">Status : aktif</option>
+                        <option value="not active">Status : tidak aktif</option>
                     </select>
-                    <button class="px-2 bg-[#F9FAFB] border border-gray-400 rounded-lg text-gray-400">
-                        select date
-                    </button>
-                </div>
+                </div> --}}
 
 
                 <button
