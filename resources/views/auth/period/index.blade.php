@@ -45,24 +45,45 @@
                 </button>
 
             </div>
-            @for ($i = 0; $i <= 2; $i++)
-                @foreach ($periode as $item)
-                    @php
-                        $tanggal_buka = new DateTimeImmutable($item->tanggal_buka);
-                        $tanggal_tutup = new DateTimeImmutable($item->tanggal_tutup);
-                        $nama_periode =
-                            strlen($item->nama_periode) > 20
-                                ? substr($item->nama_periode, 0, 20) . '...'
-                                : $item->nama_periode;
-                    @endphp
-                    <x-period-card :nama_periode="$nama_periode" :tahun_ajaran="$item->tahun_ajaran" :tanggal_buka="$tanggal_buka->format('d F Y')" :tanggal_tutup="$tanggal_tutup->format('d F Y')"
-                        :is_active="$item->is_active" :item="$item" />
-                @endforeach
-            @endfor
-
-
+            @foreach ($periode as $item)
+                @php
+                    $tanggal_buka = new DateTimeImmutable($item->tanggal_buka);
+                    $tanggal_tutup = new DateTimeImmutable($item->tanggal_tutup);
+                    $nama_periode =
+                        strlen($item->nama_periode) > 20
+                            ? substr($item->nama_periode, 0, 20) . '...'
+                            : $item->nama_periode;
+                @endphp
+                <x-period-card :nama_periode="$nama_periode" :tahun_ajaran="$item->tahun_ajaran" :tanggal_buka="$tanggal_buka->format('d F Y')" :tanggal_tutup="$tanggal_tutup->format('d F Y')" :is_active="$item->is_active"
+                    :item="$item" />
+            @endforeach
 
         </div>
+        @if ($periode->lastPage() > 1)
+            <div class="flex flex-row items-center justify-center gap-3 bg-white border border-gray-300 py-2 px-5 rounded-full w-fit mx-auto">
+                @if ($periode->onFirstPage())
+                    <span class="text-gray-400 cursor-not-allowed">&lt; sebelum</span>
+                @else
+                    <a href="{{ $periode->previousPageUrl() }}" class="text-gray-800  hover:underline">&lt;
+                        sebelum</a>
+                @endif
+                <div class="flex flex-row gap-2 ">
+                    @for ($halaman = 1; $halaman <= $periode->lastPage(); $halaman++)
+                        <a href="{{ $periode->url($halaman) }}"
+                            class="rounded {{ $halaman == $periode->currentPage() ? ' text-gray-800 font-bold' : 'text-gray-500 hover:text-gray-800 font-bold' }}">
+                            {{ $halaman }}
+                        </a>
+                    @endfor
+                </div>
+                @if ($periode->hasMorePages())
+                    <a href="{{ $periode->nextPageUrl() }}" class="text-gray-800 hover:underline">selanjutnya
+                        &gt;</a>
+                @else
+                    <span class="text-gray-500 cursor-not-allowed">selanjutnya &gt;</span>
+                @endif
+            </div>
+        @endif
+
         <x-delete-modal />
         <x-add-modal-periode />
         <x-update-modal-periode />
