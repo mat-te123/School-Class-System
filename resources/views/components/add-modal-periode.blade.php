@@ -15,26 +15,26 @@
 
         @php
             $currentyear = (int) date('Y');
-            $startyear = $currentyear - 5;
-            $endyear = $currentyear + 5;
         @endphp
         <div class="flex flex-col gap-1">
             <label for="ftahun_ajaran" class="text-sm leading-4 font-semibold">Tahun Ajaran</label>
-            <select name="tahun_ajaran" id="ftahunajaran" class="border border-black rounded-lg py-1 px-4 text-base"
+            <select name="tahun_ajaran" id="ftahun_ajaran" class="border border-black rounded-lg py-1 px-4 text-base"
                 required>
-                <option value="">-- Pilih Tahun Ajaran --</option>
-
-                @for ($year = $endyear; $year >= $startyear; $year--)
-                    <option value="{{ $year }}/{{ $year + 1 }}">{{ $year }}/{{ $year + 1 }}
+                @for ($year = $currentyear + 2; $year >= $currentyear; $year--)
+                    <option @selected($year === $currentyear) value="{{ $year }}/{{ $year + 1 }}">
+                        {{ $year }}/{{ $year + 1 }}
                     </option>
                 @endfor
             </select>
         </div>
 
+
+
         <div class="flex flex-row justify-between gap-3">
             <div class="flex flex-col gap-1 w-full">
                 <label for="fgelombang" class="text-sm leading-4 font-semibold">Gelombang</label>
-                <select name="gelombang" id="fgelombang" required class="border border-black rounded-lg py-1 px-4 text-base w-full">
+                <select name="gelombang" id="fgelombang" required
+                    class="border border-black rounded-lg py-1 px-4 text-base w-full">
                     <option value="" disabled selected>Pilih gelombang</option>
                     <option value="Utama">Utama</option>
                     <option value="Susulan">Susulan</option>
@@ -71,7 +71,7 @@
                 Tambahkan Periode
             </button>
         </div>
-    </form> 
+    </form>
 
 
 </x-add-modal>
