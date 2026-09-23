@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KelasAsal;
+use App\Models\PeriodePendaftaran;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -19,6 +20,7 @@ class KelasAsalController extends Controller
         $validated = $request->validate([
             'search'   => 'nullable|string|max:50',
             'tingkat'  => 'nullable|string|max:10',
+            'tanggal'  => 'nullable|date_format:Y-m-d',
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
@@ -36,17 +38,46 @@ class KelasAsalController extends Controller
             $query->where('nama_kelas', 'like', "%{$search}%");
         }
 
+        // Filter berdasarkan tanggal periode pendaftaran
+        $periode = null;
+        if (!empty($validated['tanggal'])) {
+            $targetDate = $validated['tanggal'];
+            $periode = PeriodePendaftaran::query()
+                ->whereDate('tanggal_buka', '<=', $targetDate)
+                ->whereDate('tanggal_tutup', '>=', $targetDate)
+                ->orderByDesc('tanggal_buka')
+                ->first();
+
+            if ($periode) {
+                $query->whereHas('siswas', function ($q) use ($periode) {
+                    $q->where('angkatan', $periode->tahun_ajaran);
+                });
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        // Opsi periode pendaftaran untuk kebutuhan dropdown filter UI
+        $periodes = PeriodePendaftaran::query()
+            ->select('id', 'tahun_ajaran', 'nama_periode', 'tanggal_buka', 'tanggal_tutup')
+            ->orderByDesc('tanggal_buka')
+            ->get();
+
         // Urutkan berdasarkan nama_kelas ascending
-        $kelases = $query->orderBy('nama_kelas', 'asc')->paginate((int) $request->input('per_page', 4));
+        $kelases = $query->orderBy('nama_kelas', 'asc')
+            ->paginate((int) $request->input('per_page', 4))
+            ->withQueryString();
 
         if ($request->wantsJson() || $request->ajax() || !view()->exists('kelas-asal.index')) {
             return response()->json([
-                'success' => true,
-                'data'    => $kelases,
+                'success'  => true,
+                'data'     => $kelases,
+                'periodes' => $periodes,
+                'selected_periode' => $periode,
             ]);
         }
 
-        return view('kelas-asal.index', compact('kelases'));
+        return view('kelas-asal.index', compact('kelases', 'periodes', 'periode'));
     }
 
     /**

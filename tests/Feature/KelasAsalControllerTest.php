@@ -481,4 +481,75 @@ class KelasAsalControllerTest extends TestCase
         $response->assertSessionHas('success', 'Berhasil menghapus data Kelas.');
         $this->assertSoftDeleted('kelas_asal', ['id' => $kelas->id]);
     }
+
+    /** Filter kelas asal berdasarkan tanggal periode pendaftaran */
+    public function test_can_filter_kelas_by_periode_date(): void
+    {
+        $user = \App\Models\User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'user_filter_periode_date',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+
+        $periode = \App\Models\PeriodePendaftaran::create([
+            'id' => (string) Str::uuid(),
+            'nama_periode' => 'Periode Uji Coba Tanggal',
+            'tahun_ajaran' => '2026/2027',
+            'tanggal_buka' => '2026-07-01 00:00:00',
+            'tanggal_tutup' => '2026-07-31 23:59:59',
+            'is_active' => true,
+        ]);
+
+        $kelasInPeriode = KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'X Filter Tanggal Ada',
+            'tingkat' => 'X',
+        ]);
+
+        $kelasLain = KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'X Filter Tanggal Lain',
+            'tingkat' => 'X',
+        ]);
+
+        Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '1234567890',
+            'nis' => '10001',
+            'nama_lengkap' => 'Siswa Periode Ini',
+            'kelas_asal_id' => $kelasInPeriode->id,
+            'angkatan' => '2026/2027',
+            'is_active' => true,
+        ]);
+
+        Siswa::create([
+            'id' => (string) Str::uuid(),
+            'nisn' => '1234567891',
+            'nis' => '10002',
+            'nama_lengkap' => 'Siswa Periode Lain',
+            'kelas_asal_id' => $kelasLain->id,
+            'angkatan' => '2024/2025',
+            'is_active' => true,
+        ]);
+
+        // Request tanggal yang masuk dalam rentang periode
+        $response = $this->actingAs($user, 'web')->getJson('/kelas-asal?tanggal=2026-07-15');
+
+        $response->assertStatus(200)
+            ->assertJson(['success' => true])
+            ->assertJsonCount(1, 'data.data')
+            ->assertJsonPath('data.data.0.nama_kelas', 'X Filter Tanggal Ada');
+
+        // Request tanggal di luar periode manapun harus mengembalikan data kosong
+        $responseOutside = $this->actingAs($user, 'web')->getJson('/kelas-asal?tanggal=2025-01-01');
+        $responseOutside->assertStatus(200)
+            ->assertJsonCount(0, 'data.data');
+
+        // Request tanggal dengan format tidak valid harus mengembalikan error 422
+        $responseInvalid = $this->actingAs($user, 'web')->getJson('/kelas-asal?tanggal=invalid-date');
+        $responseInvalid->assertStatus(422)
+            ->assertJsonValidationErrors(['tanggal']);
+    }
 }

@@ -11,6 +11,7 @@ use App\Http\Controllers\LegerImportController;
 use App\Http\Controllers\MasterMataPelajaranController;
 use App\Http\Controllers\NilaiSiswaController;
 use App\Http\Controllers\PaketMenuPilihanController;
+use App\Http\Controllers\PemantauanMinatController;
 use App\Http\Controllers\PendaftaranPilihanController;
 use App\Http\Controllers\PeriodePenjurusanController;
 use App\Http\Controllers\ProgramStudiController;
@@ -173,7 +174,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::put('/admin/pertukaran/{id}/reject', [AdminPertukaranController::class, 'reject'])->name('admin.pertukaran.reject');
 
     // ===== Route Laporan & Ekspor (Admin) =====
-    Route::get('/admin/pemantauan-minat', [\App\Http\Controllers\PemantauanMinatController::class, 'index'])->name('admin.pemantauan-minat.index');
+    Route::get('/admin/pemantauan-minat', [PemantauanMinatController::class, 'index'])->name('admin.pemantauan-minat.index');
     Route::get('/admin/laporan/hasil-penjurusan', [AdminLaporanController::class, 'hasilPenjurusan'])->name('admin.laporan.hasil-penjurusan');
     Route::get('/admin/laporan/minat-siswa', [AdminLaporanController::class, 'minatSiswa'])->name('admin.laporan.minat-siswa');
     Route::get('/admin/laporan/peminat-vs-kuota', [AdminLaporanController::class, 'peminatVsKuota'])->name('admin.laporan.peminat-vs-kuota');
