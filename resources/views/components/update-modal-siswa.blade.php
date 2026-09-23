@@ -1,3 +1,4 @@
+@props(['kelasAsal' => []])
 <x-update-modal type="Siswa" subtext="Perbarui atau ubah data siswa">
     <form :action="editUrl" method="POST" class="flex flex-col gap-3">
         @csrf
@@ -25,8 +26,13 @@
         <div class="flex flex-row gap-2">
             <div class="flex flex-col gap-1 w-full">
                 <label for="fkelas" class="text-sm leading-4 font-semibold">Kelas</label>
-                <input name="kelas_asal" id="fkelas" type="text" x-model="studentData.kelas_asal"
+                <select name="kelas_asal_id" id="fkelas" x-model="studentData.kelas_asal_id"
                     class="border border-black rounded-lg py-1 px-4 w-full text-base">
+                    <option value="">- Pilih Kelas -</option>
+                    @foreach ($kelasAsal as $kelas)
+                        <option value="{{ $kelas->id }}">{{ $kelas->nama_kelas }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="flex flex-col gap-1 w-full">
                 <label for="fjeniskelamin" class="text-sm leading-4 font-semibold">Jenis Kelamin</label>
