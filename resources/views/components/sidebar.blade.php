@@ -28,11 +28,6 @@
                     'icon' => asset('Icon/placeholder.svg'),
                     'text' => 'Kelas',
                 ],
-                'Pemantau Minat' => [
-                    'route' => route('admin-pendaftaran.index'),
-                    'icon' => asset('Icon/placeholder.svg'),
-                    'text' => 'Pemantau Minat',
-                ],
             ];
         @endphp
 
