@@ -10,40 +10,6 @@ use Illuminate\Http\Request;
 
 class KriteriaBobotMenuController extends Controller
 {
-    /**
-     * Mengambil daftar kriteria bobot menu (bisa difilter berdasarkan paket_menu_pilihan_id).
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function index(Request $request)
-    {
-        $validated = $request->validate([
-            'search'   => 'nullable|string|max:50',
-            'per_page' => 'nullable|integer|min:1|max:100',
-        ]);
-
-        $query = KriteriaBobotMenu::with(['paketMenuPilihan', 'masterMataPelajaran']);
-
-        if ($request->has('paket_menu_pilihan_id') && !empty($request->paket_menu_pilihan_id)) {
-            $query->where('paket_menu_pilihan_id', $request->paket_menu_pilihan_id);
-        }
-
-        if ($request->has('master_mata_pelajaran_id') && !empty($request->master_mata_pelajaran_id)) {
-            $query->where('master_mata_pelajaran_id', $request->master_mata_pelajaran_id);
-        }
-
-        $items = $query->paginate((int) $request->input('per_page', 10));
-
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'data'    => $items,
-            ]);
-        }
-
-        return view('kriteria-bobot-menu.index', compact('items'));
-    }
 
     /**
      * Menentukan/menyimpan bobot mata pelajaran pada paket menu pilihan (Khusus Role Admin).

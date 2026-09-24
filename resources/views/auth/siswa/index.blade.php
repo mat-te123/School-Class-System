@@ -34,19 +34,32 @@
                 </span>
             </div>
 
-            <div class="flex flex-row bg-gray-100 p-3 w-full border border-gray-400 rounded-lg gap-6">
-                <input type="text" placeholder="Cari nama, NISN, atau NIS..."
+            <form method="GET" action="{{ route('admin-siswa.index') }}" class="flex flex-row bg-gray-100 p-3 w-full border border-gray-400 rounded-lg gap-6 items-center">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, NISN, atau NIS..."
                     class="w-full py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
-                <select class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
-                    <option>Kelas</option>
+                <select name="kelas_id" onchange="this.form.submit()" class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
+                    <option value="">Semua Kelas</option>
+                    @foreach ($kelasAsal as $kelas)
+                        <option value="{{ $kelas->id }}" {{ request('kelas_id') == $kelas->id || request('kelas_asal_id') == $kelas->id ? 'selected' : '' }}>
+                            {{ $kelas->nama_kelas }}
+                        </option>
+                    @endforeach
                 </select>
-                <select class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
-                    <option>Kelamin</option>
+                <select name="jenis_kelamin" onchange="this.form.submit()" class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
+                    <option value="">Semua Kelamin</option>
+                    <option value="L" {{ request('jenis_kelamin') === 'L' ? 'selected' : '' }}>Laki-laki</option>
+                    <option value="P" {{ request('jenis_kelamin') === 'P' ? 'selected' : '' }}>Perempuan</option>
                 </select>
-                <select class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
-                    <option>Periode</option>
+                <select name="angkatan" onchange="this.form.submit()" class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
+                    <option value="">Semua Angkatan</option>
+                    @foreach ($tahunAjaranList as $tahun)
+                        <option value="{{ $tahun }}" {{ (request('angkatan') == $tahun || request('tahun_ajaran') == $tahun) ? 'selected' : '' }}>
+                            {{ $tahun }}
+                        </option>
+                    @endforeach
                 </select>
                 <button
+                    type="button"
                     class="px-4 py-2 text-white rounded-md bg-[linear-gradient(180deg,#273344_11.77%,#000_166.84%)] whitespace-nowrap"
                     @click="
                     showaddmodal=true;
@@ -54,7 +67,7 @@
                     addExcelUrl='{{ route('leger.import') }}'; ">
                     Tambahkan Data
                 </button>
-            </div>
+            </form>
 
             <div class="rounded-xl border-gray-200 border overflow-hidden shadow-lg">
                 <table class="w-full">

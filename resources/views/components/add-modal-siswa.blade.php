@@ -57,17 +57,13 @@
 
         @php
             $currentyear = (int) date('Y');
-            $startyear = $currentyear - 5;
-            $endyear = $currentyear + 5;
         @endphp
         <div class="flex flex-col gap-1">
-            <label for="fangkatan" class="text-sm leading-4 font-semibold">Angkatan</label>
-            <select name="angkatan" id="fangkatan" x-model="studentData.angkatan"
-                class="border border-black rounded-lg py-1 px-4 text-base" required>
-                <option value="">- Pilih angkatan -</option>
-
-                @for ($year = $endyear; $year >= $startyear; $year--)
-                    <option value="{{ $year }}/{{ $year + 1 }}">{{ $year }}/{{ $year + 1 }}
+            <label for="fangkatan" class="text-sm leading-4 font-semibold">Tahun Ajaran</label>
+            <select name="angkatan" id="fangkatan" class="border border-black rounded-lg py-1 px-4 text-base" required>
+                @for ($year = $currentyear; $year >= $currentyear - 2; $year--)
+                    <option @selected($year === $currentyear) value="{{ $year }}/{{ $year + 1 }}">
+                        {{ $year }}/{{ $year + 1 }}
                     </option>
                 @endfor
             </select>
@@ -104,12 +100,11 @@
             </div>
 
             <div class="flex flex-col gap-1 w-full">
-                <label for="fangkatan_excel" class="text-sm leading-4 font-semibold">Angkatan</label>
-                <select name="angkatan" id="fangkatan_excel" class="border border-black rounded-lg py-1 px-4 text-base"
+                <label for="fangkatan" class="text-sm leading-4 font-semibold">Tahun Ajaran</label>
+                <select name="angkatan" id="fangkatan" class="border border-black rounded-lg py-1 px-4 text-base"
                     required>
-                    <option value="">- Pilih angkatan -</option>
-                    @for ($year = $endyear; $year >= $startyear; $year--)
-                        <option value="{{ $year }}/{{ $year + 1 }}">
+                    @for ($year = $currentyear; $year >= $currentyear - 2; $year--)
+                        <option @selected($year === $currentyear) value="{{ $year }}/{{ $year + 1 }}">
                             {{ $year }}/{{ $year + 1 }}
                         </option>
                     @endfor

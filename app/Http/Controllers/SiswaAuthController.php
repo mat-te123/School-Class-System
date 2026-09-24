@@ -110,7 +110,7 @@ class SiswaAuthController extends Controller
                         'nisn' => $siswa->nisn,
                         'nis' => $siswa->nis,
                         'nama_lengkap' => $siswa->nama_lengkap,
-                        'kelas_asal' => $siswa->kelas_asal,
+                        'kelas_asal' => $siswa->kelasAsalRelation?->nama_kelas,
                         'jenis_kelamin' => $siswa->jenis_kelamin,
                         'tanggal_lahir' => $siswa->tanggal_lahir,
                         'angkatan' => $siswa->angkatan,
@@ -222,7 +222,7 @@ class SiswaAuthController extends Controller
                 'data' => [
                     'nisn' => $siswa->nisn,
                     'nama_lengkap' => $siswa->nama_lengkap,
-                    'kelas_asal' => $siswa->kelas_asal,
+                    'kelas_asal' => $siswa->kelasAsalRelation?->nama_kelas,
                     'can_register' => true,
                 ],
             ]);

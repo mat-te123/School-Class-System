@@ -18,17 +18,14 @@
 
         @php
             $currentyear = (int) date('Y');
-            $startyear = $currentyear - 5;
-            $endyear = $currentyear + 5;
         @endphp
         <div class="flex flex-col gap-1">
-            <label for="ftahun_ajaran_edit" class="text-sm leading-4 font-semibold">Tahun Ajaran</label>
-            <select name="tahun_ajaran" id="ftahun_ajaran_edit"
-                class="border border-black rounded-lg py-1 px-4 text-base" x-model="Data.tahun_ajaran">
-                <option value="">-- Pilih Tahun Ajaran --</option>
-
-                @for ($year = $endyear; $year >= $startyear; $year--)
-                    <option value="{{ $year }}/{{ $year + 1 }}">{{ $year }}/{{ $year + 1 }}
+            <label for="ftahun_ajaran" class="text-sm leading-4 font-semibold">Tahun Ajaran</label>
+            <select name="tahun_ajaran" id="ftahun_ajaran" class="border border-black rounded-lg py-1 px-4 text-base"
+                x-model="Data.tahun_ajaran">
+                @for ($year = $currentyear + 2; $year >= $currentyear; $year--)
+                    <option value="{{ $year }}/{{ $year + 1 }}">
+                        {{ $year }}/{{ $year + 1 }}
                     </option>
                 @endfor
             </select>

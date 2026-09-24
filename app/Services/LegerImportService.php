@@ -174,7 +174,6 @@ class LegerImportService
                     'nis' => $data['nis'],
                     'nama_lengkap' => $data['nama_lengkap'],
                     'kelas_asal_id' => $kelasAsalModel->id,
-                    'kelas_asal' => $kelasNama,
                     'angkatan' => $angkatan,
                     'is_active' => false,
                 ];
@@ -251,7 +250,7 @@ class LegerImportService
             }
 
             // D. Eksekusi Bulk Upsert & Bulk Insert
-            Siswa::upsert($siswaUpserts, ['nisn'], ['nis', 'nama_lengkap', 'kelas_asal_id', 'kelas_asal', 'angkatan', 'is_active']);
+            Siswa::upsert($siswaUpserts, ['nisn'], ['nis', 'nama_lengkap', 'kelas_asal_id', 'angkatan', 'is_active']);
             $importedSiswaCount = count($siswaUpserts);
 
             NilaiLegerSiswa::upsert(

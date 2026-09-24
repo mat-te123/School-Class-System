@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KelasAsal;
+use App\Models\PeriodePendaftaran;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -11,8 +13,14 @@ class SiswaController extends Controller
     public function index(Request $request)
     {
         $validated = $request->validate([
-            'search'   => 'nullable|string|max:150',
-            'per_page' => 'nullable|integer|min:1|max:100',
+            'search'        => 'nullable|string|max:150',
+            'kelas_id'      => 'nullable|uuid|exists:kelas_asal,id',
+            'kelas_asal_id' => 'nullable|uuid|exists:kelas_asal,id',
+            'jenis_kelamin' => 'nullable|in:L,P',
+            'angkatan'      => 'nullable|string|max:20',
+            'tahun_ajaran'  => 'nullable|string|max:20',
+            'periode_id'    => 'nullable|uuid|exists:periode_pendaftaran,id',
+            'per_page'      => 'nullable|integer|min:1|max:100',
         ]);
 
         $query = Siswa::with('kelasAsalRelation');
@@ -26,7 +34,29 @@ class SiswaController extends Controller
             });
         }
 
-        $siswa = $query->orderBy('nama_lengkap')->paginate((int) $request->input('per_page', 10));
+        $kelasId = $validated['kelas_id'] ?? $validated['kelas_asal_id'] ?? null;
+        if (!empty($kelasId)) {
+            $query->where('kelas_asal_id', $kelasId);
+        }
+
+        if (!empty($validated['jenis_kelamin'])) {
+            $query->where('jenis_kelamin', $validated['jenis_kelamin']);
+        }
+
+        $angkatan = $validated['angkatan'] ?? $validated['tahun_ajaran'] ?? null;
+        if (!empty($angkatan)) {
+            $query->where('angkatan', $angkatan);
+        }
+
+        if (!empty($validated['periode_id'])) {
+            $query->whereHas('pendaftaranPilihan', function ($q) use ($validated) {
+                $q->where('periode_pendaftaran_id', $validated['periode_id']);
+            });
+        }
+
+        $siswa = $query->orderBy('nama_lengkap')
+            ->paginate((int) $request->input('per_page', 10))
+            ->withQueryString();
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -35,9 +65,13 @@ class SiswaController extends Controller
             ]);
         }
 
-        $kelasAsal = \App\Models\KelasAsal::orderBy('nama_kelas')->get();
+        $kelasAsal = KelasAsal::orderBy('nama_kelas')->get();
+        $tahunAjaranList = PeriodePendaftaran::whereNotNull('tahun_ajaran')
+            ->distinct()
+            ->orderBy('tahun_ajaran', 'desc')
+            ->pluck('tahun_ajaran');
 
-        return view('auth.siswa.index', compact('siswa', 'kelasAsal'));
+        return view('auth.siswa.index', compact('siswa', 'kelasAsal', 'tahunAjaranList'));
     }
 
     public function store(Request $request)
