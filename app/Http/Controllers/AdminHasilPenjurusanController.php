@@ -75,7 +75,7 @@ class AdminHasilPenjurusanController extends Controller
             ]);
         }
 
-        return view('admin-hasil-penjurusan.index', compact('results'));
+        return view('auth.hasil.index', compact('results'));
     }
 
     /**
