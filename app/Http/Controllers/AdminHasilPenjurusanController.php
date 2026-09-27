@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\HasilSeleksi;
 use App\Models\PaketMenuPilihan;
-use App\Models\PeriodePendaftaran;
 use App\Models\PendaftaranPilihan;
+use App\Models\PeriodePendaftaran;
 use App\Services\PenjurusanPlacementService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class AdminHasilPenjurusanController extends Controller
 {
@@ -57,7 +55,7 @@ class AdminHasilPenjurusanController extends Controller
                 });
             });
 
-        if (!empty($validated['search'])) {
+        if (! empty($validated['search'])) {
             $search = trim($validated['search']);
             $query->whereHas('siswa', function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
@@ -75,7 +73,7 @@ class AdminHasilPenjurusanController extends Controller
             ]);
         }
 
-        return view('auth.hasil.index', compact('results'));
+        return view('auth.hasil-kelas.index', compact('results'));
     }
 
     /**
@@ -133,7 +131,7 @@ class AdminHasilPenjurusanController extends Controller
             ->where('siswa_id', $siswaId)
             ->first();
 
-        if (!$hasil) {
+        if (! $hasil) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -284,7 +282,7 @@ class AdminHasilPenjurusanController extends Controller
     private function ensureAdmin(): void
     {
         $user = Auth::guard('web')->user();
-        if (!$user || $user->role !== 'admin') {
+        if (! $user || $user->role !== 'admin') {
             if (request()->wantsJson() || request()->ajax()) {
                 abort(response()->json([
                     'success' => false,
