@@ -28,6 +28,20 @@
             </div>
         </div>
     @endif
+
+    @if (session('success'))
+        <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 4000)"
+            class="absolute top-4 left-1/2 transform -translate-x-1/2 w-fit bg-emerald-100 border border-emerald-400 text-emerald-900 px-4 py-3 rounded-lg text-sm flex flex-row items-center gap-2">
+            ✅ {{ session('success') }}
+            <div class="cursor-pointer">
+                <svg viewBox="0 0 10 10" width="0.75em" height="0.75em" stroke="currentColor" stroke-width="2"
+                    @click="show = false">
+                    <line x1="1" y1="1" x2="9" y2="9" />
+                    <line x1="9" y1="1" x2="1" y2="9" />
+                </svg>
+            </div>
+        </div>
+    @endif
     <div class="bg-white flex flex-col items-center justify-content-start p-8 gap-6 rounded-lg shadow-2xl"
         x-data="{
             showPassword: false,
