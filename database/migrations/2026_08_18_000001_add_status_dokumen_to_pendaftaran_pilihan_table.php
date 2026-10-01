@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::table('pendaftaran_pilihan', function (Blueprint $table) {
             $table->enum('status', ['menunggu', 'disetujui', 'ditolak'])
-                  ->default('menunggu')
-                  ->after('tanggal_submit');
+                ->default('menunggu')
+                ->after('tanggal_submit');
             $table->text('catatan_penolakan')->nullable()->after('status');
             $table->string('dokumen_wali_path', 255)->nullable()->after('catatan_penolakan');
             $table->foreignUuid('ditinjau_oleh')->nullable()
-                  ->constrained('users')->nullOnDelete()->after('dokumen_wali_path');
+                ->constrained('users')->nullOnDelete()->after('dokumen_wali_path');
             $table->timestamp('tanggal_tinjauan')->nullable()->after('ditinjau_oleh');
         });
     }

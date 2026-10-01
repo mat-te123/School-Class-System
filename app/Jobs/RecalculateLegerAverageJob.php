@@ -71,9 +71,9 @@ class RecalculateLegerAverageJob implements ShouldQueue
             DB::table('nilai_leger_siswa')
                 ->where('id', $legerId)
                 ->update([
-                    'rata_6_mapel'     => $rata6Mapel,
+                    'rata_6_mapel' => $rata6Mapel,
                     'rata_keseluruhan' => $rataKeseluruhan,
-                    'nilai_json'       => json_encode($nilaiJson),
+                    'nilai_json' => json_encode($nilaiJson),
                 ]);
         }
     }

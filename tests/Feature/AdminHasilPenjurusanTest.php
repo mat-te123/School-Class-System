@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\DetailPendaftaranPilihan;
 use App\Models\HasilSeleksi;
 use App\Models\KelasAsal;
 use App\Models\KriteriaBobotMenu;
@@ -9,7 +10,6 @@ use App\Models\MasterMataPelajaran;
 use App\Models\NilaiLegerSiswa;
 use App\Models\PaketMenuPilihan;
 use App\Models\PendaftaranPilihan;
-use App\Models\DetailPendaftaranPilihan;
 use App\Models\PeriodePendaftaran;
 use App\Models\Siswa;
 use App\Models\User;
@@ -22,12 +22,19 @@ class AdminHasilPenjurusanTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private User $nonAdmin;
+
     private Siswa $siswa1;
+
     private Siswa $siswa2;
+
     private PeriodePendaftaran $periode;
+
     private PaketMenuPilihan $paket1;
+
     private PaketMenuPilihan $paket2;
+
     private MasterMataPelajaran $mapel;
 
     protected function setUp(): void
@@ -221,7 +228,7 @@ class AdminHasilPenjurusanTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/hasil-penjurusan?periode_id=' . $this->periode->id);
+            ->getJson('/admin/hasil-penjurusan?periode_id='.$this->periode->id);
 
         $response->assertStatus(200)
             ->assertJson(['success' => true]);
@@ -230,7 +237,7 @@ class AdminHasilPenjurusanTest extends TestCase
     public function test_admin_can_view_rekap_kuota(): void
     {
         $response = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/hasil-penjurusan/rekap-kuota?periode_id=' . $this->periode->id);
+            ->getJson('/admin/hasil-penjurusan/rekap-kuota?periode_id='.$this->periode->id);
 
         $response->assertStatus(200)
             ->assertJson(['success' => true]);
@@ -251,7 +258,7 @@ class AdminHasilPenjurusanTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/hasil-penjurusan/siswa/' . $this->siswa1->id);
+            ->getJson('/admin/hasil-penjurusan/siswa/'.$this->siswa1->id);
 
         $response->assertStatus(200)
             ->assertJson(['success' => true]);
@@ -272,7 +279,7 @@ class AdminHasilPenjurusanTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->admin, 'web')
-            ->putJson('/admin/hasil-penjurusan/' . $hasil->id . '/override', [
+            ->putJson('/admin/hasil-penjurusan/'.$hasil->id.'/override', [
                 'paket_menu_pilihan_id' => $this->paket2->id,
                 'catatan_perubahan' => 'Perubahan atas permintaan orang tua siswa.',
             ]);
@@ -303,7 +310,7 @@ class AdminHasilPenjurusanTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->admin, 'web')
-            ->putJson('/admin/hasil-penjurusan/' . $hasil->id . '/override', [
+            ->putJson('/admin/hasil-penjurusan/'.$hasil->id.'/override', [
                 'paket_menu_pilihan_id' => $this->paket2->id,
                 'catatan_perubahan' => '',
             ]);
@@ -328,7 +335,7 @@ class AdminHasilPenjurusanTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->admin, 'web')
-            ->putJson('/admin/hasil-penjurusan/' . $hasil->id . '/override', [
+            ->putJson('/admin/hasil-penjurusan/'.$hasil->id.'/override', [
                 'paket_menu_pilihan_id' => $this->paket2->id,
                 'catatan_perubahan' => 'Test reason',
             ]);

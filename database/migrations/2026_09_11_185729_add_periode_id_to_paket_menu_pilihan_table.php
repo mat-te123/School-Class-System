@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('paket_menu_pilihan', function (Blueprint $table) {
             $table->foreignUuid('periode_id')->nullable()->constrained('periode_pendaftaran')->onDelete('cascade')->after('id');
-            
+
             // Hapus unique constraint yang lama
             $table->dropUnique('paket_menu_pilihan_nama_menu_unique');
-            
+
             // Tambahkan unique constraint kombinasi
             $table->unique(['nama_menu', 'periode_id']);
         });

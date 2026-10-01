@@ -17,7 +17,9 @@ class NilaiSiswaControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected Siswa $siswa;
+
     protected MasterMataPelajaran $mapel;
 
     protected function setUp(): void
@@ -116,7 +118,7 @@ class NilaiSiswaControllerTest extends TestCase
     {
         $detail = $this->seedNilai(50);
 
-        $response = $this->actingAs($this->admin, 'web')->putJson('/nilai-siswa/' . $detail->id, [
+        $response = $this->actingAs($this->admin, 'web')->putJson('/nilai-siswa/'.$detail->id, [
             'nilai_angka' => 91,
         ]);
 
@@ -180,7 +182,7 @@ class NilaiSiswaControllerTest extends TestCase
         $detail = $this->seedNilai(80);
 
         $this->actingAs($this->admin, 'web')
-            ->putJson('/nilai-siswa/' . $detail->id, ['nilai_angka' => 150])
+            ->putJson('/nilai-siswa/'.$detail->id, ['nilai_angka' => 150])
             ->assertStatus(422);
     }
 
@@ -198,7 +200,7 @@ class NilaiSiswaControllerTest extends TestCase
         $detail = $this->seedNilai(80);
 
         $this->actingAs($guru, 'web')
-            ->putJson('/nilai-siswa/' . $detail->id, ['nilai_angka' => 90])
+            ->putJson('/nilai-siswa/'.$detail->id, ['nilai_angka' => 90])
             ->assertStatus(403);
     }
 
@@ -211,7 +213,7 @@ class NilaiSiswaControllerTest extends TestCase
 
         $response->assertOk()
             ->assertJson(['success' => true]);
-        
+
         $this->assertCount(1, $response->json('data'));
         $this->assertEquals(85.0, $response->json('data.0.nilai_angka'));
         $this->assertEquals($this->siswa->nisn, $response->json('data.0.leger.siswa.nisn'));
@@ -269,7 +271,7 @@ class NilaiSiswaControllerTest extends TestCase
 
         $response = $this->actingAs($this->admin, 'web')
             ->from('/nilai-siswa')
-            ->put('/nilai-siswa/' . $detail->id, [
+            ->put('/nilai-siswa/'.$detail->id, [
                 'nilai_angka' => 90.0,
             ]);
 

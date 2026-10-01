@@ -13,10 +13,10 @@ return new class extends Migration
     {
         if (Schema::hasTable('master_mata_pelajaran')) {
             Schema::table('master_mata_pelajaran', function (Blueprint $table) {
-                if (!Schema::hasColumn('master_mata_pelajaran', 'deleted_at')) {
+                if (! Schema::hasColumn('master_mata_pelajaran', 'deleted_at')) {
                     $table->softDeletes();
                 }
-                if (!Schema::hasColumn('master_mata_pelajaran', 'updated_at')) {
+                if (! Schema::hasColumn('master_mata_pelajaran', 'updated_at')) {
                     $table->timestamp('updated_at')->nullable();
                 }
             });

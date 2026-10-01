@@ -10,6 +10,7 @@ use App\Models\PeriodePendaftaran;
 use App\Models\Siswa;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -18,10 +19,15 @@ class AdminPertukaranTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private User $nonAdmin;
+
     private Siswa $siswa;
+
     private PeriodePendaftaran $periode;
+
     private PaketMenuPilihan $paketAsal;
+
     private PaketMenuPilihan $paketTujuan;
 
     protected function setUp(): void
@@ -147,7 +153,7 @@ class AdminPertukaranTest extends TestCase
 
         // Seed a file in public disk
         $path = $p->dokumen_persetujuan_path;
-        \Illuminate\Support\Facades\Storage::disk('public')->put($path, 'dummy-pdf-content');
+        Storage::disk('public')->put($path, 'dummy-pdf-content');
 
         $resp = $this->actingAs($this->admin, 'web')
             ->get("/admin/pertukaran/{$p->id}/dokumen");

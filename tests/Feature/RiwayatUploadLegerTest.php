@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\KelasAsal;
 use App\Models\RiwayatUploadLeger;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -32,7 +33,7 @@ class RiwayatUploadLegerTest extends TestCase
             'status' => 'completed',
         ]);
 
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'test_user_riwayat',
             'password' => 'password123',
@@ -57,7 +58,7 @@ class RiwayatUploadLegerTest extends TestCase
      */
     public function test_records_logged_in_user_who_uploaded(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'guru_bk_1',
             'password' => 'password123',

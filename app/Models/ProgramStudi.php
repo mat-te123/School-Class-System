@@ -26,8 +26,8 @@ class ProgramStudi extends Model
     ];
 
     protected $casts = [
-        'is_active'          => 'boolean',
-        'daya_tampung'       => 'integer',
+        'is_active' => 'boolean',
+        'daya_tampung' => 'integer',
         'peminat_tahun_lalu' => 'integer',
     ];
 

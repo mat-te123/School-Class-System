@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\DetailPendaftaranPilihan;
+use App\Models\KelasAsal;
 use App\Models\PaketMenuPilihan;
 use App\Models\PendaftaranPilihan;
 use App\Models\PeriodePendaftaran;
 use App\Models\Siswa;
-use App\Models\KelasAsal;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -20,10 +20,15 @@ class AdminPendaftaranReviewTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private Siswa $siswa;
+
     private PeriodePendaftaran $periode;
+
     private PendaftaranPilihan $pendaftaran;
+
     private PaketMenuPilihan $paket1;
+
     private KelasAsal $kelas;
 
     protected function setUp(): void
@@ -106,7 +111,7 @@ class AdminPendaftaranReviewTest extends TestCase
     public function test_admin_can_view_detail_pendaftaran(): void
     {
         $response = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/pendaftaran-pilihan/' . $this->pendaftaran->id);
+            ->getJson('/admin/pendaftaran-pilihan/'.$this->pendaftaran->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -114,14 +119,14 @@ class AdminPendaftaranReviewTest extends TestCase
                 'data' => [
                     'id' => $this->pendaftaran->id,
                     'status' => 'menunggu',
-                ]
+                ],
             ]);
     }
 
     public function test_admin_can_approve_pendaftaran(): void
     {
         $response = $this->actingAs($this->admin, 'web')
-            ->putJson('/admin/pendaftaran-pilihan/' . $this->pendaftaran->id . '/approve');
+            ->putJson('/admin/pendaftaran-pilihan/'.$this->pendaftaran->id.'/approve');
 
         $response->assertStatus(200)
             ->assertJson(['success' => true]);
@@ -133,7 +138,7 @@ class AdminPendaftaranReviewTest extends TestCase
     public function test_admin_can_reject_pendaftaran_with_catatan(): void
     {
         $response = $this->actingAs($this->admin, 'web')
-            ->putJson('/admin/pendaftaran-pilihan/' . $this->pendaftaran->id . '/reject', [
+            ->putJson('/admin/pendaftaran-pilihan/'.$this->pendaftaran->id.'/reject', [
                 'catatan_penolakan' => 'Dokumen wali tidak terbaca.',
             ]);
 
@@ -153,7 +158,7 @@ class AdminPendaftaranReviewTest extends TestCase
         $this->pendaftaran->update(['dokumen_wali_path' => $path]);
 
         $response = $this->actingAs($this->admin, 'web')
-            ->get('/admin/pendaftaran-pilihan/' . $this->pendaftaran->id . '/dokumen');
+            ->get('/admin/pendaftaran-pilihan/'.$this->pendaftaran->id.'/dokumen');
 
         $response->assertStatus(200);
     }
@@ -163,7 +168,7 @@ class AdminPendaftaranReviewTest extends TestCase
     {
         $response = $this->actingAs($this->admin, 'web')
             ->from('/admin/pendaftaran-pilihan')
-            ->put('/admin/pendaftaran-pilihan/' . $this->pendaftaran->id . '/approve');
+            ->put('/admin/pendaftaran-pilihan/'.$this->pendaftaran->id.'/approve');
 
         $response->assertRedirect('/admin/pendaftaran-pilihan');
         $response->assertSessionHas('success', 'Pengajuan pilihan paket berhasil disetujui.');
@@ -175,7 +180,7 @@ class AdminPendaftaranReviewTest extends TestCase
     {
         $response = $this->actingAs($this->admin, 'web')
             ->from('/admin/pendaftaran-pilihan')
-            ->put('/admin/pendaftaran-pilihan/' . $this->pendaftaran->id . '/reject', [
+            ->put('/admin/pendaftaran-pilihan/'.$this->pendaftaran->id.'/reject', [
                 'catatan_penolakan' => 'Dokumen wali tidak terbaca.',
             ]);
 
@@ -237,7 +242,7 @@ class AdminPendaftaranReviewTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/siswa/status-pilihan?periode_id=' . $periode->id);
+            ->getJson('/admin/siswa/status-pilihan?periode_id='.$periode->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -267,7 +272,7 @@ class AdminPendaftaranReviewTest extends TestCase
     public function test_admin_can_view_student_priority_choices_by_student_id(): void
     {
         $response = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/siswa/' . $this->siswa->id . '/pilihan');
+            ->getJson('/admin/siswa/'.$this->siswa->id.'/pilihan');
 
         $response->assertStatus(200)
             ->assertJson([

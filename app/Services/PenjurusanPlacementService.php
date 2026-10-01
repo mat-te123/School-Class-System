@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\HasilSeleksi;
 use App\Models\KriteriaBobotMenu;
+use App\Models\MasterMataPelajaran;
 use App\Models\NilaiLegerSiswa;
 use App\Models\PaketMenuPilihan;
 use App\Models\PendaftaranPilihan;
@@ -52,11 +53,11 @@ class PenjurusanPlacementService
         $paketModels = PaketMenuPilihan::whereIn('id', $paketIds)->get();
         $paketNames = $paketModels->pluck('nama_menu', 'id')->toArray();
         $kuota = $paketModels->mapWithKeys(fn ($p) => [
-                $p->id => [
-                    'kapasitas' => (int) $p->kuota_kapasitas,
-                    'terisi' => 0,
-                ],
-            ])
+            $p->id => [
+                'kapasitas' => (int) $p->kuota_kapasitas,
+                'terisi' => 0,
+            ],
+        ])
             ->all();
 
         $studentLogs = [];
@@ -64,7 +65,7 @@ class PenjurusanPlacementService
         // Calculate scores for each student for each of their choices, grouped by urutan_pilihan
         $choicesByRound = [];
         $maxRound = (int) ($periode->max_pilihan_siswa ?? 3);
-        $tiebreakerMapels = \App\Models\MasterMataPelajaran::where('is_tiebreaker_default', true)->pluck('nama_mapel')->toArray();
+        $tiebreakerMapels = MasterMataPelajaran::where('is_tiebreaker_default', true)->pluck('nama_mapel')->toArray();
 
         foreach ($pendaftaranList as $pendaftaran) {
             $siswaId = $pendaftaran->siswa_id;
@@ -106,7 +107,7 @@ class PenjurusanPlacementService
             // Ambil kandidat pilihan round ini yang belum diterima di round sebelumnya
             $roundCandidates = array_filter(
                 $choicesByRound[$round],
-                fn ($c) => !isset($placedStudents[$c['siswa_id']])
+                fn ($c) => ! isset($placedStudents[$c['siswa_id']])
             );
 
             // Urutkan kandidat pada round ini dengan urutan tiebreaker yang deterministik
@@ -127,6 +128,7 @@ class PenjurusanPlacementService
                 if ($a['tanggal_submit'] !== $b['tanggal_submit']) {
                     return $a['tanggal_submit'] <=> $b['tanggal_submit'];
                 }
+
                 // 5. Deterministik murni (Fallback terakhir)
                 return $a['siswa_id'] <=> $b['siswa_id'];
             });
@@ -137,7 +139,7 @@ class PenjurusanPlacementService
                 $paketId = $candidate['paket_id'];
                 $namaPaket = $paketNames[$paketId] ?? 'Paket';
 
-                if (!isset($studentLogs[$siswaId])) {
+                if (! isset($studentLogs[$siswaId])) {
                     $studentLogs[$siswaId] = [];
                 }
 
@@ -147,7 +149,7 @@ class PenjurusanPlacementService
 
                 $kuotaData = $kuota[$paketId] ?? null;
 
-                if (!$kuotaData) {
+                if (! $kuotaData) {
                     continue;
                 }
 
@@ -180,10 +182,10 @@ class PenjurusanPlacementService
         // Handle unplaced students (Kuota Penuh or Pelimpahan Kompetensi)
         foreach ($pendaftaranList as $pendaftaran) {
             $siswaId = $pendaftaran->siswa_id;
-            if (!isset($placedStudents[$siswaId])) {
+            if (! isset($placedStudents[$siswaId])) {
                 $leger = $nilaiLeger->get($siswaId);
                 $firstChoice = $pendaftaran->detailPendaftaran->first();
-                $studentLogs[$siswaId][] = "Siswa tidak berhasil lolos di semua pilihan prioritas. Status: TERLEMPAR / KUOTA PENUH.";
+                $studentLogs[$siswaId][] = 'Siswa tidak berhasil lolos di semua pilihan prioritas. Status: TERLEMPAR / KUOTA PENUH.';
 
                 if ($firstChoice) {
                     $results[] = [
@@ -232,7 +234,7 @@ class PenjurusanPlacementService
      */
     private function calculateScore(?NilaiLegerSiswa $leger, $kriteriaBobot): float
     {
-        if (!$leger || $kriteriaBobot->isEmpty()) {
+        if (! $leger || $kriteriaBobot->isEmpty()) {
             return 0;
         }
 

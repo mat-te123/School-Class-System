@@ -2,10 +2,11 @@
 
 namespace Tests\Feature\Jobs;
 
+use App\Jobs\RecalculateLegerAverageJob;
 use App\Models\DetailNilaiSiswa;
+use App\Models\MasterMataPelajaran;
 use App\Models\NilaiLegerSiswa;
 use App\Models\Siswa;
-use App\Models\MasterMataPelajaran;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -66,7 +67,7 @@ class RecalculateLegerAverageJobTest extends TestCase
         $legerIds = [$leger1->id, $leger2->id];
 
         // When: Job dijalankan
-        \App\Jobs\RecalculateLegerAverageJob::dispatch($legerIds);
+        RecalculateLegerAverageJob::dispatch($legerIds);
 
         // Then: Average dihitung ulang secara batch
         $freshLeger1 = NilaiLegerSiswa::find($leger1->id);

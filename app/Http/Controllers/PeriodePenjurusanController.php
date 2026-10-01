@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\PeriodePendaftaran;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,13 +13,13 @@ class PeriodePenjurusanController extends Controller
     public function index(Request $request)
     {
         $validated = $request->validate([
-            'search'   => 'nullable|string|max:100',
+            'search' => 'nullable|string|max:100',
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
         $query = PeriodePendaftaran::query();
 
-        if (!empty($validated['search'])) {
+        if (! empty($validated['search'])) {
             $search = trim($validated['search']);
             $query->where(function ($q) use ($search) {
                 $q->where('nama_periode', 'like', "%{$search}%")
@@ -33,7 +32,7 @@ class PeriodePenjurusanController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'data'    => $periode,
+                'data' => $periode,
             ]);
         }
 
@@ -60,8 +59,8 @@ class PeriodePenjurusanController extends Controller
 
         // Hitung tahun ajaran dari date now (Juli - Juni)
         $year = now()->month >= 7 ? now()->year : now()->year - 1;
-        $tahunAjaran = $year . '/' . ($year + 1);
-        
+        $tahunAjaran = $year.'/'.($year + 1);
+
         $request->merge(['tahun_ajaran' => $tahunAjaran]);
 
         $validated = $request->validate($this->rules());
@@ -138,7 +137,7 @@ class PeriodePenjurusanController extends Controller
     private function ensureAdmin(): void
     {
         $user = Auth::guard('web')->user();
-        if (!$user || $user->role !== 'admin') {
+        if (! $user || $user->role !== 'admin') {
             if (request()->wantsJson() || request()->ajax()) {
                 abort(response()->json([
                     'success' => false,
@@ -161,7 +160,7 @@ class PeriodePenjurusanController extends Controller
                 Rule::unique('periode_pendaftaran', 'tahun_ajaran')
                     ->where(fn ($query) => $query->where('gelombang', request('gelombang', $periode?->gelombang ?? 'Utama')))
                     ->ignore($periode?->id)
-                    ->whereNull('deleted_at')
+                    ->whereNull('deleted_at'),
             ],
             'gelombang' => ['nullable', 'string', 'in:Utama,Susulan'],
             'max_pilihan_siswa' => ['nullable', 'integer', 'min:1'],
@@ -169,19 +168,19 @@ class PeriodePenjurusanController extends Controller
             'tanggal_tutup' => [
                 $periode ? 'sometimes' : 'required',
                 'date',
-                Rule::when($tanggalBuka, 'after:' . $tanggalBuka),
+                Rule::when($tanggalBuka, 'after:'.$tanggalBuka),
             ],
             'tanggal_pengumuman' => [
                 'nullable',
                 'date',
-                Rule::when($tanggalBuka, 'after:' . $tanggalBuka),
+                Rule::when($tanggalBuka, 'after:'.$tanggalBuka),
             ],
             'tanggal_mulai_pertukaran' => [
                 'nullable',
                 'date',
                 Rule::when(
                     request('tanggal_tutup', $periode?->tanggal_tutup),
-                    'after:' . request('tanggal_tutup', $periode?->tanggal_tutup)
+                    'after:'.request('tanggal_tutup', $periode?->tanggal_tutup)
                 ),
             ],
             'tanggal_selesai_pertukaran' => [
@@ -189,7 +188,7 @@ class PeriodePenjurusanController extends Controller
                 'date',
                 Rule::when(
                     request('tanggal_mulai_pertukaran', $periode?->tanggal_mulai_pertukaran),
-                    'after:' . (request('tanggal_mulai_pertukaran', $periode?->tanggal_mulai_pertukaran) ?? '')
+                    'after:'.(request('tanggal_mulai_pertukaran', $periode?->tanggal_mulai_pertukaran) ?? '')
                 ),
             ],
             'status_pengumuman' => ['nullable', 'in:AKTIF,NON-AKTIF'],

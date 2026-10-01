@@ -111,7 +111,7 @@ class MasterMataPelajaranControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->user, 'web')->putJson('/master-mata-pelajaran/' . $mapel->id, [
+        $response = $this->actingAs($this->user, 'web')->putJson('/master-mata-pelajaran/'.$mapel->id, [
             'nama_mapel' => 'Biologi Terapan',
             'is_tiebreaker_default' => true,
         ]);
@@ -167,7 +167,7 @@ class MasterMataPelajaranControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->user, 'web')->deleteJson('/master-mata-pelajaran/' . $mapel->id);
+        $response = $this->actingAs($this->user, 'web')->deleteJson('/master-mata-pelajaran/'.$mapel->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -304,7 +304,7 @@ class MasterMataPelajaranControllerTest extends TestCase
 
         $response = $this->actingAs($this->user, 'web')
             ->from('/master-mata-pelajaran')
-            ->put('/master-mata-pelajaran/' . $mapel->id, [
+            ->put('/master-mata-pelajaran/'.$mapel->id, [
                 'nama_mapel' => 'Matematika Wajib 3 Edited',
             ]);
 
@@ -326,7 +326,7 @@ class MasterMataPelajaranControllerTest extends TestCase
 
         $response = $this->actingAs($this->user, 'web')
             ->from('/master-mata-pelajaran')
-            ->delete('/master-mata-pelajaran/' . $mapel->id);
+            ->delete('/master-mata-pelajaran/'.$mapel->id);
 
         $response->assertRedirect('/master-mata-pelajaran');
         $response->assertSessionHas('success', 'Berhasil menghapus data Master Mata Pelajaran.');

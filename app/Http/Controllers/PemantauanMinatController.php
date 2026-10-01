@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Siswa;
-use App\Models\PeriodePendaftaran;
 use App\Models\PaketMenuPilihan;
+use App\Models\PeriodePendaftaran;
+use App\Models\Siswa;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -17,7 +17,7 @@ class PemantauanMinatController extends Controller
     protected function ensureAdmin()
     {
         $user = Auth::guard('web')->user();
-        if (!$user || $user->role !== 'admin') {
+        if (! $user || $user->role !== 'admin') {
             abort(403, 'Akses ditolak. Hanya Admin yang dapat mengakses halaman ini.');
         }
     }
@@ -27,11 +27,11 @@ class PemantauanMinatController extends Controller
         $this->ensureAdmin();
 
         $periodeId = $request->periode_id;
-        
+
         // Jika tidak ada filter, ambil periode aktif
-        if (!$periodeId) {
+        if (! $periodeId) {
             $activePeriode = PeriodePendaftaran::where('is_active', true)->first();
-            if (!$activePeriode) {
+            if (! $activePeriode) {
                 if ($request->wantsJson() || $request->ajax()) {
                     return response()->json(['success' => false, 'message' => 'Tidak ada periode pendaftaran yang aktif saat ini.'], 400);
                 }
@@ -40,32 +40,32 @@ class PemantauanMinatController extends Controller
             $periodeId = $activePeriode->id;
         }
 
-        $siswaQuery = Siswa::query(); 
+        $siswaQuery = Siswa::query();
 
         $siswaSudahMemilih = (clone $siswaQuery)
-            ->whereHas('pendaftaranPilihan', function($q) use ($periodeId) {
+            ->whereHas('pendaftaranPilihan', function ($q) use ($periodeId) {
                 $q->where('periode_pendaftaran_id', $periodeId);
             })
-            ->with(['pendaftaranPilihan' => function($q) use ($periodeId) {
+            ->with(['pendaftaranPilihan' => function ($q) use ($periodeId) {
                 $q->where('periode_pendaftaran_id', $periodeId)
-                  ->with('detailPendaftaranPilihan.paketMenuPilihan');
+                    ->with('detailPendaftaranPilihan.paketMenuPilihan');
             }])
             ->paginate((int) $request->input('per_page_sudah', 10), ['*'], 'page_sudah');
 
         $siswaBelumMemilih = (clone $siswaQuery)
-            ->whereDoesntHave('pendaftaranPilihan', function($q) use ($periodeId) {
+            ->whereDoesntHave('pendaftaranPilihan', function ($q) use ($periodeId) {
                 $q->where('periode_pendaftaran_id', $periodeId);
             })
             ->paginate((int) $request->input('per_page_belum', 10), ['*'], 'page_belum');
 
         // Hitung total keseluruhan
-        $totalSudah = (clone $siswaQuery)->whereHas('pendaftaranPilihan', function($q) use ($periodeId) {
-                $q->where('periode_pendaftaran_id', $periodeId);
-            })->count();
-            
-        $totalBelum = (clone $siswaQuery)->whereDoesntHave('pendaftaranPilihan', function($q) use ($periodeId) {
-                $q->where('periode_pendaftaran_id', $periodeId);
-            })->count();
+        $totalSudah = (clone $siswaQuery)->whereHas('pendaftaranPilihan', function ($q) use ($periodeId) {
+            $q->where('periode_pendaftaran_id', $periodeId);
+        })->count();
+
+        $totalBelum = (clone $siswaQuery)->whereDoesntHave('pendaftaranPilihan', function ($q) use ($periodeId) {
+            $q->where('periode_pendaftaran_id', $periodeId);
+        })->count();
 
         // Rincian peminatan per paket menu
         $detailPilihan = DB::table('detail_pendaftaran_pilihan')
@@ -78,7 +78,7 @@ class PemantauanMinatController extends Controller
             ->get();
 
         $paketMenu = PaketMenuPilihan::where('periode_id', $periodeId)->orWhereNull('periode_id')->get(['id', 'nama_menu']);
-        
+
         // Data periode untuk dropdown filter periode
         $periodes = PeriodePendaftaran::select('id', 'tahun_ajaran')->orderBy('tahun_ajaran', 'desc')->get();
 
@@ -86,7 +86,7 @@ class PemantauanMinatController extends Controller
             'total_siswa' => $totalSudah + $totalBelum,
             'sudah_memilih' => $totalSudah,
             'belum_memilih' => $totalBelum,
-            'detail_paket' => $detailPilihan
+            'detail_paket' => $detailPilihan,
         ];
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -96,14 +96,14 @@ class PemantauanMinatController extends Controller
                 'siswa_sudah_memilih' => $siswaSudahMemilih,
                 'siswa_belum_memilih' => $siswaBelumMemilih,
                 'paket_menu' => $paketMenu,
-                'periodes' => $periodes
+                'periodes' => $periodes,
             ]);
         }
 
         return view('admin.pemantauan-minat.index', compact(
-            'summary', 
-            'siswaSudahMemilih', 
-            'siswaBelumMemilih', 
+            'summary',
+            'siswaSudahMemilih',
+            'siswaBelumMemilih',
             'paketMenu',
             'periodes'
         ));

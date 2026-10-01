@@ -16,10 +16,10 @@ class ProyeksiUniversitasControllerTest extends TestCase
     private function makeAdmin(): User
     {
         return User::create([
-            'id'        => (string) Str::uuid(),
-            'username'  => 'admin_proyeksi',
-            'password'  => 'password123',
-            'role'      => 'admin',
+            'id' => (string) Str::uuid(),
+            'username' => 'admin_proyeksi',
+            'password' => 'password123',
+            'role' => 'admin',
             'is_active' => true,
         ]);
     }
@@ -28,12 +28,12 @@ class ProyeksiUniversitasControllerTest extends TestCase
     {
         ProyeksiUniversitas::create([
             'nama_universitas' => 'Universitas Indonesia',
-            'singkatan'        => 'UI',
-            'akreditasi'       => 'Unggul',
-            'lokasi_kota'      => 'Depok',
-            'lokasi_provinsi'  => 'Jawa Barat',
-            'tahun_data'       => 2024,
-            'is_active'        => true,
+            'singkatan' => 'UI',
+            'akreditasi' => 'Unggul',
+            'lokasi_kota' => 'Depok',
+            'lokasi_provinsi' => 'Jawa Barat',
+            'tahun_data' => 2024,
+            'is_active' => true,
         ]);
 
         $this->assertDatabaseHas('proyeksi_universitas', ['singkatan' => 'UI']);
@@ -45,11 +45,11 @@ class ProyeksiUniversitasControllerTest extends TestCase
 
         $response = $this->actingAs($admin, 'web')->postJson('/proyeksi-universitas', [
             'nama_universitas' => 'Institut Teknologi Bandung',
-            'singkatan'        => 'ITB',
-            'akreditasi'       => 'Unggul',
-            'lokasi_kota'      => 'Bandung',
-            'lokasi_provinsi'  => 'Jawa Barat',
-            'tahun_data'       => 2024,
+            'singkatan' => 'ITB',
+            'akreditasi' => 'Unggul',
+            'lokasi_kota' => 'Bandung',
+            'lokasi_provinsi' => 'Jawa Barat',
+            'tahun_data' => 2024,
         ]);
 
         $response->assertStatus(201)->assertJson(['success' => true]);
@@ -59,10 +59,10 @@ class ProyeksiUniversitasControllerTest extends TestCase
     public function test_non_admin_cannot_create_proyeksi_universitas(): void
     {
         $guru = User::create([
-            'id'        => (string) Str::uuid(),
-            'username'  => 'guru_bk_proyeksi',
-            'password'  => 'password123',
-            'role'      => 'guru_bk',
+            'id' => (string) Str::uuid(),
+            'username' => 'guru_bk_proyeksi',
+            'password' => 'password123',
+            'role' => 'guru_bk',
             'is_active' => true,
         ]);
 
@@ -88,15 +88,15 @@ class ProyeksiUniversitasControllerTest extends TestCase
 
         ProyeksiUniversitas::create([
             'nama_universitas' => 'Universitas Gadjah Mada',
-            'singkatan'        => 'UGM',
-            'is_active'        => true,
+            'singkatan' => 'UGM',
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($admin, 'web')->getJson('/proyeksi-universitas');
 
         $response->assertStatus(200)
-                 ->assertJson(['success' => true])
-                 ->assertJsonCount(1, 'data.data');
+            ->assertJson(['success' => true])
+            ->assertJsonCount(1, 'data.data');
     }
 
     public function test_can_search_proyeksi_universitas(): void
@@ -105,14 +105,14 @@ class ProyeksiUniversitasControllerTest extends TestCase
 
         ProyeksiUniversitas::create([
             'nama_universitas' => 'Universitas Gadjah Mada',
-            'singkatan'        => 'UGM',
-            'is_active'        => true,
+            'singkatan' => 'UGM',
+            'is_active' => true,
         ]);
 
         ProyeksiUniversitas::create([
             'nama_universitas' => 'Universitas Airlangga',
-            'singkatan'        => 'UNAIR',
-            'is_active'        => true,
+            'singkatan' => 'UNAIR',
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($admin, 'web')->getJson('/proyeksi-universitas?search=UGM');
@@ -126,15 +126,15 @@ class ProyeksiUniversitasControllerTest extends TestCase
 
         $univ = ProyeksiUniversitas::create([
             'nama_universitas' => 'Universitas Gadjah Mada',
-            'singkatan'        => 'UGM',
-            'is_active'        => true,
+            'singkatan' => 'UGM',
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($admin, 'web')->getJson("/proyeksi-universitas/{$univ->id}");
 
         $response->assertStatus(200)
-                 ->assertJsonPath('data.singkatan', 'UGM')
-                 ->assertJsonStructure(['data' => ['program_studis']]);
+            ->assertJsonPath('data.singkatan', 'UGM')
+            ->assertJsonStructure(['data' => ['program_studis']]);
     }
 
     public function test_admin_can_update_proyeksi_universitas(): void
@@ -143,8 +143,8 @@ class ProyeksiUniversitasControllerTest extends TestCase
 
         $univ = ProyeksiUniversitas::create([
             'nama_universitas' => 'Universitas Gadjah Mada',
-            'singkatan'        => 'UGM',
-            'is_active'        => true,
+            'singkatan' => 'UGM',
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($admin, 'web')->putJson("/proyeksi-universitas/{$univ->id}", [
@@ -153,7 +153,7 @@ class ProyeksiUniversitasControllerTest extends TestCase
 
         $response->assertStatus(200)->assertJson(['success' => true]);
         $this->assertDatabaseHas('proyeksi_universitas', [
-            'id'         => $univ->id,
+            'id' => $univ->id,
             'akreditasi' => 'Unggul',
         ]);
     }
@@ -164,8 +164,8 @@ class ProyeksiUniversitasControllerTest extends TestCase
 
         $univ = ProyeksiUniversitas::create([
             'nama_universitas' => 'Universitas Hapus',
-            'singkatan'        => 'UH',
-            'is_active'        => true,
+            'singkatan' => 'UH',
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($admin, 'web')->deleteJson("/proyeksi-universitas/{$univ->id}");
@@ -177,18 +177,18 @@ class ProyeksiUniversitasControllerTest extends TestCase
     public function test_siswa_can_read_proyeksi_universitas(): void
     {
         $siswa = Siswa::create([
-            'id'           => (string) Str::uuid(),
-            'nisn'         => '0011223344',
-            'nis'          => '11001',
+            'id' => (string) Str::uuid(),
+            'nisn' => '0011223344',
+            'nis' => '11001',
             'nama_lengkap' => 'Siswa Baca Proyeksi',
-            'password'     => 'password123',
-            'is_active'    => true,
+            'password' => 'password123',
+            'is_active' => true,
         ]);
 
         ProyeksiUniversitas::create([
             'nama_universitas' => 'Universitas Indonesia',
-            'singkatan'        => 'UI',
-            'is_active'        => true,
+            'singkatan' => 'UI',
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($siswa, 'siswa')->getJson('/proyeksi-universitas');

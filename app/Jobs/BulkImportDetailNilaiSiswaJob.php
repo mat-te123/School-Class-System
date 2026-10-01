@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\DetailNilaiSiswa;
 use App\Models\MasterMataPelajaran;
 use App\Models\NilaiLegerSiswa;
 use App\Models\Siswa;
@@ -19,10 +18,15 @@ class BulkImportDetailNilaiSiswaJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     private string $mapelId;
+
     private string $tahunAjaran;
+
     private string $semester;
+
     private array $rows;
+
     private int $imported = 0;
+
     private array $skipped = [];
 
     public function __construct(string $mapelId, string $tahunAjaran, string $semester, array $rows)
@@ -37,7 +41,7 @@ class BulkImportDetailNilaiSiswaJob implements ShouldQueue
     {
         $mapel = MasterMataPelajaran::findOrFail($this->mapelId);
         $nisnList = array_column($this->rows, 'nisn');
-        
+
         $siswaMap = Siswa::whereIn('nisn', $nisnList)
             ->get()
             ->keyBy('nisn');
@@ -51,23 +55,24 @@ class BulkImportDetailNilaiSiswaJob implements ShouldQueue
 
         $legerData = [];
         $detailsToUpsert = [];
-        
+
         DB::transaction(function () use ($siswaMap, $existingLegers, &$legerData, &$detailsToUpsert) {
             foreach ($this->rows as $row) {
                 $siswa = $siswaMap->get($row['nisn']);
-                
-                if (!$siswa) {
+
+                if (! $siswa) {
                     $this->skipped[] = ['nisn' => $row['nisn'], 'reason' => 'Siswa tidak ditemukan'];
+
                     continue;
                 }
 
                 $existingLeger = $existingLegers->get($siswa->id);
                 $key = "{$siswa->id}_{$this->tahunAjaran}_{$this->semester}";
-                
+
                 if ($existingLeger) {
                     $legerId = $existingLeger->id;
                 } else {
-                    if (!isset($legerData[$key])) {
+                    if (! isset($legerData[$key])) {
                         $legerData[$key] = [
                             'id' => (string) Str::uuid(),
                             'siswa_id' => $siswa->id,
@@ -77,7 +82,7 @@ class BulkImportDetailNilaiSiswaJob implements ShouldQueue
                     }
                     $legerId = $legerData[$key]['id'];
                 }
-                
+
                 $detailsToUpsert[] = [
                     'id' => (string) Str::uuid(),
                     'nilai_leger_siswa_id' => $legerId,
@@ -85,17 +90,17 @@ class BulkImportDetailNilaiSiswaJob implements ShouldQueue
                     'nilai_angka' => (float) $row['nilai'],
                     'predikat' => $this->calculatePredikat((float) $row['nilai']),
                 ];
-                
+
                 $this->imported++;
             }
 
             // Bulk insert leger records
-            if (!empty($legerData)) {
+            if (! empty($legerData)) {
                 NilaiLegerSiswa::insertOrIgnore(array_values($legerData));
             }
 
             // Bulk upsert details
-            if (!empty($detailsToUpsert)) {
+            if (! empty($detailsToUpsert)) {
                 DB::table('detail_nilai_siswa')->upsert(
                     $detailsToUpsert,
                     ['nilai_leger_siswa_id', 'master_mata_pelajaran_id'],
@@ -104,7 +109,7 @@ class BulkImportDetailNilaiSiswaJob implements ShouldQueue
             }
 
             // Dispatch recalculation for all affected leger IDs
-            if (!empty($legerData)) {
+            if (! empty($legerData)) {
                 $legerIds = array_column(array_values($legerData), 'id');
                 RecalculateLegerAverageJob::dispatch($legerIds);
             }
@@ -113,9 +118,16 @@ class BulkImportDetailNilaiSiswaJob implements ShouldQueue
 
     private function calculatePredikat(float $nilai): string
     {
-        if ($nilai >= 90) return 'A';
-        if ($nilai >= 80) return 'B';
-        if ($nilai >= 70) return 'C';
+        if ($nilai >= 90) {
+            return 'A';
+        }
+        if ($nilai >= 80) {
+            return 'B';
+        }
+        if ($nilai >= 70) {
+            return 'C';
+        }
+
         return 'D';
     }
 }

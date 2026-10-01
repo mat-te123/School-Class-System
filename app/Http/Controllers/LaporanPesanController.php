@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\HasilSeleksi;
 use App\Models\LaporanPesan;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class LaporanPesanController extends Controller
 {
@@ -15,7 +16,7 @@ class LaporanPesanController extends Controller
     public function index(Request $request)
     {
         $validated = $request->validate([
-            'search'   => 'nullable|string|max:50',
+            'search' => 'nullable|string|max:50',
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
@@ -29,13 +30,13 @@ class LaporanPesanController extends Controller
             $query->where('kategori', $request->query('kategori'));
         }
 
-        if (!empty($validated['search'])) {
+        if (! empty($validated['search'])) {
             $search = trim($validated['search']);
             $query->where(function ($q) use ($search) {
                 $q->where('judul', 'like', "%{$search}%")
-                  ->orWhere('pesan', 'like', "%{$search}%")
-                  ->orWhere('nama', 'like', "%{$search}%")
-                  ->orWhere('nisn', 'like', "%{$search}%");
+                    ->orWhere('pesan', 'like', "%{$search}%")
+                    ->orWhere('nama', 'like', "%{$search}%")
+                    ->orWhere('nisn', 'like', "%{$search}%");
             });
         }
 
@@ -44,7 +45,7 @@ class LaporanPesanController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'data'    => $laporan,
+                'data' => $laporan,
             ]);
         }
 
@@ -102,7 +103,7 @@ class LaporanPesanController extends Controller
         $payload = null;
         if ($request->filled('target_paket_id')) {
             $payload = [
-                'target_paket_id' => $request->target_paket_id
+                'target_paket_id' => $request->target_paket_id,
             ];
         }
 
@@ -162,13 +163,13 @@ class LaporanPesanController extends Controller
 
         $validated['ditangani_oleh'] = Auth::guard('web')->id();
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($laporan, $validated) {
+        DB::transaction(function () use ($laporan, $validated) {
             $laporan->update($validated);
 
             // Logika Otomatisasi
-            if ($validated['status'] === 'selesai' && $laporan->kategori === 'Pindah Paket' && !empty($laporan->payload['target_paket_id'])) {
-                $hasilSeleksi = \App\Models\HasilSeleksi::where('siswa_id', $laporan->siswa_id)->first();
-                
+            if ($validated['status'] === 'selesai' && $laporan->kategori === 'Pindah Paket' && ! empty($laporan->payload['target_paket_id'])) {
+                $hasilSeleksi = HasilSeleksi::where('siswa_id', $laporan->siswa_id)->first();
+
                 if ($hasilSeleksi) {
                     $riwayat = $hasilSeleksi->riwayat_proses ?? [];
                     $riwayat[] = [
@@ -176,7 +177,7 @@ class LaporanPesanController extends Controller
                         'aksi' => 'Pindah Paket melalui Laporan',
                         'dari' => $hasilSeleksi->paket_menu_pilihan_id,
                         'ke' => $laporan->payload['target_paket_id'],
-                        'admin_id' => $validated['ditangani_oleh']
+                        'admin_id' => $validated['ditangani_oleh'],
                     ];
 
                     $hasilSeleksi->update([

@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Siswa;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Siswa>
+ * @extends Factory<Siswa>
  */
 class SiswaFactory extends Factory
 {
@@ -14,7 +15,7 @@ class SiswaFactory extends Factory
      *
      * @var string
      */
-    protected $model = \App\Models\Siswa::class;
+    protected $model = Siswa::class;
 
     /**
      * Define the model's default state.

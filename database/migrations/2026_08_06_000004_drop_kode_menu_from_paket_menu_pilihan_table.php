@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasTable('paket_menu_pilihan') && !Schema::hasColumn('paket_menu_pilihan', 'kode_menu')) {
+        if (Schema::hasTable('paket_menu_pilihan') && ! Schema::hasColumn('paket_menu_pilihan', 'kode_menu')) {
             Schema::table('paket_menu_pilihan', function (Blueprint $table) {
                 $table->integer('kode_menu')->nullable();
             });

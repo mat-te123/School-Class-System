@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('program_studi', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('proyeksi_universitas_id')
-                  ->constrained('proyeksi_universitas')
-                  ->onDelete('cascade');
+                ->constrained('proyeksi_universitas')
+                ->onDelete('cascade');
             $table->string('nama_prodi', 200);
             $table->enum('jenjang', ['D3', 'D4', 'S1', 'S2', 'S3', 'Profesi'])->default('S1');
             $table->string('akreditasi_prodi', 20)->nullable();

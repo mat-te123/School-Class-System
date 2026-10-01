@@ -11,9 +11,6 @@ class ServerClockController extends Controller
     /**
      * Mengambil waktu jam server saat ini (real-time).
      * Dapat digunakan oleh client (frontend / mobile) untuk sinkronisasi jam dan countdown.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {

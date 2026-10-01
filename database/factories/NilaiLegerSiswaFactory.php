@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\NilaiLegerSiswa;
+use App\Models\Siswa;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\NilaiLegerSiswa>
+ * @extends Factory<NilaiLegerSiswa>
  */
 class NilaiLegerSiswaFactory extends Factory
 {
@@ -14,7 +16,7 @@ class NilaiLegerSiswaFactory extends Factory
      *
      * @var string
      */
-    protected $model = \App\Models\NilaiLegerSiswa::class;
+    protected $model = NilaiLegerSiswa::class;
 
     /**
      * Define the model's default state.
@@ -24,7 +26,7 @@ class NilaiLegerSiswaFactory extends Factory
     public function definition(): array
     {
         return [
-            'siswa_id' => \App\Models\Siswa::factory(),
+            'siswa_id' => Siswa::factory(),
             'tahun_ajaran' => '2024/2025',
             'semester' => 'Ganjil',
             'rata_6_mapel' => 0,

@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\DetailPendaftaranPilihan;
+use App\Models\KelasAsal;
 use App\Models\PaketMenuPilihan;
 use App\Models\PendaftaranPilihan;
 use App\Models\PeriodePendaftaran;
 use App\Models\Siswa;
-use App\Models\KelasAsal;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -19,9 +19,13 @@ class PendaftaranPilihanControllerTest extends TestCase
     use RefreshDatabase;
 
     private Siswa $siswa;
+
     private PaketMenuPilihan $paket1;
+
     private PaketMenuPilihan $paket2;
+
     private PaketMenuPilihan $paket3;
+
     private PeriodePendaftaran $periode;
 
     protected function setUp(): void
@@ -91,7 +95,7 @@ class PendaftaranPilihanControllerTest extends TestCase
                 $this->paket1->id,
                 $this->paket2->id,
                 $this->paket3->id,
-            ]
+            ],
         ];
 
         $response = $this->actingAs($this->siswa, 'siswa')
@@ -126,7 +130,7 @@ class PendaftaranPilihanControllerTest extends TestCase
                 $this->paket1->id,
                 $this->paket1->id, // DUPLICATE
                 $this->paket3->id,
-            ]
+            ],
         ];
 
         $response = $this->actingAs($this->siswa, 'siswa')
@@ -156,7 +160,7 @@ class PendaftaranPilihanControllerTest extends TestCase
                 $this->paket1->id,
                 $this->paket2->id,
                 $this->paket3->id,
-            ]
+            ],
         ];
 
         $response = $this->actingAs($this->siswa, 'siswa')
@@ -182,7 +186,7 @@ class PendaftaranPilihanControllerTest extends TestCase
                 $this->paket1->id,
                 $this->paket2->id,
                 $this->paket3->id,
-            ]
+            ],
         ];
 
         $response = $this->actingAs($this->siswa, 'siswa')
@@ -220,9 +224,9 @@ class PendaftaranPilihanControllerTest extends TestCase
                 'data' => [
                     'id' => $pendaftaran->id,
                     'siswa_id' => $this->siswa->id,
-                ]
+                ],
             ]);
-        
+
         $this->assertEquals($this->paket1->id, $response->json('data.detail_pendaftaran.0.paket_menu_pilihan_id'));
     }
 

@@ -39,8 +39,6 @@ class LaporanPesan extends Model
 
     /**
      * Relasi ke model User (Pelapor Admin/Guru).
-     *
-     * @return BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -49,8 +47,6 @@ class LaporanPesan extends Model
 
     /**
      * Relasi ke model Siswa (Pelapor Siswa).
-     *
-     * @return BelongsTo
      */
     public function siswa(): BelongsTo
     {
@@ -59,8 +55,6 @@ class LaporanPesan extends Model
 
     /**
      * Relasi ke model User (Petugas yang menangani).
-     *
-     * @return BelongsTo
      */
     public function penangan(): BelongsTo
     {

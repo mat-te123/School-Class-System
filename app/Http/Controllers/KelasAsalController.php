@@ -6,21 +6,23 @@ use App\Models\KelasAsal;
 use App\Models\PeriodePendaftaran;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class KelasAsalController extends Controller
 {
     /**
      * Mengambil daftar data Kelas dengan filter opsional.
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function index(Request $request)
     {
         $validated = $request->validate([
-            'search'   => 'nullable|string|max:50',
-            'tingkat'  => 'nullable|string|max:10',
-            'tanggal'  => 'nullable|date_format:Y-m-d',
+            'search' => 'nullable|string|max:50',
+            'tingkat' => 'nullable|string|max:10',
+            'tanggal' => 'nullable|date_format:Y-m-d',
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
@@ -28,19 +30,19 @@ class KelasAsalController extends Controller
         $query = KelasAsal::query()->withCount('siswas');
 
         // Filter tingkat jika diberikan
-        if (!empty($validated['tingkat'])) {
+        if (! empty($validated['tingkat'])) {
             $query->where('tingkat', $validated['tingkat']);
         }
 
         // Pencarian berdasarkan nama kelas
-        if (!empty($validated['search'])) {
+        if (! empty($validated['search'])) {
             $search = trim($validated['search']);
             $query->where('nama_kelas', 'like', "%{$search}%");
         }
 
         // Filter berdasarkan tanggal periode pendaftaran
         $periode = null;
-        if (!empty($validated['tanggal'])) {
+        if (! empty($validated['tanggal'])) {
             $targetDate = $validated['tanggal'];
             $periode = PeriodePendaftaran::query()
                 ->whereDate('tanggal_buka', '<=', $targetDate)
@@ -68,10 +70,10 @@ class KelasAsalController extends Controller
             ->paginate((int) $request->input('per_page', 4))
             ->withQueryString();
 
-        if ($request->wantsJson() || $request->ajax() || !view()->exists('kelas-asal.index')) {
+        if ($request->wantsJson() || $request->ajax() || ! view()->exists('kelas-asal.index')) {
             return response()->json([
-                'success'  => true,
-                'data'     => $kelases,
+                'success' => true,
+                'data' => $kelases,
                 'periodes' => $periodes,
                 'selected_periode' => $periode,
             ]);
@@ -83,21 +85,21 @@ class KelasAsalController extends Controller
     /**
      * Mengambil detail satu Kelas berdasarkan ID (UUID) atau nama_kelas.
      *
-     * @param string $identifier (UUID id atau nama_kelas)
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\View\View
+     * @param  string  $identifier  (UUID id atau nama_kelas)
+     * @return JsonResponse|View
      */
     public function show(string $identifier)
     {
         $kelas = KelasAsal::where(function ($q) use ($identifier) {
-                $q->where('id', $identifier)
-                  ->orWhere('nama_kelas', $identifier);
-            })
+            $q->where('id', $identifier)
+                ->orWhere('nama_kelas', $identifier);
+        })
             ->with(['siswas' => function ($q) {
                 $q->select('id', 'kelas_asal_id', 'nisn', 'nis', 'nama_lengkap', 'jenis_kelamin');
             }])
             ->first();
 
-        if (!$kelas) {
+        if (! $kelas) {
             if (request()->wantsJson() || request()->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -129,14 +131,13 @@ class KelasAsalController extends Controller
     /**
      * Membuat data Kelas baru (Khusus Role Admin).
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function store(Request $request)
     {
-        $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
+        $user = Auth::guard('web')->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthenticated / Belum login.',
@@ -151,8 +152,8 @@ class KelasAsalController extends Controller
         }
 
         $namaKelas = trim($request->input('nama_kelas', ''));
-        $action    = $request->input('action');
-        $isRestore   = $action === 'restore' || $request->boolean('restore');
+        $action = $request->input('action');
+        $isRestore = $action === 'restore' || $request->boolean('restore');
         $isOverwrite = $action === 'overwrite' || $action === 'replace' || $request->boolean('overwrite');
 
         // Cek apakah ada data kelas dengan nama yang sama yang telah di-soft delete
@@ -169,7 +170,7 @@ class KelasAsalController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => "Kelas '{$trashed->nama_kelas}' yang sebelumnya terhapus berhasil dipulihkan dan diperbarui.",
-                    'data'    => $trashed,
+                    'data' => $trashed,
                 ], 200);
             }
 
@@ -178,42 +179,42 @@ class KelasAsalController extends Controller
                 $trashed->forceDelete();
 
                 $validated = $request->validate([
-                    'nama_kelas' => ['required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('kelas_asal', 'nama_kelas')->whereNull('deleted_at')],
-                    'tingkat'    => ['nullable', 'string', 'max:10'],
+                    'nama_kelas' => ['required', 'string', 'max:50', Rule::unique('kelas_asal', 'nama_kelas')->whereNull('deleted_at')],
+                    'tingkat' => ['nullable', 'string', 'max:10'],
                 ]);
 
                 $kelas = KelasAsal::create([
                     'nama_kelas' => $validated['nama_kelas'],
-                    'tingkat'    => $validated['tingkat'] ?? 'X',
+                    'tingkat' => $validated['tingkat'] ?? 'X',
                 ]);
 
                 return response()->json([
                     'success' => true,
                     'message' => "Kelas '{$kelas->nama_kelas}' lama telah dihapus permanen dan data kelas baru berhasil dibuat.",
-                    'data'    => $kelas,
+                    'data' => $kelas,
                 ], 201);
             }
 
             // Jika belum ada parameter action/restore/overwrite, kembalikan 409 Conflict dengan pilihan opsi
             return response()->json([
-                'success'    => false,
+                'success' => false,
                 'is_trashed' => true,
-                'message'    => "Kelas dengan nama '{$namaKelas}' pernah dihapus sebelumnya. Apakah Anda ingin memulihkan (restore) atau menimpa dengan data baru (overwrite)?",
+                'message' => "Kelas dengan nama '{$namaKelas}' pernah dihapus sebelumnya. Apakah Anda ingin memulihkan (restore) atau menimpa dengan data baru (overwrite)?",
                 'trashed_data' => [
-                    'id'         => $trashed->id,
+                    'id' => $trashed->id,
                     'nama_kelas' => $trashed->nama_kelas,
                     'deleted_at' => $trashed->deleted_at,
                 ],
                 'options' => [
-                    'restore'   => 'Gunakan payload JSON {"action": "restore"} atau query parameter ?restore=1 untuk memulihkan dan memperbarui data lama.',
+                    'restore' => 'Gunakan payload JSON {"action": "restore"} atau query parameter ?restore=1 untuk memulihkan dan memperbarui data lama.',
                     'overwrite' => 'Gunakan payload JSON {"action": "overwrite"} atau query parameter ?overwrite=1 untuk menghapus permanen data lama dan membuat data baru.',
                 ],
             ], 409);
         }
 
         $validated = $request->validate([
-            'nama_kelas' => ['required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('kelas_asal', 'nama_kelas')->whereNull('deleted_at')],
-            'tingkat'    => ['nullable', 'string', 'max:10'],
+            'nama_kelas' => ['required', 'string', 'max:50', Rule::unique('kelas_asal', 'nama_kelas')->whereNull('deleted_at')],
+            'tingkat' => ['nullable', 'string', 'max:10'],
         ], [
             'nama_kelas.required' => 'Nama kelas wajib diisi.',
             'nama_kelas.unique' => 'Nama kelas sudah terdaftar.',
@@ -221,7 +222,7 @@ class KelasAsalController extends Controller
 
         $kelas = KelasAsal::create([
             'nama_kelas' => $validated['nama_kelas'],
-            'tingkat'    => $validated['tingkat'] ?? 'X',
+            'tingkat' => $validated['tingkat'] ?? 'X',
         ]);
 
         return $this->handleWriteResponse($request, [
@@ -234,15 +235,13 @@ class KelasAsalController extends Controller
     /**
      * Memperbarui data Kelas (Khusus Role Admin).
      *
-     * @param Request $request
-     * @param string $id
      * @return JsonResponse
      */
     public function update(Request $request, string $id)
     {
-        $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
+        $user = Auth::guard('web')->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthenticated / Belum login.',
@@ -257,12 +256,12 @@ class KelasAsalController extends Controller
         }
 
         $kelas = KelasAsal::where(function ($q) use ($id) {
-                $q->where('id', $id)
-                  ->orWhere('nama_kelas', $id);
-            })
+            $q->where('id', $id)
+                ->orWhere('nama_kelas', $id);
+        })
             ->first();
 
-        if (!$kelas) {
+        if (! $kelas) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data Kelas tidak ditemukan.',
@@ -270,8 +269,8 @@ class KelasAsalController extends Controller
         }
 
         $validated = $request->validate([
-            'nama_kelas' => ['sometimes', 'required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('kelas_asal', 'nama_kelas')->ignore($kelas->id)->whereNull('deleted_at')],
-            'tingkat'    => ['sometimes', 'required', 'string', 'max:10'],
+            'nama_kelas' => ['sometimes', 'required', 'string', 'max:50', Rule::unique('kelas_asal', 'nama_kelas')->ignore($kelas->id)->whereNull('deleted_at')],
+            'tingkat' => ['sometimes', 'required', 'string', 'max:10'],
         ], [
             'nama_kelas.required' => 'Nama kelas tidak boleh kosong.',
             'nama_kelas.unique' => 'Nama kelas sudah terdaftar.',
@@ -289,15 +288,13 @@ class KelasAsalController extends Controller
     /**
      * Menghapus data Kelas (Khusus Role Admin).
      *
-     * @param Request $request
-     * @param string $id
      * @return JsonResponse
      */
     public function destroy(Request $request, string $id)
     {
-        $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
+        $user = Auth::guard('web')->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthenticated / Belum login.',
@@ -312,13 +309,13 @@ class KelasAsalController extends Controller
         }
 
         $kelas = KelasAsal::where(function ($q) use ($id) {
-                $q->where('id', $id)
-                  ->orWhere('nama_kelas', $id);
-            })
+            $q->where('id', $id)
+                ->orWhere('nama_kelas', $id);
+        })
             ->withCount('siswas')
             ->first();
 
-        if (!$kelas) {
+        if (! $kelas) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data Kelas tidak ditemukan.',
@@ -328,7 +325,7 @@ class KelasAsalController extends Controller
         if ($kelas->siswas_count > 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'Kelas tidak dapat dihapus karena masih memiliki ' . $kelas->siswas_count . ' siswa terdaftar.',
+                'message' => 'Kelas tidak dapat dihapus karena masih memiliki '.$kelas->siswas_count.' siswa terdaftar.',
             ], 422);
         }
 

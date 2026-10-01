@@ -14,35 +14,35 @@ class ProgramStudiController extends Controller
     public function index(Request $request)
     {
         $validated = $request->validate([
-            'search'                  => 'nullable|string|max:100',
-            'per_page'                => 'nullable|integer|min:1|max:100',
+            'search' => 'nullable|string|max:100',
+            'per_page' => 'nullable|integer|min:1|max:100',
             'proyeksi_universitas_id' => 'nullable|uuid',
-            'jenjang'                 => 'nullable|in:D3,D4,S1,S2,S3,Profesi',
+            'jenjang' => 'nullable|in:D3,D4,S1,S2,S3,Profesi',
             'kelompok_saintek_soshum' => 'nullable|in:Saintek,Soshum,Campuran',
         ]);
 
         $query = ProgramStudi::with('proyeksiUniversitas');
 
-        if (!empty($validated['search'])) {
+        if (! empty($validated['search'])) {
             $search = trim($validated['search']);
             $query->where(function ($q) use ($search) {
                 $q->where('nama_prodi', 'like', "%{$search}%")
-                  ->orWhereHas('proyeksiUniversitas', function ($u) use ($search) {
-                      $u->where('nama_universitas', 'like', "%{$search}%")
-                        ->orWhere('singkatan', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('proyeksiUniversitas', function ($u) use ($search) {
+                        $u->where('nama_universitas', 'like', "%{$search}%")
+                            ->orWhere('singkatan', 'like', "%{$search}%");
+                    });
             });
         }
 
-        if (!empty($validated['proyeksi_universitas_id'])) {
+        if (! empty($validated['proyeksi_universitas_id'])) {
             $query->where('proyeksi_universitas_id', $validated['proyeksi_universitas_id']);
         }
 
-        if (!empty($validated['jenjang'])) {
+        if (! empty($validated['jenjang'])) {
             $query->where('jenjang', $validated['jenjang']);
         }
 
-        if (!empty($validated['kelompok_saintek_soshum'])) {
+        if (! empty($validated['kelompok_saintek_soshum'])) {
             $query->where('kelompok_saintek_soshum', $validated['kelompok_saintek_soshum']);
         }
 
@@ -55,7 +55,7 @@ class ProgramStudiController extends Controller
         }
 
         $data = $query->orderBy('nama_prodi')
-                      ->paginate((int) $request->input('per_page', 15));
+            ->paginate((int) $request->input('per_page', 15));
 
         return response()->json(['success' => true, 'data' => $data]);
     }
@@ -67,7 +67,7 @@ class ProgramStudiController extends Controller
     {
         $prodi = ProgramStudi::with('proyeksiUniversitas')->find($id);
 
-        if (!$prodi) {
+        if (! $prodi) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data program studi tidak ditemukan.',
@@ -86,17 +86,17 @@ class ProgramStudiController extends Controller
 
         $validated = $request->validate([
             'proyeksi_universitas_id' => 'required|uuid|exists:proyeksi_universitas,id',
-            'nama_prodi'              => 'required|string|max:200',
-            'jenjang'                 => 'nullable|in:D3,D4,S1,S2,S3,Profesi',
-            'akreditasi_prodi'        => 'nullable|string|max:20',
-            'daya_tampung'            => 'nullable|integer|min:0',
-            'peminat_tahun_lalu'      => 'nullable|integer|min:0',
+            'nama_prodi' => 'required|string|max:200',
+            'jenjang' => 'nullable|in:D3,D4,S1,S2,S3,Profesi',
+            'akreditasi_prodi' => 'nullable|string|max:20',
+            'daya_tampung' => 'nullable|integer|min:0',
+            'peminat_tahun_lalu' => 'nullable|integer|min:0',
             'kelompok_saintek_soshum' => 'nullable|in:Saintek,Soshum,Campuran',
-            'is_active'               => 'nullable|boolean',
+            'is_active' => 'nullable|boolean',
         ], [
             'proyeksi_universitas_id.required' => 'Universitas wajib dipilih.',
-            'proyeksi_universitas_id.exists'   => 'Universitas yang dipilih tidak ditemukan.',
-            'nama_prodi.required'              => 'Nama program studi wajib diisi.',
+            'proyeksi_universitas_id.exists' => 'Universitas yang dipilih tidak ditemukan.',
+            'nama_prodi.required' => 'Nama program studi wajib diisi.',
         ]);
 
         $prodi = ProgramStudi::create($validated);
@@ -104,7 +104,7 @@ class ProgramStudiController extends Controller
         return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Data program studi berhasil ditambahkan.',
-            'data'    => $prodi->load('proyeksiUniversitas'),
+            'data' => $prodi->load('proyeksiUniversitas'),
         ], 201);
     }
 
@@ -117,7 +117,7 @@ class ProgramStudiController extends Controller
 
         $prodi = ProgramStudi::find($id);
 
-        if (!$prodi) {
+        if (! $prodi) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data program studi tidak ditemukan.',
@@ -126,13 +126,13 @@ class ProgramStudiController extends Controller
 
         $validated = $request->validate([
             'proyeksi_universitas_id' => 'sometimes|required|uuid|exists:proyeksi_universitas,id',
-            'nama_prodi'              => 'sometimes|required|string|max:200',
-            'jenjang'                 => 'sometimes|nullable|in:D3,D4,S1,S2,S3,Profesi',
-            'akreditasi_prodi'        => 'sometimes|nullable|string|max:20',
-            'daya_tampung'            => 'sometimes|nullable|integer|min:0',
-            'peminat_tahun_lalu'      => 'sometimes|nullable|integer|min:0',
+            'nama_prodi' => 'sometimes|required|string|max:200',
+            'jenjang' => 'sometimes|nullable|in:D3,D4,S1,S2,S3,Profesi',
+            'akreditasi_prodi' => 'sometimes|nullable|string|max:20',
+            'daya_tampung' => 'sometimes|nullable|integer|min:0',
+            'peminat_tahun_lalu' => 'sometimes|nullable|integer|min:0',
             'kelompok_saintek_soshum' => 'sometimes|nullable|in:Saintek,Soshum,Campuran',
-            'is_active'               => 'sometimes|boolean',
+            'is_active' => 'sometimes|boolean',
         ]);
 
         $prodi->update($validated);
@@ -140,7 +140,7 @@ class ProgramStudiController extends Controller
         return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Data program studi berhasil diperbarui.',
-            'data'    => $prodi->fresh()->load('proyeksiUniversitas'),
+            'data' => $prodi->fresh()->load('proyeksiUniversitas'),
         ]);
     }
 
@@ -153,7 +153,7 @@ class ProgramStudiController extends Controller
 
         $prodi = ProgramStudi::find($id);
 
-        if (!$prodi) {
+        if (! $prodi) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data program studi tidak ditemukan.',
@@ -172,7 +172,7 @@ class ProgramStudiController extends Controller
     {
         $user = Auth::guard('web')->user();
 
-        if (!$user || $user->role !== 'admin') {
+        if (! $user || $user->role !== 'admin') {
             abort(response()->json([
                 'success' => false,
                 'message' => 'Akses ditolak. Hanya Admin yang dapat mengelola data program studi.',

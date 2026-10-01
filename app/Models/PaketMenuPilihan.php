@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PaketMenuPilihan extends Model
@@ -55,8 +57,6 @@ class PaketMenuPilihan extends Model
 
     /**
      * Accessor untuk menghitung sisa kuota yang masih tersedia.
-     *
-     * @return int
      */
     public function getKuotaTersisaAttribute(): int
     {
@@ -65,20 +65,16 @@ class PaketMenuPilihan extends Model
 
     /**
      * Relasi ke kriteria bobot menu.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function kriteriaBobots(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function kriteriaBobots(): HasMany
     {
         return $this->hasMany(KriteriaBobotMenu::class, 'paket_menu_pilihan_id');
     }
 
     /**
      * Relasi ke periode pendaftaran.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function periode(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function periode(): BelongsTo
     {
         return $this->belongsTo(PeriodePendaftaran::class, 'periode_id');
     }

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\RunPlacementJob;
 use App\Models\DetailPendaftaranPilihan;
 use App\Models\HasilSeleksi;
 use App\Models\PaketMenuPilihan;
 use App\Models\PendaftaranPilihan;
 use App\Models\PeriodePendaftaran;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +21,7 @@ class PendaftaranPilihanController extends Controller
     public function indexSiswa(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
-        if (!$siswa) {
+        if (! $siswa) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -38,7 +38,7 @@ class PendaftaranPilihanController extends Controller
             ->where('tanggal_tutup', '>=', $now)
             ->first();
 
-        if (!$periodeAktif) {
+        if (! $periodeAktif) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -46,6 +46,7 @@ class PendaftaranPilihanController extends Controller
                     'data' => null,
                 ]);
             }
+
             return view('pendaftaran-pilihan.index-siswa', ['data' => null, 'message' => 'Tidak ada periode pendaftaran yang sedang berjalan saat ini.']);
         }
 
@@ -55,9 +56,9 @@ class PendaftaranPilihanController extends Controller
             },
             'periodePendaftaran',
         ])
-        ->where('siswa_id', $siswa->id)
-        ->where('periode_pendaftaran_id', $periodeAktif->id)
-        ->first();
+            ->where('siswa_id', $siswa->id)
+            ->where('periode_pendaftaran_id', $periodeAktif->id)
+            ->first();
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -76,7 +77,7 @@ class PendaftaranPilihanController extends Controller
     public function storeSiswa(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
-        if (!$siswa) {
+        if (! $siswa) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -93,7 +94,7 @@ class PendaftaranPilihanController extends Controller
             ->where('tanggal_tutup', '>=', $now)
             ->first();
 
-        if (!$periodeAktif) {
+        if (! $periodeAktif) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -191,7 +192,7 @@ class PendaftaranPilihanController extends Controller
         ]);
 
         // Dispatch job untuk kalkulasi ulang klasemen secara background
-        \App\Jobs\RunPlacementJob::dispatch($pendaftaran->periode_pendaftaran_id);
+        RunPlacementJob::dispatch($pendaftaran->periode_pendaftaran_id);
 
         return $this->handleWriteResponse($request, [
             'success' => true,
@@ -206,7 +207,7 @@ class PendaftaranPilihanController extends Controller
     public function uploadDokumenSiswa(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
-        if (!$siswa) {
+        if (! $siswa) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
             }
@@ -220,7 +221,7 @@ class PendaftaranPilihanController extends Controller
             ->where('tanggal_tutup', '>=', $now)
             ->first();
 
-        if (!$periodeAktif) {
+        if (! $periodeAktif) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Tidak ada periode pendaftaran yang sedang aktif.'], 422);
             }
@@ -231,7 +232,7 @@ class PendaftaranPilihanController extends Controller
             ->where('periode_pendaftaran_id', $periodeAktif->id)
             ->first();
 
-        if (!$pendaftaran) {
+        if (! $pendaftaran) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Belum ada pengajuan pilihan untuk periode ini.'], 404);
             }
@@ -260,7 +261,7 @@ class PendaftaranPilihanController extends Controller
     public function cancelSiswa(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
-        if (!$siswa) {
+        if (! $siswa) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
             }
@@ -273,7 +274,7 @@ class PendaftaranPilihanController extends Controller
             ->where('tanggal_selesai_pertukaran', '>=', $now)
             ->first();
 
-        if (!$periodeAktif) {
+        if (! $periodeAktif) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -288,7 +289,7 @@ class PendaftaranPilihanController extends Controller
             ->where('periode_pendaftaran_id', $periodeAktif->id)
             ->first();
 
-        if (!$pendaftaran) {
+        if (! $pendaftaran) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Tidak ada pengajuan yang ditemukan.'], 404);
             }
@@ -323,7 +324,7 @@ class PendaftaranPilihanController extends Controller
     public function updateSiswa(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
-        if (!$siswa) {
+        if (! $siswa) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -339,7 +340,7 @@ class PendaftaranPilihanController extends Controller
             ->where('tanggal_tutup', '>=', $now)
             ->first();
 
-        if (!$periodeAktif) {
+        if (! $periodeAktif) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -354,7 +355,7 @@ class PendaftaranPilihanController extends Controller
             ->where('periode_pendaftaran_id', $periodeAktif->id)
             ->first();
 
-        if (!$pendaftaran) {
+        if (! $pendaftaran) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -446,7 +447,7 @@ class PendaftaranPilihanController extends Controller
         ]);
 
         // Dispatch job untuk kalkulasi ulang klasemen secara background
-        \App\Jobs\RunPlacementJob::dispatch($pendaftaran->periode_pendaftaran_id);
+        RunPlacementJob::dispatch($pendaftaran->periode_pendaftaran_id);
 
         return $this->handleWriteResponse($request, [
             'success' => true,
@@ -462,7 +463,7 @@ class PendaftaranPilihanController extends Controller
     public function hasilPenempatanSiswa(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
-        if (!$siswa) {
+        if (! $siswa) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -474,7 +475,7 @@ class PendaftaranPilihanController extends Controller
 
         $periode = PeriodePendaftaran::where('is_active', true)->latest('tanggal_tutup')->first();
 
-        if (!$periode || !$periode->isPengumumanDibuka()) {
+        if (! $periode || ! $periode->isPengumumanDibuka()) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -488,7 +489,7 @@ class PendaftaranPilihanController extends Controller
             ->where('siswa_id', $siswa->id)
             ->first();
 
-        if (!$hasil) {
+        if (! $hasil) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -525,7 +526,7 @@ class PendaftaranPilihanController extends Controller
     public function liveRankingSiswa(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
-        if (!$siswa) {
+        if (! $siswa) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
             }
@@ -533,7 +534,7 @@ class PendaftaranPilihanController extends Controller
         }
 
         $periode = PeriodePendaftaran::where('is_active', true)->first();
-        if (!$periode) {
+        if (! $periode) {
             return response()->json(['success' => false, 'message' => 'Tidak ada periode pendaftaran aktif.'], 400);
         }
 
@@ -542,7 +543,7 @@ class PendaftaranPilihanController extends Controller
             ->where('periode_pendaftaran_id', $periode->id)
             ->first();
 
-        if (!$pendaftaran) {
+        if (! $pendaftaran) {
             return response()->json(['success' => false, 'message' => 'Anda belum mengirimkan pendaftaran pilihan.'], 404);
         }
 
@@ -573,7 +574,7 @@ class PendaftaranPilihanController extends Controller
                 'paket_menu' => $detail->paketMenuPilihan->nama_menu,
                 'kuota_maksimal' => $kuota,
                 'status' => $status,
-                'rank' => $rank
+                'rank' => $rank,
             ];
         }
 
@@ -586,7 +587,7 @@ class PendaftaranPilihanController extends Controller
             'success' => true,
             'is_final' => $isFinal,
             'data' => $responsePilihan,
-            'riwayat_proses' => $riwayatProses
+            'riwayat_proses' => $riwayatProses,
         ]);
     }
 }

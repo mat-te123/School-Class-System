@@ -14,19 +14,19 @@ class ProyeksiUniversitasController extends Controller
     public function index(Request $request)
     {
         $validated = $request->validate([
-            'search'   => 'nullable|string|max:100',
+            'search' => 'nullable|string|max:100',
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
         $query = ProyeksiUniversitas::query();
 
-        if (!empty($validated['search'])) {
+        if (! empty($validated['search'])) {
             $search = trim($validated['search']);
             $query->where(function ($q) use ($search) {
                 $q->where('nama_universitas', 'like', "%{$search}%")
-                  ->orWhere('singkatan', 'like', "%{$search}%")
-                  ->orWhere('lokasi_kota', 'like', "%{$search}%")
-                  ->orWhere('lokasi_provinsi', 'like', "%{$search}%");
+                    ->orWhere('singkatan', 'like', "%{$search}%")
+                    ->orWhere('lokasi_kota', 'like', "%{$search}%")
+                    ->orWhere('lokasi_provinsi', 'like', "%{$search}%");
             });
         }
 
@@ -39,7 +39,7 @@ class ProyeksiUniversitasController extends Controller
         }
 
         $data = $query->orderBy('nama_universitas')
-                      ->paginate((int) $request->input('per_page', 15));
+            ->paginate((int) $request->input('per_page', 15));
 
         return response()->json(['success' => true, 'data' => $data]);
     }
@@ -53,7 +53,7 @@ class ProyeksiUniversitasController extends Controller
             $q->where('is_active', true)->orderBy('nama_prodi');
         }])->find($id);
 
-        if (!$univ) {
+        if (! $univ) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data proyeksi universitas tidak ditemukan.',
@@ -72,17 +72,17 @@ class ProyeksiUniversitasController extends Controller
 
         $validated = $request->validate([
             'nama_universitas' => 'required|string|max:200',
-            'singkatan'        => 'nullable|string|max:20',
-            'akreditasi'       => 'nullable|string|max:20',
-            'lokasi_kota'      => 'nullable|string|max:100',
-            'lokasi_provinsi'  => 'nullable|string|max:100',
-            'website'          => 'nullable|url|max:255',
-            'deskripsi'        => 'nullable|string',
-            'tahun_data'       => 'nullable|integer|min:2000|max:2100',
-            'is_active'        => 'nullable|boolean',
+            'singkatan' => 'nullable|string|max:20',
+            'akreditasi' => 'nullable|string|max:20',
+            'lokasi_kota' => 'nullable|string|max:100',
+            'lokasi_provinsi' => 'nullable|string|max:100',
+            'website' => 'nullable|url|max:255',
+            'deskripsi' => 'nullable|string',
+            'tahun_data' => 'nullable|integer|min:2000|max:2100',
+            'is_active' => 'nullable|boolean',
         ], [
             'nama_universitas.required' => 'Nama universitas wajib diisi.',
-            'website.url'               => 'Format website harus berupa URL valid.',
+            'website.url' => 'Format website harus berupa URL valid.',
         ]);
 
         $univ = ProyeksiUniversitas::create($validated);
@@ -90,7 +90,7 @@ class ProyeksiUniversitasController extends Controller
         return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Data proyeksi universitas berhasil ditambahkan.',
-            'data'    => $univ,
+            'data' => $univ,
         ], 201);
     }
 
@@ -103,7 +103,7 @@ class ProyeksiUniversitasController extends Controller
 
         $univ = ProyeksiUniversitas::find($id);
 
-        if (!$univ) {
+        if (! $univ) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data proyeksi universitas tidak ditemukan.',
@@ -112,14 +112,14 @@ class ProyeksiUniversitasController extends Controller
 
         $validated = $request->validate([
             'nama_universitas' => 'sometimes|required|string|max:200',
-            'singkatan'        => 'sometimes|nullable|string|max:20',
-            'akreditasi'       => 'sometimes|nullable|string|max:20',
-            'lokasi_kota'      => 'sometimes|nullable|string|max:100',
-            'lokasi_provinsi'  => 'sometimes|nullable|string|max:100',
-            'website'          => 'sometimes|nullable|url|max:255',
-            'deskripsi'        => 'sometimes|nullable|string',
-            'tahun_data'       => 'sometimes|nullable|integer|min:2000|max:2100',
-            'is_active'        => 'sometimes|boolean',
+            'singkatan' => 'sometimes|nullable|string|max:20',
+            'akreditasi' => 'sometimes|nullable|string|max:20',
+            'lokasi_kota' => 'sometimes|nullable|string|max:100',
+            'lokasi_provinsi' => 'sometimes|nullable|string|max:100',
+            'website' => 'sometimes|nullable|url|max:255',
+            'deskripsi' => 'sometimes|nullable|string',
+            'tahun_data' => 'sometimes|nullable|integer|min:2000|max:2100',
+            'is_active' => 'sometimes|boolean',
         ]);
 
         $univ->update($validated);
@@ -127,7 +127,7 @@ class ProyeksiUniversitasController extends Controller
         return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Data proyeksi universitas berhasil diperbarui.',
-            'data'    => $univ->fresh(),
+            'data' => $univ->fresh(),
         ]);
     }
 
@@ -140,7 +140,7 @@ class ProyeksiUniversitasController extends Controller
 
         $univ = ProyeksiUniversitas::find($id);
 
-        if (!$univ) {
+        if (! $univ) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data proyeksi universitas tidak ditemukan.',
@@ -159,7 +159,7 @@ class ProyeksiUniversitasController extends Controller
     {
         $user = Auth::guard('web')->user();
 
-        if (!$user || $user->role !== 'admin') {
+        if (! $user || $user->role !== 'admin') {
             abort(response()->json([
                 'success' => false,
                 'message' => 'Akses ditolak. Hanya Admin yang dapat mengelola data proyeksi universitas.',

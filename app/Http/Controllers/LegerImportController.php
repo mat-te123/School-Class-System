@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\ProcessLegerImportJob;
+use App\Models\KelasAsal;
+use App\Models\RiwayatUploadLeger;
 use App\Services\LegerImportService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class LegerImportController extends Controller
 {
@@ -21,14 +26,13 @@ class LegerImportController extends Controller
     /**
      * Mengimpor file XLSX Leger secara Asynchronous (Background Queue Job) atau Synchronous.
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function import(Request $request)
     {
         // Hanya admin yang boleh upload file Leger Excel
-        $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
-        if (!$user || $user->role !== 'admin') {
+        $user = Auth::guard('web')->user();
+        if (! $user || $user->role !== 'admin') {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -45,7 +49,7 @@ class LegerImportController extends Controller
             ?? collect($request->allFiles())->first();
 
         // 2. Jika tidak ada file
-        if (!$uploadedFile) {
+        if (! $uploadedFile) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -60,7 +64,7 @@ class LegerImportController extends Controller
 
         // 3. Validasi ekstensi
         $extension = strtolower($uploadedFile->getClientOriginalExtension());
-        if (!in_array($extension, ['xlsx', 'xls'])) {
+        if (! in_array($extension, ['xlsx', 'xls'])) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -89,7 +93,7 @@ class LegerImportController extends Controller
         }
 
         // 4. Validasi kelas_asal_id dan angkatan wajib diisi dari form data
-        $kelasAsalId   = $request->input('kelas_asal_id') ?? $request->input('kelas_id');
+        $kelasAsalId = $request->input('kelas_asal_id') ?? $request->input('kelas_id');
         $angkatanInput = $request->input('angkatan');
 
         $validationErrors = [];
@@ -97,10 +101,10 @@ class LegerImportController extends Controller
         if (empty($kelasAsalId)) {
             $validationErrors['kelas_asal_id'] = ['Field kelas_asal_id wajib diisi.'];
         } else {
-            $kelasModel = \App\Models\KelasAsal::where('id', $kelasAsalId)
+            $kelasModel = KelasAsal::where('id', $kelasAsalId)
                 ->orWhere('nama_kelas', $kelasAsalId)
                 ->first();
-            if (!$kelasModel) {
+            if (! $kelasModel) {
                 $validationErrors['kelas_asal_id'] = ['Kelas asal dengan ID atau nama tersebut tidak ditemukan.'];
             }
         }
@@ -109,12 +113,12 @@ class LegerImportController extends Controller
             $validationErrors['angkatan'] = ['Field angkatan wajib diisi. Contoh: 2024 atau 2024/2025'];
         }
 
-        if (!empty($validationErrors)) {
+        if (! empty($validationErrors)) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Validasi gagal.',
-                    'errors'  => $validationErrors,
+                    'errors' => $validationErrors,
                 ], 422);
             }
             abort(422, 'Validasi gagal. Field kelas_asal_id dan angkatan wajib diisi.');
@@ -127,7 +131,7 @@ class LegerImportController extends Controller
         $kelasNama = $kelasModel->nama_kelas;
 
         // 5. Cek duplikat: kelas_asal_id + angkatan sudah ada di riwayat_upload_leger
-        $duplicate = \App\Models\RiwayatUploadLeger::where('kelas_asal_id', $kelasModel->id)
+        $duplicate = RiwayatUploadLeger::where('kelas_asal_id', $kelasModel->id)
             ->where('angkatan', $angkatan)
             ->where('status', 'completed')
             ->first();
@@ -144,16 +148,16 @@ class LegerImportController extends Controller
 
         try {
             // 6. Simpan file sementara di storage
-            $fileName  = 'leger_' . Str::uuid() . '.' . $extension;
+            $fileName = 'leger_'.Str::uuid().'.'.$extension;
             $savedPath = $uploadedFile->storeAs('leger_imports', $fileName);
-            $fullPath  = storage_path('app/' . $savedPath);
+            $fullPath = storage_path('app/'.$savedPath);
 
             // Jika file tersimpan di storage/app/private
-            if (!file_exists($fullPath) && file_exists(storage_path('app/private/' . $savedPath))) {
-                $fullPath = storage_path('app/private/' . $savedPath);
+            if (! file_exists($fullPath) && file_exists(storage_path('app/private/'.$savedPath))) {
+                $fullPath = storage_path('app/private/'.$savedPath);
             }
 
-            $userId = \Illuminate\Support\Facades\Auth::id() ?? $request->user()?->id;
+            $userId = Auth::id() ?? $request->user()?->id;
 
             // 7. Opsi: Jika meminta respon langsung / sync
             if ($request->boolean('sync', false)) {
@@ -162,7 +166,7 @@ class LegerImportController extends Controller
                 return $this->handleWriteResponse($request, [
                     'success' => true,
                     'message' => 'File XLSX Leger berhasil diimpor ke database secara langsung (sync).',
-                    'file_url' => url('/leger/download/' . $fileName),
+                    'file_url' => url('/leger/download/'.$fileName),
                     'summary' => $result,
                 ]);
             }
@@ -171,40 +175,39 @@ class LegerImportController extends Controller
             ProcessLegerImportJob::dispatch($fullPath, $userId, $kelasAsalId, $angkatan);
 
             return $this->handleWriteResponse($request, [
-                'success'   => true,
-                'message'   => 'File XLSX Leger berhasil diterima dan sedang diproses di background queue (Asynchronous).',
-                'status'    => 'queued',
+                'success' => true,
+                'message' => 'File XLSX Leger berhasil diterima dan sedang diproses di background queue (Asynchronous).',
+                'status' => 'queued',
                 'file_name' => $fileName,
-                'file_url'  => url('/leger/download/' . $fileName),
-                'kelas'     => $kelasNama,
-                'angkatan'  => $angkatan,
+                'file_url' => url('/leger/download/'.$fileName),
+                'kelas' => $kelasNama,
+                'angkatan' => $angkatan,
             ], 202);
         } catch (Exception $e) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal mengunggah file XLSX: ' . $e->getMessage(),
+                    'message' => 'Gagal mengunggah file XLSX: '.$e->getMessage(),
                 ], 500);
             }
-            abort(500, 'Gagal mengunggah file XLSX: ' . $e->getMessage());
+            abort(500, 'Gagal mengunggah file XLSX: '.$e->getMessage());
         }
     }
 
     /**
      * Mengunduh file XLSX Leger berdasarkan nama file.
      *
-     * @param string $filename
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|JsonResponse
+     * @return BinaryFileResponse|JsonResponse
      */
     public function download(string $filename)
     {
         $filename = basename($filename);
 
         $possiblePaths = [
-            storage_path('app/public/leger_imports/' . $filename),
-            storage_path('app/private/leger_imports/' . $filename),
-            storage_path('app/leger_imports/' . $filename),
-            storage_path('app/' . $filename),
+            storage_path('app/public/leger_imports/'.$filename),
+            storage_path('app/private/leger_imports/'.$filename),
+            storage_path('app/leger_imports/'.$filename),
+            storage_path('app/'.$filename),
         ];
 
         foreach ($possiblePaths as $path) {
@@ -224,14 +227,13 @@ class LegerImportController extends Controller
     /**
      * Mengambil riwayat dan tracking unggah file Leger Excel berdasarkan kelas dan angkatan.
      *
-     * @param Request $request
-     * @return JsonResponse|\Illuminate\View\View
+     * @return JsonResponse|View
      */
     public function history(Request $request)
     {
-        $user = \Illuminate\Support\Facades\Auth::guard('web')->user() ?? \Illuminate\Support\Facades\Auth::user();
-        
-        if (!$user || $user->role !== 'admin') {
+        $user = Auth::guard('web')->user() ?? Auth::user();
+
+        if (! $user || $user->role !== 'admin') {
             return response()->json([
                 'success' => false,
                 'message' => 'Akses ditolak. Hanya admin yang dapat melihat riwayat Leger.',
@@ -240,17 +242,17 @@ class LegerImportController extends Controller
 
         $validated = $request->validate([
             'nama_kelas' => 'nullable|string|max:50',
-            'angkatan'   => 'nullable|string|max:10',
-            'per_page'   => 'nullable|integer|min:1|max:100',
+            'angkatan' => 'nullable|string|max:10',
+            'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
-        $query = \App\Models\RiwayatUploadLeger::with(['kelasAsal', 'uploader']);
+        $query = RiwayatUploadLeger::with(['kelasAsal', 'uploader']);
 
-        if (!empty($validated['nama_kelas'])) {
+        if (! empty($validated['nama_kelas'])) {
             $query->where('nama_kelas', $validated['nama_kelas']);
         }
 
-        if (!empty($validated['angkatan'])) {
+        if (! empty($validated['angkatan'])) {
             $query->where('angkatan', $validated['angkatan']);
         }
 
@@ -260,7 +262,7 @@ class LegerImportController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Berhasil mengambil riwayat unggah file Leger Excel.',
-                'data'    => $history,
+                'data' => $history,
             ]);
         }
 

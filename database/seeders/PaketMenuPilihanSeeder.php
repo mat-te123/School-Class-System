@@ -17,7 +17,7 @@ class PaketMenuPilihanSeeder extends Seeder
             ->where('nama_periode', 'Pemilihan Mapel Fase F 2026/2027')
             ->value('id');
 
-        if (!$periodeId) {
+        if (! $periodeId) {
             throw new \RuntimeException('Periode pendaftaran untuk paket menu belum tersedia.');
         }
 

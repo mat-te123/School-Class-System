@@ -2,7 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\KriteriaBobotMenu;
+use App\Models\MasterMataPelajaran;
 use App\Models\PaketMenuPilihan;
+use App\Models\PeriodePendaftaran;
+use App\Models\Siswa;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -16,7 +21,7 @@ class PaketMenuPilihanControllerTest extends TestCase
      */
     public function test_can_get_all_active_paket_menu_pilihan(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'test_user_paket',
             'password' => 'password123',
@@ -60,7 +65,7 @@ class PaketMenuPilihanControllerTest extends TestCase
      */
     public function test_can_filter_paket_menu_pilihan_by_rumpun(): void
     {
-        $siswa = \App\Models\Siswa::create([
+        $siswa = Siswa::create([
             'id' => (string) Str::uuid(),
             'nisn' => '0011223344',
             'nis' => '12346',
@@ -103,7 +108,7 @@ class PaketMenuPilihanControllerTest extends TestCase
      */
     public function test_can_get_detail_paket_menu_pilihan_by_nama_or_id(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'test_user_paket_detail',
             'password' => 'password123',
@@ -126,14 +131,14 @@ class PaketMenuPilihanControllerTest extends TestCase
             ->assertJsonPath('data.kuota_tersisa', 52);
 
         // Cek via UUID id
-        $responseId = $this->actingAs($user, 'web')->getJson('/paket-menu-pilihan/' . $paketMenu->id);
+        $responseId = $this->actingAs($user, 'web')->getJson('/paket-menu-pilihan/'.$paketMenu->id);
         $responseId->assertStatus(200)
             ->assertJsonPath('data.nama_menu', 'Menu 2 (P2)');
     }
 
     public function test_admin_can_create_paket_menu_pilihan(): void
     {
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_menu',
             'password' => 'password123',
@@ -165,7 +170,7 @@ class PaketMenuPilihanControllerTest extends TestCase
 
     public function test_non_admin_cannot_create_paket_menu_pilihan(): void
     {
-        $guruBk = \App\Models\User::create([
+        $guruBk = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'guru_bk_menu',
             'password' => 'password123',
@@ -183,7 +188,7 @@ class PaketMenuPilihanControllerTest extends TestCase
 
     public function test_admin_can_update_paket_menu_pilihan(): void
     {
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_menu2',
             'password' => 'password123',
@@ -199,7 +204,7 @@ class PaketMenuPilihanControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($admin, 'web')->putJson('/paket-menu-pilihan/' . $paketMenu->id, [
+        $response = $this->actingAs($admin, 'web')->putJson('/paket-menu-pilihan/'.$paketMenu->id, [
             'nama_menu' => 'Menu 1 Revised',
             'kuota_kapasitas' => 50,
         ]);
@@ -216,7 +221,7 @@ class PaketMenuPilihanControllerTest extends TestCase
 
     public function test_admin_can_delete_paket_menu_pilihan(): void
     {
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_menu3',
             'password' => 'password123',
@@ -232,7 +237,7 @@ class PaketMenuPilihanControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($admin, 'web')->deleteJson('/paket-menu-pilihan/' . $paketMenu->id);
+        $response = $this->actingAs($admin, 'web')->deleteJson('/paket-menu-pilihan/'.$paketMenu->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -247,7 +252,7 @@ class PaketMenuPilihanControllerTest extends TestCase
 
     public function test_create_paket_menu_with_soft_deleted_name_returns_409_conflict(): void
     {
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_menu_conflict_1',
             'password' => 'password123',
@@ -278,7 +283,7 @@ class PaketMenuPilihanControllerTest extends TestCase
 
     public function test_create_paket_menu_with_action_restore_restores_and_updates(): void
     {
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_menu_conflict_2',
             'password' => 'password123',
@@ -322,7 +327,7 @@ class PaketMenuPilihanControllerTest extends TestCase
 
     public function test_create_paket_menu_with_action_overwrite_force_deletes_and_creates_new(): void
     {
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_menu_conflict_3',
             'password' => 'password123',
@@ -361,7 +366,7 @@ class PaketMenuPilihanControllerTest extends TestCase
      */
     public function test_siswa_can_view_active_paket_menu_for_current_periode(): void
     {
-        $siswa = \App\Models\Siswa::create([
+        $siswa = Siswa::create([
             'id' => (string) Str::uuid(),
             'nisn' => '5566778899',
             'nis' => '12347',
@@ -371,7 +376,7 @@ class PaketMenuPilihanControllerTest extends TestCase
         ]);
 
         // Buat periode aktif
-        \App\Models\PeriodePendaftaran::create([
+        PeriodePendaftaran::create([
             'nama_periode' => 'Periode Aktif Test',
             'tahun_ajaran' => '2024/2025',
             'tanggal_buka' => now()->subDay(),
@@ -389,7 +394,7 @@ class PaketMenuPilihanControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $mapel = \App\Models\MasterMataPelajaran::create([
+        $mapel = MasterMataPelajaran::create([
             'id' => (string) Str::uuid(),
             'kode_mapel' => 'test_mapel',
             'nama_mapel' => 'Mapel Test',
@@ -398,7 +403,7 @@ class PaketMenuPilihanControllerTest extends TestCase
         ]);
 
         // Tambahkan kriteria (syarat tampil di endpoint siswa)
-        \App\Models\KriteriaBobotMenu::create([
+        KriteriaBobotMenu::create([
             'id' => (string) Str::uuid(),
             'paket_menu_pilihan_id' => $paket1->id,
             'master_mata_pelajaran_id' => $mapel->id,
@@ -421,7 +426,7 @@ class PaketMenuPilihanControllerTest extends TestCase
                 'success' => true,
                 'meta' => [
                     'total_paket' => 1,
-                ]
+                ],
             ])
             ->assertJsonPath('data.0.nama_menu', 'Paket Aktif 1')
             ->assertJsonPath('data.0.kriteria_bobot.0.nama_mapel', 'Mapel Test');
@@ -437,7 +442,7 @@ class PaketMenuPilihanControllerTest extends TestCase
      */
     public function test_siswa_can_view_detail_paket_menu_aktif(): void
     {
-        $siswa = \App\Models\Siswa::create([
+        $siswa = Siswa::create([
             'id' => (string) Str::uuid(),
             'nisn' => '5566778891',
             'nis' => '12348',
@@ -446,7 +451,7 @@ class PaketMenuPilihanControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        \App\Models\PeriodePendaftaran::create([
+        PeriodePendaftaran::create([
             'nama_periode' => 'Periode Aktif Test 2',
             'tahun_ajaran' => '2024/2025',
             'tanggal_buka' => now()->subDay(),
@@ -463,7 +468,7 @@ class PaketMenuPilihanControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $mapel = \App\Models\MasterMataPelajaran::create([
+        $mapel = MasterMataPelajaran::create([
             'id' => (string) Str::uuid(),
             'kode_mapel' => 'test_mapel_2',
             'nama_mapel' => 'Mapel Test 2',
@@ -471,14 +476,14 @@ class PaketMenuPilihanControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        \App\Models\KriteriaBobotMenu::create([
+        KriteriaBobotMenu::create([
             'id' => (string) Str::uuid(),
             'paket_menu_pilihan_id' => $paket1->id,
             'master_mata_pelajaran_id' => $mapel->id,
             'bobot_persen' => 100,
         ]);
 
-        $response = $this->actingAs($siswa, 'siswa')->getJson('/siswa/paket-menu-aktif/' . $paket1->id);
+        $response = $this->actingAs($siswa, 'siswa')->getJson('/siswa/paket-menu-aktif/'.$paket1->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -491,7 +496,7 @@ class PaketMenuPilihanControllerTest extends TestCase
 
     public function test_siswa_cannot_view_inactive_paket_detail(): void
     {
-        $siswa = \App\Models\Siswa::create([
+        $siswa = Siswa::create([
             'id' => (string) Str::uuid(),
             'nisn' => '5566778892',
             'nis' => '12349',
@@ -508,14 +513,14 @@ class PaketMenuPilihanControllerTest extends TestCase
             'is_active' => false,
         ]);
 
-        $response = $this->actingAs($siswa, 'siswa')->getJson('/siswa/paket-menu-aktif/' . $paketInactive->id);
+        $response = $this->actingAs($siswa, 'siswa')->getJson('/siswa/paket-menu-aktif/'.$paketInactive->id);
         $response->assertStatus(404);
     }
 
     /** Request browser reguler merender view paket-menu-pilihan.show */
     public function test_user_can_view_paket_menu_show_blade(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'test_user_paket_show',
             'password' => 'password123',
@@ -531,7 +536,7 @@ class PaketMenuPilihanControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($user, 'web')->get('/paket-menu-pilihan/' . $paket->id);
+        $response = $this->actingAs($user, 'web')->get('/paket-menu-pilihan/'.$paket->id);
 
         $response->assertOk();
         $response->assertViewIs('paket-menu-pilihan.show');
@@ -541,7 +546,7 @@ class PaketMenuPilihanControllerTest extends TestCase
     /** Request browser reguler merender view paket-menu-pilihan.index-siswa */
     public function test_siswa_can_view_paket_menu_aktif_blade(): void
     {
-        $siswa = \App\Models\Siswa::create([
+        $siswa = Siswa::create([
             'id' => (string) Str::uuid(),
             'nisn' => '8888888888',
             'nis' => '8888',
@@ -561,7 +566,7 @@ class PaketMenuPilihanControllerTest extends TestCase
     /** Request browser reguler merender view paket-menu-pilihan.show-siswa */
     public function test_siswa_can_view_paket_menu_aktif_detail_blade(): void
     {
-        $siswa = \App\Models\Siswa::create([
+        $siswa = Siswa::create([
             'id' => (string) Str::uuid(),
             'nisn' => '7777777777',
             'nis' => '7777',
@@ -578,7 +583,7 @@ class PaketMenuPilihanControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($siswa, 'siswa')->get('/siswa/paket-menu-aktif/' . $paket->id);
+        $response = $this->actingAs($siswa, 'siswa')->get('/siswa/paket-menu-aktif/'.$paket->id);
 
         $response->assertOk();
         $response->assertViewIs('paket-menu-pilihan.show-siswa');
@@ -588,7 +593,7 @@ class PaketMenuPilihanControllerTest extends TestCase
     /** Request browser non-JSON redirect setelah store */
     public function test_browser_store_redirects_back_with_success_flash(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'user_paket_store_redirect',
             'password' => 'password123',
@@ -612,7 +617,7 @@ class PaketMenuPilihanControllerTest extends TestCase
     /** Request browser non-JSON redirect setelah update */
     public function test_browser_update_redirects_back_with_success_flash(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'user_paket_update_redirect',
             'password' => 'password123',
@@ -630,7 +635,7 @@ class PaketMenuPilihanControllerTest extends TestCase
 
         $response = $this->actingAs($user, 'web')
             ->from('/paket-menu-pilihan')
-            ->put('/paket-menu-pilihan/' . $paket->id, [
+            ->put('/paket-menu-pilihan/'.$paket->id, [
                 'kuota_kapasitas' => 42,
             ]);
 
@@ -642,7 +647,7 @@ class PaketMenuPilihanControllerTest extends TestCase
     /** Request browser non-JSON redirect setelah destroy */
     public function test_browser_destroy_redirects_back_with_success_flash(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'user_paket_destroy_redirect',
             'password' => 'password123',
@@ -661,7 +666,7 @@ class PaketMenuPilihanControllerTest extends TestCase
 
         $response = $this->actingAs($user, 'web')
             ->from('/paket-menu-pilihan')
-            ->delete('/paket-menu-pilihan/' . $paket->id);
+            ->delete('/paket-menu-pilihan/'.$paket->id);
 
         $response->assertRedirect('/paket-menu-pilihan');
         $response->assertSessionHas('success', 'Berhasil menghapus Paket Menu Pilihan.');

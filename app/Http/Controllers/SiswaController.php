@@ -6,26 +6,25 @@ use App\Models\KelasAsal;
 use App\Models\PeriodePendaftaran;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 
 class SiswaController extends Controller
 {
     public function index(Request $request)
     {
         $validated = $request->validate([
-            'search'        => 'nullable|string|max:150',
-            'kelas_id'      => 'nullable|uuid|exists:kelas_asal,id',
+            'search' => 'nullable|string|max:150',
+            'kelas_id' => 'nullable|uuid|exists:kelas_asal,id',
             'kelas_asal_id' => 'nullable|uuid|exists:kelas_asal,id',
             'jenis_kelamin' => 'nullable|in:L,P',
-            'angkatan'      => 'nullable|string|max:20',
-            'tahun_ajaran'  => 'nullable|string|max:20',
-            'periode_id'    => 'nullable|uuid|exists:periode_pendaftaran,id',
-            'per_page'      => 'nullable|integer|min:1|max:100',
+            'angkatan' => 'nullable|string|max:20',
+            'tahun_ajaran' => 'nullable|string|max:20',
+            'periode_id' => 'nullable|uuid|exists:periode_pendaftaran,id',
+            'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
         $query = Siswa::with('kelasAsalRelation');
 
-        if (!empty($validated['search'])) {
+        if (! empty($validated['search'])) {
             $search = trim($validated['search']);
             $query->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
@@ -35,20 +34,20 @@ class SiswaController extends Controller
         }
 
         $kelasId = $validated['kelas_id'] ?? $validated['kelas_asal_id'] ?? null;
-        if (!empty($kelasId)) {
+        if (! empty($kelasId)) {
             $query->where('kelas_asal_id', $kelasId);
         }
 
-        if (!empty($validated['jenis_kelamin'])) {
+        if (! empty($validated['jenis_kelamin'])) {
             $query->where('jenis_kelamin', $validated['jenis_kelamin']);
         }
 
         $angkatan = $validated['angkatan'] ?? $validated['tahun_ajaran'] ?? null;
-        if (!empty($angkatan)) {
+        if (! empty($angkatan)) {
             $query->where('angkatan', $angkatan);
         }
 
-        if (!empty($validated['periode_id'])) {
+        if (! empty($validated['periode_id'])) {
             $query->whereHas('pendaftaranPilihan', function ($q) use ($validated) {
                 $q->where('periode_pendaftaran_id', $validated['periode_id']);
             });
@@ -61,7 +60,7 @@ class SiswaController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'data'    => $siswa,
+                'data' => $siswa,
             ]);
         }
 
@@ -94,7 +93,7 @@ class SiswaController extends Controller
         return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil menambahkan data siswa',
-            'data' => $siswa
+            'data' => $siswa,
         ], 201);
     }
 
@@ -105,7 +104,7 @@ class SiswaController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'message' => 'Berhasil mengambil detail siswa',
-                'data' => $siswa
+                'data' => $siswa,
             ]);
         }
 
@@ -117,8 +116,8 @@ class SiswaController extends Controller
         $siswa = Siswa::findOrFail($id);
 
         $validated = $request->validate([
-            'nisn' => 'sometimes|string|size:10|unique:siswa,nisn,' . $id,
-            'nis' => 'sometimes|string|max:10|unique:siswa,nis,' . $id,
+            'nisn' => 'sometimes|string|size:10|unique:siswa,nisn,'.$id,
+            'nis' => 'sometimes|string|max:10|unique:siswa,nis,'.$id,
             'nama_lengkap' => 'sometimes|string|max:150',
             'kelas_asal_id' => 'nullable|uuid|exists:kelas_asal,id',
             'jenis_kelamin' => 'nullable|in:L,P',
@@ -127,13 +126,12 @@ class SiswaController extends Controller
             'is_active' => 'boolean',
         ]);
 
-
         $siswa->update($validated);
 
         return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil mengubah data siswa',
-            'data' => $siswa
+            'data' => $siswa,
         ]);
     }
 
@@ -144,7 +142,7 @@ class SiswaController extends Controller
 
         return $this->handleWriteResponse($request, [
             'success' => true,
-            'message' => 'Berhasil menghapus data siswa'
+            'message' => 'Berhasil menghapus data siswa',
         ]);
     }
 }

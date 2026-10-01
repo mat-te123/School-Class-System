@@ -3,11 +3,14 @@
 namespace App\Services;
 
 use App\Models\DetailNilaiSiswa;
+use App\Models\KelasAsal;
 use App\Models\Ketidakhadiran;
 use App\Models\MasterMataPelajaran;
 use App\Models\NilaiLegerSiswa;
+use App\Models\RiwayatUploadLeger;
 use App\Models\Siswa;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use ZipArchive;
@@ -17,18 +20,19 @@ class LegerImportService
     /**
      * Mengekstrak file XLSX Leger dan mengimpor seluruh data ke database secara instan (< 0.5 detik).
      *
-     * @param string $filePath Path lengkap file XLSX di disk.
-     * @param string|null $uploadedBy ID user pengunggah.
-     * @param string|null $kelasAsalId ID kelas asal dari form request.
-     * @param string|null $angkatanFromForm Angkatan dari form request (digunakan untuk riwayat_upload_leger).
+     * @param  string  $filePath  Path lengkap file XLSX di disk.
+     * @param  string|null  $uploadedBy  ID user pengunggah.
+     * @param  string|null  $kelasAsalId  ID kelas asal dari form request.
+     * @param  string|null  $angkatanFromForm  Angkatan dari form request (digunakan untuk riwayat_upload_leger).
      * @return array Ringkasan hasil impor.
+     *
      * @throws Exception
      */
     public function importFromXlsx(string $filePath, ?string $uploadedBy = null, ?string $kelasAsalId = null, ?string $angkatanFromForm = null): array
     {
-        $uploadedBy = $uploadedBy ?? \Illuminate\Support\Facades\Auth::id();
+        $uploadedBy = $uploadedBy ?? Auth::id();
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             throw new Exception("File XLSX tidak ditemukan pada path: {$filePath}");
         }
 
@@ -36,7 +40,7 @@ class LegerImportService
         $rawRows = $this->parseXlsxXml($filePath);
 
         if (empty($rawRows)) {
-            throw new Exception("Gagal membaca struktur atau data dari file XLSX.");
+            throw new Exception('Gagal membaca struktur atau data dari file XLSX.');
         }
 
         // 2. Ekstrak Metadata (Tahun Ajaran, Semester, Kelas) dari header Excel
@@ -44,15 +48,15 @@ class LegerImportService
 
         // Penentuan Model Kelas Asal (dari parameter kelas_asal_id, atau fallback ke metadata Excel)
         $kelasAsalModel = null;
-        if (!empty($kelasAsalId)) {
-            $kelasAsalModel = \App\Models\KelasAsal::where('id', $kelasAsalId)
+        if (! empty($kelasAsalId)) {
+            $kelasAsalModel = KelasAsal::where('id', $kelasAsalId)
                 ->orWhere('nama_kelas', $kelasAsalId)
                 ->first();
         }
 
-        if (!$kelasAsalModel) {
+        if (! $kelasAsalModel) {
             $kelasNama = $metadata['kelas_asal'] ?? 'X A';
-            $kelasAsalModel = \App\Models\KelasAsal::firstOrCreate(
+            $kelasAsalModel = KelasAsal::firstOrCreate(
                 ['nama_kelas' => $kelasNama],
                 ['id' => (string) Str::uuid(), 'tingkat' => 'X']
             );
@@ -61,11 +65,11 @@ class LegerImportService
         }
 
         // Angkatan untuk riwayat_upload_leger & data siswa: ambil 4 digit tahun pertama (contoh: "2024/2025" -> "2024")
-        $rawAngkatan = !empty($angkatanFromForm) ? $angkatanFromForm : ($metadata['tahun_ajaran'] ?? date('Y'));
+        $rawAngkatan = ! empty($angkatanFromForm) ? $angkatanFromForm : ($metadata['tahun_ajaran'] ?? date('Y'));
         $angkatan = $this->extractTahunAngkatan($rawAngkatan);
 
         // 2b. Cek Batasan 1 Kelas & Angkatan Hanya Boleh 1 File Excel Leger
-        $existingUpload = \App\Models\RiwayatUploadLeger::where('nama_kelas', $kelasNama)
+        $existingUpload = RiwayatUploadLeger::where('nama_kelas', $kelasNama)
             ->where('angkatan', $angkatan)
             ->where('status', 'completed')
             ->first();
@@ -88,7 +92,7 @@ class LegerImportService
             foreach ($columnsMap['subjects'] as $col => $mapelName) {
                 $kodeMapel = Str::slug($mapelName, '_');
                 $allKodes[$col] = $kodeMapel;
-                if (!isset($allMapelData[$kodeMapel])) {
+                if (! isset($allMapelData[$kodeMapel])) {
                     $allMapelData[$kodeMapel] = [
                         'id' => (string) Str::uuid(),
                         'kode_mapel' => $kodeMapel,
@@ -103,12 +107,12 @@ class LegerImportService
             $newMapelsToInsert = [];
 
             foreach ($allMapelData as $kodeMapel => $m) {
-                if (!isset($existingMapels[$kodeMapel])) {
+                if (! isset($existingMapels[$kodeMapel])) {
                     $newMapelsToInsert[] = $m;
                 }
             }
 
-            if (!empty($newMapelsToInsert)) {
+            if (! empty($newMapelsToInsert)) {
                 MasterMataPelajaran::insert($newMapelsToInsert);
                 $existingMapels = MasterMataPelajaran::whereIn('kode_mapel', array_keys($allMapelData))->get()->keyBy('kode_mapel');
             }
@@ -123,7 +127,9 @@ class LegerImportService
             $nisnList = [];
 
             foreach ($rawRows as $rowNum => $rowCells) {
-                if ($rowNum < 8) continue; // Baris header
+                if ($rowNum < 8) {
+                    continue;
+                } // Baris header
 
                 $nisn = trim($rowCells['C'] ?? '');
                 $namaLengkap = trim($rowCells['B'] ?? '');
@@ -149,7 +155,7 @@ class LegerImportService
             $existingSiswa = Siswa::whereIn('nisn', $nisnList)->get()->keyBy('nisn');
             $siswaIdsExisting = $existingSiswa->pluck('id')->all();
 
-            $existingLeger = !empty($siswaIdsExisting)
+            $existingLeger = ! empty($siswaIdsExisting)
                 ? NilaiLegerSiswa::whereIn('siswa_id', $siswaIdsExisting)
                     ->where('tahun_ajaran', $metadata['tahun_ajaran'])
                     ->where('semester', $metadata['semester'])
@@ -260,24 +266,24 @@ class LegerImportService
             );
             $importedNilaiCount = count($legerUpserts);
 
-            if (!empty($legerIds)) {
+            if (! empty($legerIds)) {
                 DetailNilaiSiswa::whereIn('nilai_leger_siswa_id', $legerIds)->delete();
-                if (!empty($detailNilaiData)) {
+                if (! empty($detailNilaiData)) {
                     foreach (array_chunk($detailNilaiData, 500) as $chunk) {
                         DetailNilaiSiswa::insert($chunk);
                     }
                 }
             }
 
-            if (!empty($siswaIdMap)) {
+            if (! empty($siswaIdMap)) {
                 Ketidakhadiran::whereIn('siswa_id', array_values($siswaIdMap))->delete();
-                if (!empty($ketidakhadiranInserts)) {
+                if (! empty($ketidakhadiranInserts)) {
                     Ketidakhadiran::insert($ketidakhadiranInserts);
                 }
             }
 
             // Catat riwayat upload leger ke database
-            \App\Models\RiwayatUploadLeger::updateOrInsert(
+            RiwayatUploadLeger::updateOrInsert(
                 [
                     'nama_kelas' => $kelasNama,
                     'angkatan' => $angkatan,
@@ -309,7 +315,7 @@ class LegerImportService
      */
     private function parseXlsxXml(string $filePath): array
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($filePath) !== true) {
             return [];
         }
@@ -320,11 +326,11 @@ class LegerImportService
             $xml = simplexml_load_string($xmlStr);
             foreach ($xml->si as $val) {
                 if (isset($val->t)) {
-                    $sharedStrings[] = (string)$val->t;
+                    $sharedStrings[] = (string) $val->t;
                 } elseif (isset($val->r)) {
                     $text = '';
                     foreach ($val->r as $r) {
-                        $text .= (string)$r->t;
+                        $text .= (string) $r->t;
                     }
                     $sharedStrings[] = $text;
                 } else {
@@ -338,16 +344,16 @@ class LegerImportService
         if (($sheetStr = $zip->getFromName('xl/worksheets/sheet1.xml')) !== false) {
             $sheetXml = simplexml_load_string($sheetStr);
             foreach ($sheetXml->sheetData->row as $row) {
-                $rowNum = (int)$row['r'];
+                $rowNum = (int) $row['r'];
                 $cells = [];
                 foreach ($row->c as $c) {
-                    $cellRef = (string)$c['r'];
+                    $cellRef = (string) $c['r'];
                     $colLetter = preg_replace('/[0-9]/', '', $cellRef);
-                    $t = (string)$c['t'];
-                    $val = (string)$c->v;
+                    $t = (string) $c['t'];
+                    $val = (string) $c->v;
 
-                    if ($t === 's' && isset($sharedStrings[(int)$val])) {
-                        $val = $sharedStrings[(int)$val];
+                    if ($t === 's' && isset($sharedStrings[(int) $val])) {
+                        $val = $sharedStrings[(int) $val];
                     }
 
                     $cells[$colLetter] = $val;
@@ -357,6 +363,7 @@ class LegerImportService
         }
 
         $zip->close();
+
         return $rows;
     }
 
@@ -398,7 +405,7 @@ class LegerImportService
             if (in_array($colLetter, ['A', 'B', 'C', 'D', 'Y', 'Z', 'AA'])) {
                 continue;
             }
-            if (!empty($valName) && !in_array($colLetter, ['AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL'])) {
+            if (! empty($valName) && ! in_array($colLetter, ['AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL'])) {
                 $subjects[$colLetter] = $valName;
             }
         }
@@ -416,9 +423,16 @@ class LegerImportService
      */
     private function calculatePredikat(float $nilai): string
     {
-        if ($nilai >= 90) return 'A';
-        if ($nilai >= 80) return 'B';
-        if ($nilai >= 70) return 'C';
+        if ($nilai >= 90) {
+            return 'A';
+        }
+        if ($nilai >= 80) {
+            return 'B';
+        }
+        if ($nilai >= 70) {
+            return 'C';
+        }
+
         return 'D';
     }
 

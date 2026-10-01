@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\HasilSeleksi;
-use App\Models\PaketMenuPilihan;
 use App\Models\PengajuanPertukaran;
 use App\Models\PeriodePendaftaran;
 use Illuminate\Http\Request;
@@ -15,7 +14,7 @@ class SiswaPertukaranController extends Controller
     public function index(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
-        if (!$siswa) {
+        if (! $siswa) {
             abort(401, 'Unauthenticated / Akses ditolak.');
         }
 
@@ -37,7 +36,7 @@ class SiswaPertukaranController extends Controller
     public function store(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
-        if (!$siswa) {
+        if (! $siswa) {
             abort(401, 'Unauthenticated / Akses ditolak.');
         }
 
@@ -47,7 +46,7 @@ class SiswaPertukaranController extends Controller
             ->where('tanggal_selesai_pertukaran', '>=', $now)
             ->first();
 
-        if (!$periodeAktif) {
+        if (! $periodeAktif) {
             return response()->json([
                 'success' => false,
                 'message' => 'Pengajuan pertukaran ditolak. Masa pertukaran belum dibuka atau telah berakhir.',
@@ -55,7 +54,7 @@ class SiswaPertukaranController extends Controller
         }
 
         $hasilSeleksi = HasilSeleksi::where('siswa_id', $siswa->id)->first();
-        if (!$hasilSeleksi || !$hasilSeleksi->paket_menu_pilihan_id) {
+        if (! $hasilSeleksi || ! $hasilSeleksi->paket_menu_pilihan_id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda belum terdaftar dalam paket kelas penempatan.',
@@ -116,7 +115,7 @@ class SiswaPertukaranController extends Controller
     public function cancel(Request $request, string $id)
     {
         $siswa = Auth::guard('siswa')->user();
-        if (!$siswa) {
+        if (! $siswa) {
             abort(401, 'Unauthenticated.');
         }
 
@@ -124,7 +123,7 @@ class SiswaPertukaranController extends Controller
             ->where('siswa_id', $siswa->id)
             ->first();
 
-        if (!$pengajuan) {
+        if (! $pengajuan) {
             return response()->json([
                 'success' => false,
                 'message' => 'Pengajuan pertukaran tidak ditemukan.',

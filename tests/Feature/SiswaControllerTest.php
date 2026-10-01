@@ -14,6 +14,7 @@ class SiswaControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected KelasAsal $kelas;
 
     protected function setUp(): void
@@ -112,7 +113,7 @@ class SiswaControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->admin, 'web')->get('/siswa/' . $siswa->id);
+        $response = $this->actingAs($this->admin, 'web')->get('/siswa/'.$siswa->id);
 
         $response->assertOk();
         $response->assertViewIs('siswa.show');
@@ -151,7 +152,7 @@ class SiswaControllerTest extends TestCase
 
         $response = $this->actingAs($this->admin, 'web')
             ->from('/siswa')
-            ->put('/siswa/' . $siswa->id, [
+            ->put('/siswa/'.$siswa->id, [
                 'nama_lengkap' => 'Siswa Update Redirect Edited',
             ]);
 
@@ -174,7 +175,7 @@ class SiswaControllerTest extends TestCase
 
         $response = $this->actingAs($this->admin, 'web')
             ->from('/siswa')
-            ->delete('/siswa/' . $siswa->id);
+            ->delete('/siswa/'.$siswa->id);
 
         $response->assertRedirect('/siswa');
         $response->assertSessionHas('success', 'Berhasil menghapus data siswa');

@@ -3,26 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\KriteriaBobotMenu;
-use App\Models\MasterMataPelajaran;
 use App\Models\PaketMenuPilihan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class KriteriaBobotMenuController extends Controller
 {
-
     /**
      * Menentukan/menyimpan bobot mata pelajaran pada paket menu pilihan (Khusus Role Admin).
      * Mendukung simpan single item atau bulk array 'kriteria'.
      *
-     * @param Request $request
      * @return JsonResponse
      */
     public function store(Request $request)
     {
-        $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
+        $user = Auth::guard('web')->user();
 
-        if (!$user) {
+        if (! $user) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -116,15 +114,13 @@ class KriteriaBobotMenuController extends Controller
      * Identifier dapat berupa paket_menu_pilihan_id atau ID kriteria bobot.
      * Payload dapat berupa array kriteria langsung [ { master_mata_pelajaran_id, bobot_persen }, ... ], { kriteria: [...] }, atau { bobot_persen }.
      *
-     * @param Request $request
-     * @param string $identifier
      * @return JsonResponse
      */
     public function update(Request $request, string $identifier)
     {
-        $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
+        $user = Auth::guard('web')->user();
 
-        if (!$user) {
+        if (! $user) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -160,7 +156,7 @@ class KriteriaBobotMenuController extends Controller
         if ($itemsToUpdate !== null && count($itemsToUpdate) > 0) {
             $paketId = $paketMenu ? $paketMenu->id : $request->input('paket_menu_pilihan_id', $identifier);
 
-            if (!PaketMenuPilihan::where('id', $paketId)->exists()) {
+            if (! PaketMenuPilihan::where('id', $paketId)->exists()) {
                 if ($request->wantsJson() || $request->ajax()) {
                     return response()->json([
                         'success' => false,
@@ -207,7 +203,7 @@ class KriteriaBobotMenuController extends Controller
         // Jika single item request berdasarkan ID KriteriaBobotMenu
         $bobot = KriteriaBobotMenu::find($identifier);
 
-        if (!$bobot) {
+        if (! $bobot) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -240,15 +236,13 @@ class KriteriaBobotMenuController extends Controller
     /**
      * Menghapus kriteria bobot menu (Khusus Role Admin).
      *
-     * @param Request $request
-     * @param string $id
      * @return JsonResponse
      */
     public function destroy(Request $request, string $id)
     {
-        $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
+        $user = Auth::guard('web')->user();
 
-        if (!$user) {
+        if (! $user) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -270,7 +264,7 @@ class KriteriaBobotMenuController extends Controller
 
         $bobot = KriteriaBobotMenu::find($id);
 
-        if (!$bobot) {
+        if (! $bobot) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,

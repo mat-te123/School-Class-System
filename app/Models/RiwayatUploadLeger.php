@@ -38,8 +38,6 @@ class RiwayatUploadLeger extends Model
 
     /**
      * Accessor untuk mendapatkan URL publik/API lengkap untuk mengunduh file berbasis APP_URL.
-     *
-     * @return string|null
      */
     public function getFileUrlAttribute(): ?string
     {
@@ -47,13 +45,11 @@ class RiwayatUploadLeger extends Model
             return null;
         }
 
-        return url('/leger/download/' . $this->file_name);
+        return url('/leger/download/'.$this->file_name);
     }
 
     /**
      * Relasi ke model KelasAsal.
-     *
-     * @return BelongsTo
      */
     public function kelasAsal(): BelongsTo
     {
@@ -62,8 +58,6 @@ class RiwayatUploadLeger extends Model
 
     /**
      * Relasi ke model User (Pengunggah).
-     *
-     * @return BelongsTo
      */
     public function uploader(): BelongsTo
     {

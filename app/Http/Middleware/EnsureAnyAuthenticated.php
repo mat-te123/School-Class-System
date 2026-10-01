@@ -13,7 +13,7 @@ class EnsureAnyAuthenticated
      * Handle an incoming request.
      * Memastikan user sudah login (baik guard 'web' untuk Admin/Guru BK maupun guard 'siswa').
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      * @param  string  ...$guards
      */
     public function handle(Request $request, Closure $next, ...$guards): Response
@@ -23,6 +23,7 @@ class EnsureAnyAuthenticated
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
                 Auth::shouldUse($guard);
+
                 return $next($request);
             }
         }

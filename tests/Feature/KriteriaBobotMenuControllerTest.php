@@ -43,7 +43,7 @@ class KriteriaBobotMenuControllerTest extends TestCase
             'bobot_persen' => 75.50,
         ]);
 
-        $response = $this->actingAs($user, 'web')->getJson('/kriteria-bobot-menu?paket_menu_pilihan_id=' . $paket->id);
+        $response = $this->actingAs($user, 'web')->getJson('/kriteria-bobot-menu?paket_menu_pilihan_id='.$paket->id);
 
         $response->assertStatus(200)
             ->assertJson(['success' => true])
@@ -215,7 +215,7 @@ class KriteriaBobotMenuControllerTest extends TestCase
             'bobot_persen' => 100.00,
         ]);
 
-        $response = $this->actingAs($admin, 'web')->deleteJson('/kriteria-bobot-menu/' . $bobot->id);
+        $response = $this->actingAs($admin, 'web')->deleteJson('/kriteria-bobot-menu/'.$bobot->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -254,7 +254,7 @@ class KriteriaBobotMenuControllerTest extends TestCase
             'bobot_persen' => 50.00,
         ]);
 
-        $response = $this->actingAs($admin, 'web')->putJson('/kriteria-bobot-menu/' . $bobot->id, [
+        $response = $this->actingAs($admin, 'web')->putJson('/kriteria-bobot-menu/'.$bobot->id, [
             'bobot_persen' => 75.00,
         ]);
 
@@ -299,7 +299,7 @@ class KriteriaBobotMenuControllerTest extends TestCase
             'nama_mapel' => 'Mapel 2',
         ]);
 
-        $response = $this->actingAs($admin, 'web')->putJson('/kriteria-bobot-menu/' . $paket->id, [
+        $response = $this->actingAs($admin, 'web')->putJson('/kriteria-bobot-menu/'.$paket->id, [
             [
                 'master_mata_pelajaran_id' => $mapel1->id,
                 'bobot_persen' => 50.00,
@@ -407,7 +407,7 @@ class KriteriaBobotMenuControllerTest extends TestCase
 
         $response = $this->actingAs($admin, 'web')
             ->from('/kriteria-bobot-menu')
-            ->put('/kriteria-bobot-menu/' . $bobot->id, [
+            ->put('/kriteria-bobot-menu/'.$bobot->id, [
                 'bobot_persen' => 80.0,
             ]);
 
@@ -451,7 +451,7 @@ class KriteriaBobotMenuControllerTest extends TestCase
 
         $response = $this->actingAs($admin, 'web')
             ->from('/kriteria-bobot-menu')
-            ->delete('/kriteria-bobot-menu/' . $bobot->id);
+            ->delete('/kriteria-bobot-menu/'.$bobot->id);
 
         $response->assertRedirect('/kriteria-bobot-menu');
         $response->assertSessionHas('success', 'Berhasil menghapus kriteria bobot menu.');

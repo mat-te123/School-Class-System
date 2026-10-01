@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PeriodePendaftaran extends Model
@@ -78,19 +79,17 @@ class PeriodePendaftaran extends Model
     {
         return $query->where(function ($q) {
             $q->where('status_pengumuman', 'AKTIF')
-              ->orWhere(function ($sub) {
-                  $sub->whereNotNull('tanggal_pengumuman')
-                      ->where('tanggal_pengumuman', '<=', now());
-              });
+                ->orWhere(function ($sub) {
+                    $sub->whereNotNull('tanggal_pengumuman')
+                        ->where('tanggal_pengumuman', '<=', now());
+                });
         });
     }
 
     /**
      * Relasi ke paket menu pilihan yang ditawarkan pada periode ini.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function paketMenuPilihans(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function paketMenuPilihans(): HasMany
     {
         return $this->hasMany(PaketMenuPilihan::class, 'periode_id');
     }

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\PeriodePendaftaran;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,7 +48,7 @@ class PeriodePenjurusanControllerTest extends TestCase
     public function test_authenticated_user_can_view_periods_and_period_detail(): void
     {
         $user = User::factory()->create();
-        $periode = \App\Models\PeriodePendaftaran::create([
+        $periode = PeriodePendaftaran::create([
             'nama_periode' => 'Penjurusan 2026/2027',
             'tahun_ajaran' => '2026/2027',
             'tanggal_buka' => '2026-08-11 08:00:00',
@@ -59,7 +60,7 @@ class PeriodePenjurusanControllerTest extends TestCase
             ->assertJson(['success' => true])
             ->assertJsonCount(1, 'data.data');
 
-        $this->actingAs($user)->getJson('/periode-penjurusan/' . $periode->id)
+        $this->actingAs($user)->getJson('/periode-penjurusan/'.$periode->id)
             ->assertOk()
             ->assertJsonPath('data.id', $periode->id);
     }
@@ -67,14 +68,14 @@ class PeriodePenjurusanControllerTest extends TestCase
     public function test_admin_can_update_period_information_and_minat_schedule(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $periode = \App\Models\PeriodePendaftaran::create([
+        $periode = PeriodePendaftaran::create([
             'nama_periode' => 'Penjurusan Lama',
             'tahun_ajaran' => '2026/2027',
             'tanggal_buka' => '2026-08-11 08:00:00',
             'tanggal_tutup' => '2026-08-20 23:59:59',
         ]);
 
-        $response = $this->actingAs($admin)->putJson('/periode-penjurusan/' . $periode->id, [
+        $response = $this->actingAs($admin)->putJson('/periode-penjurusan/'.$periode->id, [
             'nama_periode' => 'Penjurusan Baru',
             'tanggal_buka' => '2026-08-12 08:00:00',
             'tanggal_tutup' => '2026-08-25 23:59:59',
@@ -92,14 +93,14 @@ class PeriodePenjurusanControllerTest extends TestCase
     public function test_admin_cannot_update_period_with_invalid_minat_schedule(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $periode = \App\Models\PeriodePendaftaran::create([
+        $periode = PeriodePendaftaran::create([
             'nama_periode' => 'Penjurusan 2026/2027',
             'tahun_ajaran' => '2026/2027',
             'tanggal_buka' => '2026-08-11 08:00:00',
             'tanggal_tutup' => '2026-08-20 23:59:59',
         ]);
 
-        $this->actingAs($admin)->putJson('/periode-penjurusan/' . $periode->id, [
+        $this->actingAs($admin)->putJson('/periode-penjurusan/'.$periode->id, [
             'tanggal_tutup' => '2026-08-10 08:00:00',
         ])->assertUnprocessable()->assertJsonValidationErrors('tanggal_tutup');
     }
@@ -113,7 +114,7 @@ class PeriodePenjurusanControllerTest extends TestCase
         User::factory()->create(['role' => 'admin']);
 
         // Buat periode pertama (aktif)
-        \App\Models\PeriodePendaftaran::create([
+        PeriodePendaftaran::create([
             'nama_periode' => 'Periode A',
             'tahun_ajaran' => '2024/2025',
             'tanggal_buka' => '2026-08-01 08:00:00',
@@ -122,8 +123,8 @@ class PeriodePenjurusanControllerTest extends TestCase
         ]);
 
         // Coba buat periode kedua juga aktif — harus gagal dengan integrity error
-        $this->expectException(\Illuminate\Database\QueryException::class);
-        \App\Models\PeriodePendaftaran::create([
+        $this->expectException(QueryException::class);
+        PeriodePendaftaran::create([
             'nama_periode' => 'Periode B',
             'tahun_ajaran' => '2025/2026',
             'tanggal_buka' => '2026-09-01 08:00:00',
@@ -136,7 +137,7 @@ class PeriodePenjurusanControllerTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
-        $periodeA = \App\Models\PeriodePendaftaran::create([
+        $periodeA = PeriodePendaftaran::create([
             'nama_periode' => 'Periode A',
             'tahun_ajaran' => '2024/2025',
             'tanggal_buka' => '2026-07-01 08:00:00',
@@ -145,18 +146,18 @@ class PeriodePenjurusanControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)->postJson('/periode-penjurusan', [
-            'nama_periode'  => 'Periode B',
-            'tahun_ajaran'  => '2025/2026',
-            'tanggal_buka'  => '2026-08-01 08:00:00',
+            'nama_periode' => 'Periode B',
+            'tahun_ajaran' => '2025/2026',
+            'tanggal_buka' => '2026-08-01 08:00:00',
             'tanggal_tutup' => '2026-08-31 23:59:59',
-            'is_active'     => true,
+            'is_active' => true,
         ]);
 
         $response->assertCreated()->assertJson(['success' => true]);
 
         $this->assertFalse($periodeA->fresh()->is_active);
         $this->assertTrue(
-            \App\Models\PeriodePendaftaran::find($response->json('data.id'))->is_active
+            PeriodePendaftaran::find($response->json('data.id'))->is_active
         );
     }
 
@@ -164,7 +165,7 @@ class PeriodePenjurusanControllerTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
-        $periodeA = \App\Models\PeriodePendaftaran::create([
+        $periodeA = PeriodePendaftaran::create([
             'nama_periode' => 'Periode A',
             'tahun_ajaran' => '2024/2025',
             'tanggal_buka' => '2026-07-01 08:00:00',
@@ -172,7 +173,7 @@ class PeriodePenjurusanControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $periodeB = \App\Models\PeriodePendaftaran::create([
+        $periodeB = PeriodePendaftaran::create([
             'nama_periode' => 'Periode B',
             'tahun_ajaran' => '2025/2026',
             'tanggal_buka' => '2026-08-01 08:00:00',
@@ -180,7 +181,7 @@ class PeriodePenjurusanControllerTest extends TestCase
             'is_active' => false,
         ]);
 
-        $response = $this->actingAs($admin)->putJson('/periode-penjurusan/' . $periodeB->id, [
+        $response = $this->actingAs($admin)->putJson('/periode-penjurusan/'.$periodeB->id, [
             'is_active' => true,
         ]);
 
@@ -194,7 +195,7 @@ class PeriodePenjurusanControllerTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
-        $periodeA = \App\Models\PeriodePendaftaran::create([
+        $periodeA = PeriodePendaftaran::create([
             'nama_periode' => 'Periode A',
             'tahun_ajaran' => '2024/2025',
             'tanggal_buka' => '2026-07-01 08:00:00',
@@ -202,7 +203,7 @@ class PeriodePenjurusanControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($admin)->putJson('/periode-penjurusan/' . $periodeA->id, [
+        $response = $this->actingAs($admin)->putJson('/periode-penjurusan/'.$periodeA->id, [
             'is_active' => true,
         ]);
 
@@ -298,7 +299,7 @@ class PeriodePenjurusanControllerTest extends TestCase
 
         $response = $this->actingAs($admin)
             ->from('/periode-penjurusan')
-            ->put('/periode-penjurusan/' . $periode->id, [
+            ->put('/periode-penjurusan/'.$periode->id, [
                 'nama_periode' => 'Penjurusan Update Redirect Edited',
             ]);
 

@@ -2,10 +2,11 @@
 
 namespace Tests\Feature\Jobs;
 
-use App\Models\MasterMataPelajaran;
-use App\Models\Siswa;
-use App\Models\NilaiLegerSiswa;
+use App\Jobs\BulkImportDetailNilaiSiswaJob;
 use App\Models\DetailNilaiSiswa;
+use App\Models\MasterMataPelajaran;
+use App\Models\NilaiLegerSiswa;
+use App\Models\Siswa;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -25,7 +26,7 @@ class BulkImportDetailNilaiSiswaJobTest extends TestCase
         ];
 
         // When: Job dijalankan
-        \App\Jobs\BulkImportDetailNilaiSiswaJob::dispatch(
+        BulkImportDetailNilaiSiswaJob::dispatch(
             $mapel->id,
             '2024/2025',
             'Ganjil',
@@ -51,7 +52,7 @@ class BulkImportDetailNilaiSiswaJobTest extends TestCase
         ];
 
         // When: Job dijalankan
-        \App\Jobs\BulkImportDetailNilaiSiswaJob::dispatch(
+        BulkImportDetailNilaiSiswaJob::dispatch(
             $mapel->id,
             '2024/2025',
             'Ganjil',

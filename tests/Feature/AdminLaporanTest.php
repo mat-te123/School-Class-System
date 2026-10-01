@@ -2,12 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\DetailPendaftaranPilihan;
 use App\Models\HasilSeleksi;
 use App\Models\KelasAsal;
-use App\Models\NilaiLegerSiswa;
 use App\Models\PaketMenuPilihan;
 use App\Models\PendaftaranPilihan;
-use App\Models\DetailPendaftaranPilihan;
 use App\Models\PeriodePendaftaran;
 use App\Models\Siswa;
 use App\Models\User;
@@ -20,11 +19,17 @@ class AdminLaporanTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private User $nonAdmin;
+
     private Siswa $siswa;
+
     private PeriodePendaftaran $periode;
+
     private PaketMenuPilihan $paket1;
+
     private PaketMenuPilihan $paket2;
+
     private PaketMenuPilihan $paket3;
 
     protected function setUp(): void
@@ -133,7 +138,7 @@ class AdminLaporanTest extends TestCase
     public function test_admin_can_view_hasil_penjurusan_laporan(): void
     {
         $resp = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/laporan/hasil-penjurusan?periode_id=' . $this->periode->id);
+            ->getJson('/admin/laporan/hasil-penjurusan?periode_id='.$this->periode->id);
         $resp->assertStatus(200)
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.total', 1);
@@ -144,13 +149,13 @@ class AdminLaporanTest extends TestCase
     public function test_admin_can_filter_hasil_penjurusan_by_paket(): void
     {
         $resp = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/laporan/hasil-penjurusan?periode_id=' . $this->periode->id . '&paket_id=' . $this->paket1->id);
+            ->getJson('/admin/laporan/hasil-penjurusan?periode_id='.$this->periode->id.'&paket_id='.$this->paket1->id);
         $resp->assertStatus(200)
             ->assertJsonPath('data.data.0.paket_menu_pilihan_id', $this->paket1->id);
 
         // Paket tanpa hasil -> kosong
         $resp2 = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/laporan/hasil-penjurusan?periode_id=' . $this->periode->id . '&paket_id=' . $this->paket2->id);
+            ->getJson('/admin/laporan/hasil-penjurusan?periode_id='.$this->periode->id.'&paket_id='.$this->paket2->id);
         $resp2->assertStatus(200)
             ->assertJsonPath('data.total', 0);
     }
@@ -158,7 +163,7 @@ class AdminLaporanTest extends TestCase
     public function test_admin_can_view_minat_siswa_laporan(): void
     {
         $resp = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/laporan/minat-siswa?periode_id=' . $this->periode->id);
+            ->getJson('/admin/laporan/minat-siswa?periode_id='.$this->periode->id);
         $resp->assertStatus(200)
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.total', 1);
@@ -170,13 +175,13 @@ class AdminLaporanTest extends TestCase
     {
         // Filter status = ditolak -> 0
         $resp = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/laporan/minat-siswa?periode_id=' . $this->periode->id . '&status=ditolak');
+            ->getJson('/admin/laporan/minat-siswa?periode_id='.$this->periode->id.'&status=ditolak');
         $resp->assertStatus(200)
             ->assertJsonPath('data.total', 0);
 
         // Filter status = disetujui -> 1
         $resp2 = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/laporan/minat-siswa?periode_id=' . $this->periode->id . '&status=disetujui');
+            ->getJson('/admin/laporan/minat-siswa?periode_id='.$this->periode->id.'&status=disetujui');
         $resp2->assertStatus(200)
             ->assertJsonPath('data.total', 1);
     }
@@ -184,11 +189,11 @@ class AdminLaporanTest extends TestCase
     public function test_admin_can_view_peminat_vs_kuota(): void
     {
         $resp = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/laporan/peminat-vs-kuota?periode_id=' . $this->periode->id);
+            ->getJson('/admin/laporan/peminat-vs-kuota?periode_id='.$this->periode->id);
         $resp->assertStatus(200)
             ->assertJsonPath('success', true);
 
-                // Paket1: pilihan1=1, pilihan2=0, pilihan3=0, total=1
+        // Paket1: pilihan1=1, pilihan2=0, pilihan3=0, total=1
         // Paket2: pilihan1=0, pilihan2=1, pilihan3=0, total=1
         // Paket3: pilihan1=0, pilihan2=0, pilihan3=1, total=1
         $rows = collect($resp->json('data'));
@@ -217,7 +222,7 @@ class AdminLaporanTest extends TestCase
     public function test_admin_can_export_hasil_penjurusan_xlsx(): void
     {
         $resp = $this->actingAs($this->admin, 'web')
-            ->get('/admin/laporan/export/hasil-penjurusan?periode_id=' . $this->periode->id . '&format=xlsx');
+            ->get('/admin/laporan/export/hasil-penjurusan?periode_id='.$this->periode->id.'&format=xlsx');
 
         $resp->assertStatus(200);
         $this->assertStringContainsString('text/csv', $resp->headers->get('Content-Type'));
@@ -231,7 +236,7 @@ class AdminLaporanTest extends TestCase
     public function test_admin_can_export_minat_siswa_pdf(): void
     {
         $resp = $this->actingAs($this->admin, 'web')
-            ->get('/admin/laporan/export/minat-siswa?periode_id=' . $this->periode->id . '&format=pdf');
+            ->get('/admin/laporan/export/minat-siswa?periode_id='.$this->periode->id.'&format=pdf');
 
         $resp->assertStatus(200);
         $this->assertStringContainsString('text/html', $resp->headers->get('Content-Type'));
@@ -241,11 +246,11 @@ class AdminLaporanTest extends TestCase
     public function test_non_admin_cannot_access_laporan_endpoints(): void
     {
         $this->actingAs($this->nonAdmin, 'web')
-            ->getJson('/admin/laporan/hasil-penjurusan?periode_id=' . $this->periode->id)
+            ->getJson('/admin/laporan/hasil-penjurusan?periode_id='.$this->periode->id)
             ->assertStatus(403);
 
         $this->actingAs($this->nonAdmin, 'web')
-            ->getJson('/admin/laporan/peminat-vs-kuota?periode_id=' . $this->periode->id)
+            ->getJson('/admin/laporan/peminat-vs-kuota?periode_id='.$this->periode->id)
             ->assertStatus(403);
     }
 }

@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\KelasAsal;
+use App\Models\PeriodePendaftaran;
 use App\Models\Siswa;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -14,7 +16,7 @@ class KelasAsalControllerTest extends TestCase
 
     public function test_can_get_all_kelas(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'test_user_kelas',
             'password' => 'password123',
@@ -45,7 +47,7 @@ class KelasAsalControllerTest extends TestCase
 
     public function test_can_filter_kelas_by_tingkat(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'test_user_kelas_filter',
             'password' => 'password123',
@@ -91,7 +93,7 @@ class KelasAsalControllerTest extends TestCase
             'tingkat' => 'X',
         ]);
 
-        $response = $this->actingAs($siswa, 'siswa')->getJson('/kelas-asal/' . $kelas->id);
+        $response = $this->actingAs($siswa, 'siswa')->getJson('/kelas-asal/'.$kelas->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -106,7 +108,7 @@ class KelasAsalControllerTest extends TestCase
 
     public function test_admin_can_create_kelas(): void
     {
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_user',
             'password' => 'password123',
@@ -137,7 +139,7 @@ class KelasAsalControllerTest extends TestCase
 
     public function test_non_admin_cannot_create_kelas(): void
     {
-        $guruBk = \App\Models\User::create([
+        $guruBk = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'guru_bk_user',
             'password' => 'password123',
@@ -154,7 +156,7 @@ class KelasAsalControllerTest extends TestCase
 
     public function test_admin_can_update_kelas(): void
     {
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_user2',
             'password' => 'password123',
@@ -168,7 +170,7 @@ class KelasAsalControllerTest extends TestCase
             'tingkat' => 'X',
         ]);
 
-        $response = $this->actingAs($admin, 'web')->putJson('/kelas-asal/' . $kelas->id, [
+        $response = $this->actingAs($admin, 'web')->putJson('/kelas-asal/'.$kelas->id, [
             'nama_kelas' => 'X A Unggulan',
             'tingkat' => 'X',
         ]);
@@ -185,7 +187,7 @@ class KelasAsalControllerTest extends TestCase
 
     public function test_admin_can_delete_kelas(): void
     {
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_user3',
             'password' => 'password123',
@@ -199,7 +201,7 @@ class KelasAsalControllerTest extends TestCase
             'tingkat' => 'X',
         ]);
 
-        $response = $this->actingAs($admin, 'web')->deleteJson('/kelas-asal/' . $kelas->id);
+        $response = $this->actingAs($admin, 'web')->deleteJson('/kelas-asal/'.$kelas->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -225,7 +227,7 @@ class KelasAsalControllerTest extends TestCase
 
     public function test_create_kelas_with_soft_deleted_name_returns_409_conflict(): void
     {
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_conflict_1',
             'password' => 'password123',
@@ -254,7 +256,7 @@ class KelasAsalControllerTest extends TestCase
 
     public function test_create_kelas_with_action_restore_restores_and_updates(): void
     {
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_conflict_2',
             'password' => 'password123',
@@ -295,7 +297,7 @@ class KelasAsalControllerTest extends TestCase
 
     public function test_create_kelas_with_action_overwrite_force_deletes_and_creates_new(): void
     {
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_conflict_3',
             'password' => 'password123',
@@ -332,7 +334,7 @@ class KelasAsalControllerTest extends TestCase
     /** Paginasi server-side: per_page & meta paginator benar */
     public function test_admin_can_get_paginated_kelas_json(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_paginate_kelas',
             'password' => 'password123',
@@ -362,7 +364,7 @@ class KelasAsalControllerTest extends TestCase
     /** Pencarian berdasarkan substring nama_kelas */
     public function test_admin_can_search_kelas_by_nama(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'admin_search_kelas',
             'password' => 'password123',
@@ -391,7 +393,7 @@ class KelasAsalControllerTest extends TestCase
     /** Request web index mengembalikan response sukses */
     public function test_authenticated_user_can_access_kelas_index(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'user_view_kelas',
             'password' => 'password123',
@@ -407,7 +409,7 @@ class KelasAsalControllerTest extends TestCase
     /** Request browser non-JSON redirect ke halaman asal setelah store */
     public function test_browser_store_redirects_back_with_success_flash(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'user_store_kelas',
             'password' => 'password123',
@@ -430,7 +432,7 @@ class KelasAsalControllerTest extends TestCase
     /** Request browser non-JSON redirect ke halaman asal setelah update */
     public function test_browser_update_redirects_back_with_success_flash(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'user_update_kelas',
             'password' => 'password123',
@@ -446,7 +448,7 @@ class KelasAsalControllerTest extends TestCase
 
         $response = $this->actingAs($user, 'web')
             ->from('/kelas-asal')
-            ->put('/kelas-asal/' . $kelas->id, [
+            ->put('/kelas-asal/'.$kelas->id, [
                 'nama_kelas' => 'X D Updated',
                 'tingkat' => 'X',
             ]);
@@ -459,7 +461,7 @@ class KelasAsalControllerTest extends TestCase
     /** Request browser non-JSON redirect ke halaman asal setelah destroy */
     public function test_browser_destroy_redirects_back_with_success_flash(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'user_destroy_kelas',
             'password' => 'password123',
@@ -475,7 +477,7 @@ class KelasAsalControllerTest extends TestCase
 
         $response = $this->actingAs($user, 'web')
             ->from('/kelas-asal')
-            ->delete('/kelas-asal/' . $kelas->id);
+            ->delete('/kelas-asal/'.$kelas->id);
 
         $response->assertRedirect('/kelas-asal');
         $response->assertSessionHas('success', 'Berhasil menghapus data Kelas.');
@@ -485,7 +487,7 @@ class KelasAsalControllerTest extends TestCase
     /** Filter kelas asal berdasarkan tanggal periode pendaftaran */
     public function test_can_filter_kelas_by_periode_date(): void
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             'id' => (string) Str::uuid(),
             'username' => 'user_filter_periode_date',
             'password' => 'password123',
@@ -493,7 +495,7 @@ class KelasAsalControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $periode = \App\Models\PeriodePendaftaran::create([
+        $periode = PeriodePendaftaran::create([
             'id' => (string) Str::uuid(),
             'nama_periode' => 'Periode Uji Coba Tanggal',
             'tahun_ajaran' => '2026/2027',

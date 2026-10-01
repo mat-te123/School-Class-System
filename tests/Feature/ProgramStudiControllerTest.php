@@ -17,10 +17,10 @@ class ProgramStudiControllerTest extends TestCase
     private function makeAdmin(): User
     {
         return User::create([
-            'id'        => (string) Str::uuid(),
-            'username'  => 'admin_prodi',
-            'password'  => 'password123',
-            'role'      => 'admin',
+            'id' => (string) Str::uuid(),
+            'username' => 'admin_prodi',
+            'password' => 'password123',
+            'role' => 'admin',
             'is_active' => true,
         ]);
     }
@@ -29,8 +29,8 @@ class ProgramStudiControllerTest extends TestCase
     {
         return ProyeksiUniversitas::create([
             'nama_universitas' => 'Universitas Indonesia',
-            'singkatan'        => 'UI',
-            'is_active'        => true,
+            'singkatan' => 'UI',
+            'is_active' => true,
         ]);
     }
 
@@ -40,10 +40,10 @@ class ProgramStudiControllerTest extends TestCase
 
         $prodi = ProgramStudi::create([
             'proyeksi_universitas_id' => $univ->id,
-            'nama_prodi'              => 'Teknik Informatika',
-            'jenjang'                 => 'S1',
+            'nama_prodi' => 'Teknik Informatika',
+            'jenjang' => 'S1',
             'kelompok_saintek_soshum' => 'Saintek',
-            'is_active'               => true,
+            'is_active' => true,
         ]);
 
         $this->assertDatabaseHas('program_studi', ['nama_prodi' => 'Teknik Informatika']);
@@ -53,15 +53,15 @@ class ProgramStudiControllerTest extends TestCase
     public function test_admin_can_create_program_studi(): void
     {
         $admin = $this->makeAdmin();
-        $univ  = $this->makeUniversitas();
+        $univ = $this->makeUniversitas();
 
         $response = $this->actingAs($admin, 'web')->postJson('/program-studi', [
             'proyeksi_universitas_id' => $univ->id,
-            'nama_prodi'              => 'Ilmu Komputer',
-            'jenjang'                 => 'S1',
-            'akreditasi_prodi'        => 'A',
-            'daya_tampung'            => 120,
-            'peminat_tahun_lalu'      => 1500,
+            'nama_prodi' => 'Ilmu Komputer',
+            'jenjang' => 'S1',
+            'akreditasi_prodi' => 'A',
+            'daya_tampung' => 120,
+            'peminat_tahun_lalu' => 1500,
             'kelompok_saintek_soshum' => 'Saintek',
         ]);
 
@@ -72,10 +72,10 @@ class ProgramStudiControllerTest extends TestCase
     public function test_non_admin_cannot_create_program_studi(): void
     {
         $guru = User::create([
-            'id'        => (string) Str::uuid(),
-            'username'  => 'guru_bk_prodi',
-            'password'  => 'password123',
-            'role'      => 'guru_bk',
+            'id' => (string) Str::uuid(),
+            'username' => 'guru_bk_prodi',
+            'password' => 'password123',
+            'role' => 'guru_bk',
             'is_active' => true,
         ]);
 
@@ -83,8 +83,8 @@ class ProgramStudiControllerTest extends TestCase
 
         $response = $this->actingAs($guru, 'web')->postJson('/program-studi', [
             'proyeksi_universitas_id' => $univ->id,
-            'nama_prodi'              => 'Prodi Tolak',
-            'jenjang'                 => 'S1',
+            'nama_prodi' => 'Prodi Tolak',
+            'jenjang' => 'S1',
         ]);
 
         $response->assertStatus(403);
@@ -96,8 +96,8 @@ class ProgramStudiControllerTest extends TestCase
 
         $response = $this->actingAs($admin, 'web')->postJson('/program-studi', [
             'proyeksi_universitas_id' => (string) Str::uuid(),
-            'nama_prodi'              => 'Prodi Yatim',
-            'jenjang'                 => 'S1',
+            'nama_prodi' => 'Prodi Yatim',
+            'jenjang' => 'S1',
         ]);
 
         $response->assertStatus(422)->assertJsonValidationErrors('proyeksi_universitas_id');
@@ -106,101 +106,101 @@ class ProgramStudiControllerTest extends TestCase
     public function test_can_filter_program_studi_by_kelompok(): void
     {
         $admin = $this->makeAdmin();
-        $univ  = $this->makeUniversitas();
+        $univ = $this->makeUniversitas();
 
         ProgramStudi::create([
             'proyeksi_universitas_id' => $univ->id,
-            'nama_prodi'              => 'Teknik Informatika',
-            'jenjang'                 => 'S1',
+            'nama_prodi' => 'Teknik Informatika',
+            'jenjang' => 'S1',
             'kelompok_saintek_soshum' => 'Saintek',
-            'is_active'               => true,
+            'is_active' => true,
         ]);
 
         ProgramStudi::create([
             'proyeksi_universitas_id' => $univ->id,
-            'nama_prodi'              => 'Hubungan Internasional',
-            'jenjang'                 => 'S1',
+            'nama_prodi' => 'Hubungan Internasional',
+            'jenjang' => 'S1',
             'kelompok_saintek_soshum' => 'Soshum',
-            'is_active'               => true,
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($admin, 'web')
-                         ->getJson('/program-studi?kelompok_saintek_soshum=Saintek');
+            ->getJson('/program-studi?kelompok_saintek_soshum=Saintek');
 
         $response->assertStatus(200)
-                 ->assertJson(['success' => true])
-                 ->assertJsonCount(1, 'data.data');
+            ->assertJson(['success' => true])
+            ->assertJsonCount(1, 'data.data');
     }
 
     public function test_can_filter_program_studi_by_universitas(): void
     {
         $admin = $this->makeAdmin();
 
-        $ui  = $this->makeUniversitas();
+        $ui = $this->makeUniversitas();
         $itb = ProyeksiUniversitas::create([
             'nama_universitas' => 'Institut Teknologi Bandung',
-            'singkatan'        => 'ITB',
-            'is_active'        => true,
+            'singkatan' => 'ITB',
+            'is_active' => true,
         ]);
 
         ProgramStudi::create([
             'proyeksi_universitas_id' => $ui->id,
-            'nama_prodi'              => 'Ilmu Komputer',
-            'jenjang'                 => 'S1',
-            'is_active'               => true,
+            'nama_prodi' => 'Ilmu Komputer',
+            'jenjang' => 'S1',
+            'is_active' => true,
         ]);
 
         ProgramStudi::create([
             'proyeksi_universitas_id' => $itb->id,
-            'nama_prodi'              => 'Teknik Elektro',
-            'jenjang'                 => 'S1',
-            'is_active'               => true,
+            'nama_prodi' => 'Teknik Elektro',
+            'jenjang' => 'S1',
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($admin, 'web')
-                         ->getJson("/program-studi?proyeksi_universitas_id={$itb->id}");
+            ->getJson("/program-studi?proyeksi_universitas_id={$itb->id}");
 
         $response->assertStatus(200)
-                 ->assertJsonCount(1, 'data.data')
-                 ->assertJsonPath('data.data.0.nama_prodi', 'Teknik Elektro');
+            ->assertJsonCount(1, 'data.data')
+            ->assertJsonPath('data.data.0.nama_prodi', 'Teknik Elektro');
     }
 
     public function test_index_includes_universitas_relation(): void
     {
         $admin = $this->makeAdmin();
-        $univ  = $this->makeUniversitas();
+        $univ = $this->makeUniversitas();
 
         ProgramStudi::create([
             'proyeksi_universitas_id' => $univ->id,
-            'nama_prodi'              => 'Fisika',
-            'jenjang'                 => 'S1',
-            'is_active'               => true,
+            'nama_prodi' => 'Fisika',
+            'jenjang' => 'S1',
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($admin, 'web')->getJson('/program-studi');
 
         $response->assertStatus(200)
-                 ->assertJsonPath('data.data.0.proyeksi_universitas.singkatan', 'UI');
+            ->assertJsonPath('data.data.0.proyeksi_universitas.singkatan', 'UI');
     }
 
     public function test_siswa_can_read_program_studi(): void
     {
         $siswa = Siswa::create([
-            'id'           => (string) Str::uuid(),
-            'nisn'         => '0011223355',
-            'nis'          => '11002',
+            'id' => (string) Str::uuid(),
+            'nisn' => '0011223355',
+            'nis' => '11002',
             'nama_lengkap' => 'Siswa Baca Prodi',
-            'password'     => 'password123',
-            'is_active'    => true,
+            'password' => 'password123',
+            'is_active' => true,
         ]);
 
         $univ = $this->makeUniversitas();
 
         ProgramStudi::create([
             'proyeksi_universitas_id' => $univ->id,
-            'nama_prodi'              => 'Fisika',
-            'jenjang'                 => 'S1',
-            'is_active'               => true,
+            'nama_prodi' => 'Fisika',
+            'jenjang' => 'S1',
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($siswa, 'siswa')->getJson('/program-studi');
@@ -218,13 +218,13 @@ class ProgramStudiControllerTest extends TestCase
     public function test_admin_can_update_program_studi(): void
     {
         $admin = $this->makeAdmin();
-        $univ  = $this->makeUniversitas();
+        $univ = $this->makeUniversitas();
 
         $prodi = ProgramStudi::create([
             'proyeksi_universitas_id' => $univ->id,
-            'nama_prodi'              => 'Matematika',
-            'jenjang'                 => 'S1',
-            'is_active'               => true,
+            'nama_prodi' => 'Matematika',
+            'jenjang' => 'S1',
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($admin, 'web')->putJson("/program-studi/{$prodi->id}", [
@@ -233,7 +233,7 @@ class ProgramStudiControllerTest extends TestCase
 
         $response->assertStatus(200)->assertJson(['success' => true]);
         $this->assertDatabaseHas('program_studi', [
-            'id'           => $prodi->id,
+            'id' => $prodi->id,
             'daya_tampung' => 80,
         ]);
     }
@@ -241,13 +241,13 @@ class ProgramStudiControllerTest extends TestCase
     public function test_admin_can_delete_program_studi(): void
     {
         $admin = $this->makeAdmin();
-        $univ  = $this->makeUniversitas();
+        $univ = $this->makeUniversitas();
 
         $prodi = ProgramStudi::create([
             'proyeksi_universitas_id' => $univ->id,
-            'nama_prodi'              => 'Prodi Hapus',
-            'jenjang'                 => 'S1',
-            'is_active'               => true,
+            'nama_prodi' => 'Prodi Hapus',
+            'jenjang' => 'S1',
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($admin, 'web')->deleteJson("/program-studi/{$prodi->id}");
@@ -259,13 +259,13 @@ class ProgramStudiControllerTest extends TestCase
     public function test_deleting_universitas_cascades_to_program_studi(): void
     {
         $admin = $this->makeAdmin();
-        $univ  = $this->makeUniversitas();
+        $univ = $this->makeUniversitas();
 
         $prodi = ProgramStudi::create([
             'proyeksi_universitas_id' => $univ->id,
-            'nama_prodi'              => 'Prodi Ikut Hapus',
-            'jenjang'                 => 'S1',
-            'is_active'               => true,
+            'nama_prodi' => 'Prodi Ikut Hapus',
+            'jenjang' => 'S1',
+            'is_active' => true,
         ]);
 
         // Soft delete universitas: prodi tetap ada (soft delete tidak trigger FK cascade)

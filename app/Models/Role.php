@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
@@ -22,8 +21,6 @@ class Role extends Model
 
     /**
      * Relasi ke model User.
-     *
-     * @return HasMany
      */
     public function users(): HasMany
     {

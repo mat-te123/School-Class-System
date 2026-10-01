@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('laporan_pesan', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            
+
             // Pelapor (User Admin/Guru atau Siswa)
             $table->foreignUuid('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->foreignUuid('siswa_id')->nullable()->constrained('siswa')->cascadeOnDelete();

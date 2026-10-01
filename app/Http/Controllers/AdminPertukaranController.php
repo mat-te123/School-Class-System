@@ -21,8 +21,8 @@ class AdminPertukaranController extends Controller
         $this->ensureAdmin();
 
         $validated = $request->validate([
-            'status'   => 'nullable|string|in:menunggu,disetujui,ditolak',
-            'search'   => 'nullable|string|max:50',
+            'status' => 'nullable|string|in:menunggu,disetujui,ditolak',
+            'search' => 'nullable|string|max:50',
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
 
@@ -34,16 +34,16 @@ class AdminPertukaranController extends Controller
             'peninjau',
         ]);
 
-        if (!empty($validated['status'])) {
+        if (! empty($validated['status'])) {
             $query->where('status', $validated['status']);
         }
 
-        if (!empty($validated['search'])) {
+        if (! empty($validated['search'])) {
             $search = trim($validated['search']);
             $query->where(function ($q) use ($search) {
                 $q->whereHas('siswa', function ($s) use ($search) {
                     $s->where('nama_lengkap', 'like', "%{$search}%")
-                      ->orWhere('nisn', 'like', "%{$search}%");
+                        ->orWhere('nisn', 'like', "%{$search}%");
                 });
             });
         }
@@ -53,7 +53,7 @@ class AdminPertukaranController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'data'    => $pengajuan,
+                'data' => $pengajuan,
             ]);
         }
 
@@ -78,7 +78,7 @@ class AdminPertukaranController extends Controller
         if (request()->wantsJson() || request()->ajax()) {
             return response()->json([
                 'success' => true,
-                'data'    => $pengajuan,
+                'data' => $pengajuan,
             ]);
         }
 
@@ -94,22 +94,22 @@ class AdminPertukaranController extends Controller
 
         $pengajuan = PengajuanPertukaran::findOrFail($id);
 
-        if (!$pengajuan->dokumen_persetujuan_path) {
+        if (! $pengajuan->dokumen_persetujuan_path) {
             return response()->json([
                 'success' => false,
                 'message' => 'Dokumen persetujuan wali belum diunggah oleh siswa.',
             ], 404);
         }
 
-        if (!Storage::disk('public')->exists($pengajuan->dokumen_persetujuan_path)) {
+        if (! Storage::disk('public')->exists($pengajuan->dokumen_persetujuan_path)) {
             return response()->json([
                 'success' => false,
                 'message' => 'File dokumen tidak ditemukan di penyimpanan.',
             ], 404);
         }
 
-        $filename = 'dokumen_pertukaran_' . $pengajuan->siswa->nisn
-            . '.' . pathinfo($pengajuan->dokumen_persetujuan_path, PATHINFO_EXTENSION);
+        $filename = 'dokumen_pertukaran_'.$pengajuan->siswa->nisn
+            .'.'.pathinfo($pengajuan->dokumen_persetujuan_path, PATHINFO_EXTENSION);
 
         return Storage::disk('public')->download($pengajuan->dokumen_persetujuan_path, $filename);
     }
@@ -134,9 +134,9 @@ class AdminPertukaranController extends Controller
         DB::transaction(function () use ($pengajuan, $request) {
             // Update status pengajuan
             $pengajuan->update([
-                'status'           => 'disetujui',
-                'catatan_admin'    => $request->input('catatan_admin'),
-                'ditinjau_oleh'    => Auth::guard('web')->id(),
+                'status' => 'disetujui',
+                'catatan_admin' => $request->input('catatan_admin'),
+                'ditinjau_oleh' => Auth::guard('web')->id(),
                 'tanggal_tinjauan' => now(),
             ]);
 
@@ -145,13 +145,13 @@ class AdminPertukaranController extends Controller
             if ($hasil) {
                 $hasil->update([
                     'paket_menu_pilihan_id' => $pengajuan->paket_tujuan_id,
-                    'is_manual_override'    => true,
-                    'catatan_perubahan'     => 'Persetujuan pertukaran: dari '
-                        . ($pengajuan->paketAsal?->nama_menu ?? 'paket sebelumnya')
-                        . ' ke ' . ($pengajuan->paketTujuan?->nama_menu ?? 'paket baru'),
-                    'diubah_oleh'           => Auth::guard('web')->id(),
-                    'tanggal_perubahan'     => now(),
-                    'mekanisme'             => 'Pelimpahan Kompetensi',
+                    'is_manual_override' => true,
+                    'catatan_perubahan' => 'Persetujuan pertukaran: dari '
+                        .($pengajuan->paketAsal?->nama_menu ?? 'paket sebelumnya')
+                        .' ke '.($pengajuan->paketTujuan?->nama_menu ?? 'paket baru'),
+                    'diubah_oleh' => Auth::guard('web')->id(),
+                    'tanggal_perubahan' => now(),
+                    'mekanisme' => 'Pelimpahan Kompetensi',
                 ]);
             }
         });
@@ -159,7 +159,7 @@ class AdminPertukaranController extends Controller
         return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Pengajuan pertukaran berhasil disetujui. Paket kelas siswa telah diperbarui.',
-            'data'    => $pengajuan->fresh(['siswa', 'paketAsal', 'paketTujuan', 'peninjau']),
+            'data' => $pengajuan->fresh(['siswa', 'paketAsal', 'paketTujuan', 'peninjau']),
         ]);
     }
 
@@ -184,23 +184,23 @@ class AdminPertukaranController extends Controller
         }
 
         $pengajuan->update([
-            'status'           => 'ditolak',
-            'catatan_admin'    => $validated['catatan_admin'],
-            'ditinjau_oleh'    => Auth::guard('web')->id(),
+            'status' => 'ditolak',
+            'catatan_admin' => $validated['catatan_admin'],
+            'ditinjau_oleh' => Auth::guard('web')->id(),
             'tanggal_tinjauan' => now(),
         ]);
 
         return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Pengajuan pertukaran berhasil ditolak.',
-            'data'    => $pengajuan->fresh(['siswa', 'paketAsal', 'paketTujuan', 'peninjau']),
+            'data' => $pengajuan->fresh(['siswa', 'paketAsal', 'paketTujuan', 'peninjau']),
         ]);
     }
 
     private function ensureAdmin(): void
     {
         $user = Auth::guard('web')->user();
-        if (!$user || $user->role !== 'admin') {
+        if (! $user || $user->role !== 'admin') {
             if (request()->wantsJson() || request()->ajax()) {
                 abort(response()->json([
                     'success' => false,

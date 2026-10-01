@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Jobs\ProcessLegerImportJob;
+use App\Models\KelasAsal;
 use App\Models\Ketidakhadiran;
 use App\Models\MasterMataPelajaran;
 use App\Models\NilaiLegerSiswa;
+use App\Models\RiwayatUploadLeger;
 use App\Models\Siswa;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,10 +27,10 @@ class LegerImportControllerTest extends TestCase
         parent::setUp();
 
         $this->admin = User::create([
-            'id'        => (string) Str::uuid(),
-            'username'  => 'admin_leger',
-            'password'  => 'password123',
-            'role'      => 'admin',
+            'id' => (string) Str::uuid(),
+            'username' => 'admin_leger',
+            'password' => 'password123',
+            'role' => 'admin',
             'is_active' => true,
         ]);
     }
@@ -40,9 +42,9 @@ class LegerImportControllerTest extends TestCase
     {
         Queue::fake();
 
-        $kelas = \App\Models\KelasAsal::create([
-            'id'        => (string) Str::uuid(),
-            'nama_kelas'=> 'X A',
+        $kelas = KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'X A',
             'is_active' => true,
         ]);
 
@@ -61,16 +63,16 @@ class LegerImportControllerTest extends TestCase
 
         // Act: POST file ke /leger/import sebagai admin (wajib kelas_asal_id + angkatan)
         $response = $this->actingAs($this->admin, 'web')->postJson('/leger/import', [
-            'file'          => $uploadedFile,
+            'file' => $uploadedFile,
             'kelas_asal_id' => $kelas->id,
-            'angkatan'      => '2024/2025',
+            'angkatan' => '2024/2025',
         ]);
 
         // Assert: HTTP 202 Accepted & status queued
         $response->assertStatus(202)
             ->assertJson([
                 'success' => true,
-                'status'  => 'queued',
+                'status' => 'queued',
             ]);
 
         // Assert: Job ProcessLegerImportJob berhasil masuk ke antrean queue
@@ -83,7 +85,7 @@ class LegerImportControllerTest extends TestCase
     public function test_sync_leger_xlsx_upload_and_database_import(): void
     {
         $samplePath = base_path('Leger_20242_X A.xlsx');
-        if (!file_exists($samplePath)) {
+        if (! file_exists($samplePath)) {
             $this->markTestSkipped('Sample XLSX file Leger_20242_X A.xlsx not present for sync import test.');
         }
 
@@ -96,16 +98,16 @@ class LegerImportControllerTest extends TestCase
         );
 
         // Act: POST file ke /leger/import?sync=1 sebagai admin (wajib kelas_asal_id + angkatan)
-        $kelas = \App\Models\KelasAsal::create([
-            'id'        => (string) Str::uuid(),
-            'nama_kelas'=> 'X A',
+        $kelas = KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'X A',
             'is_active' => true,
         ]);
 
         $response = $this->actingAs($this->admin, 'web')->postJson('/leger/import?sync=1', [
-            'file'          => $uploadedFile,
+            'file' => $uploadedFile,
             'kelas_asal_id' => $kelas->id,
-            'angkatan'      => '2024/2025',
+            'angkatan' => '2024/2025',
         ]);
 
         // Assert: Respon JSON HTTP 200 OK
@@ -166,10 +168,10 @@ class LegerImportControllerTest extends TestCase
     {
         Queue::fake();
 
-        $kelas = \App\Models\KelasAsal::create([
-            'id'         => (string) Str::uuid(),
+        $kelas = KelasAsal::create([
+            'id' => (string) Str::uuid(),
             'nama_kelas' => 'X B Khusus',
-            'is_active'  => true,
+            'is_active' => true,
         ]);
 
         $samplePath = base_path('Leger_20242_X A.xlsx');
@@ -186,16 +188,16 @@ class LegerImportControllerTest extends TestCase
         }
 
         $response = $this->actingAs($this->admin, 'web')->postJson('/leger/import', [
-            'file'          => $uploadedFile,
+            'file' => $uploadedFile,
             'kelas_asal_id' => $kelas->id,
-            'angkatan'      => '2024/2025',
+            'angkatan' => '2024/2025',
         ]);
 
         $response->assertStatus(202)
             ->assertJson([
-                'success'  => true,
-                'status'   => 'queued',
-                'kelas'    => 'X B Khusus',
+                'success' => true,
+                'status' => 'queued',
+                'kelas' => 'X B Khusus',
                 'angkatan' => '2024',
             ]);
 
@@ -207,16 +209,16 @@ class LegerImportControllerTest extends TestCase
      */
     public function test_import_fails_without_angkatan(): void
     {
-        $kelas = \App\Models\KelasAsal::create([
-            'id'        => (string) Str::uuid(),
-            'nama_kelas'=> 'X C',
+        $kelas = KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'X C',
             'is_active' => true,
         ]);
 
         $file = UploadedFile::fake()->create('Leger.xlsx', 10, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
         $response = $this->actingAs($this->admin, 'web')->postJson('/leger/import', [
-            'file'          => $file,
+            'file' => $file,
             'kelas_asal_id' => $kelas->id,
             // angkatan tidak diisi
         ]);
@@ -234,7 +236,7 @@ class LegerImportControllerTest extends TestCase
         $file = UploadedFile::fake()->create('Leger.xlsx', 10, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
         $response = $this->actingAs($this->admin, 'web')->postJson('/leger/import', [
-            'file'     => $file,
+            'file' => $file,
             'angkatan' => '2024/2025',
             // kelas_asal_id tidak diisi
         ]);
@@ -251,30 +253,30 @@ class LegerImportControllerTest extends TestCase
     {
         Queue::fake();
 
-        $kelas = \App\Models\KelasAsal::create([
-            'id'        => (string) Str::uuid(),
-            'nama_kelas'=> 'X A',
+        $kelas = KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'X A',
             'is_active' => true,
         ]);
 
         // Buat riwayat upload yang sudah selesai untuk kelas + angkatan yang sama (format 4 digit)
-        \App\Models\RiwayatUploadLeger::create([
-            'id'            => (string) Str::uuid(),
+        RiwayatUploadLeger::create([
+            'id' => (string) Str::uuid(),
             'kelas_asal_id' => $kelas->id,
-            'nama_kelas'    => 'X A',
-            'angkatan'      => '2024',
-            'file_name'     => 'Leger_lama.xlsx',
-            'file_path'     => '/tmp/Leger_lama.xlsx',
-            'jumlah_siswa'  => 30,
-            'status'        => 'completed',
+            'nama_kelas' => 'X A',
+            'angkatan' => '2024',
+            'file_name' => 'Leger_lama.xlsx',
+            'file_path' => '/tmp/Leger_lama.xlsx',
+            'jumlah_siswa' => 30,
+            'status' => 'completed',
         ]);
 
         $file = UploadedFile::fake()->create('Leger_baru.xlsx', 10, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
         $response = $this->actingAs($this->admin, 'web')->postJson('/leger/import', [
-            'file'          => $file,
+            'file' => $file,
             'kelas_asal_id' => $kelas->id,
-            'angkatan'      => '2024/2025',
+            'angkatan' => '2024/2025',
         ]);
 
         $response->assertStatus(409)
@@ -292,13 +294,13 @@ class LegerImportControllerTest extends TestCase
     public function test_can_download_uploaded_leger_file(): void
     {
         $filename = 'test_download_sample.xlsx';
-        $path = storage_path('app/public/leger_imports/' . $filename);
-        if (!file_exists(dirname($path))) {
+        $path = storage_path('app/public/leger_imports/'.$filename);
+        if (! file_exists(dirname($path))) {
             mkdir(dirname($path), 0755, true);
         }
         file_put_contents($path, 'dummy excel content');
 
-        $response = $this->actingAs($this->admin, 'web')->get('/leger/download/' . $filename);
+        $response = $this->actingAs($this->admin, 'web')->get('/leger/download/'.$filename);
 
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -311,9 +313,9 @@ class LegerImportControllerTest extends TestCase
     {
         Queue::fake();
 
-        $kelas = \App\Models\KelasAsal::create([
-            'id'        => (string) Str::uuid(),
-            'nama_kelas'=> 'X B',
+        $kelas = KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'X B',
             'is_active' => true,
         ]);
 
@@ -322,9 +324,9 @@ class LegerImportControllerTest extends TestCase
         $response = $this->actingAs($this->admin, 'web')
             ->from('/leger/history')
             ->post('/leger/import', [
-                'file'          => $file,
+                'file' => $file,
                 'kelas_asal_id' => $kelas->id,
-                'angkatan'      => '2024/2025',
+                'angkatan' => '2024/2025',
             ]);
 
         $response->assertRedirect('/leger/history');

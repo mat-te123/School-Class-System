@@ -27,8 +27,6 @@ class KriteriaBobotMenu extends Model
 
     /**
      * Relasi ke model PaketMenuPilihan.
-     *
-     * @return BelongsTo
      */
     public function paketMenuPilihan(): BelongsTo
     {
@@ -37,8 +35,6 @@ class KriteriaBobotMenu extends Model
 
     /**
      * Relasi ke model MasterMataPelajaran (alias: mataPelajaran).
-     *
-     * @return BelongsTo
      */
     public function masterMataPelajaran(): BelongsTo
     {

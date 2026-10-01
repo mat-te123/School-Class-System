@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\MasterMataPelajaran;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\MasterMataPelajaran>
+ * @extends Factory<MasterMataPelajaran>
  */
 class MasterMataPelajaranFactory extends Factory
 {
@@ -14,7 +15,7 @@ class MasterMataPelajaranFactory extends Factory
      *
      * @var string
      */
-    protected $model = \App\Models\MasterMataPelajaran::class;
+    protected $model = MasterMataPelajaran::class;
 
     /**
      * Define the model's default state.

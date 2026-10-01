@@ -12,6 +12,7 @@ class DetailPendaftaranPilihan extends Model
     use HasFactory, HasUuids;
 
     protected $table = 'detail_pendaftaran_pilihan';
+
     public $timestamps = false;
 
     protected $fillable = [

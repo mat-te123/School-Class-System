@@ -21,8 +21,6 @@ class KelasAsal extends Model
 
     /**
      * Relasi ke model Siswa.
-     *
-     * @return HasMany
      */
     public function siswas(): HasMany
     {
