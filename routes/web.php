@@ -113,6 +113,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::post('/leger/import', [LegerImportController::class, 'import'])->name('leger.import');
 
     // Nilai Siswa - FR-13 impor nilai per mapel, FR-14 perbaiki nilai (admin only, dicek di controller)
+    Route::get('/nilai-siswa/{siswa_id}', [NilaiSiswaController::class, 'show'])->name('nilai-siswa.show');
     Route::post('/nilai-siswa/import-mapel', [NilaiSiswaController::class, 'importMapel'])->name('nilai-siswa.import-mapel');
     Route::put('/nilai-siswa/{id}', [NilaiSiswaController::class, 'update'])->name('nilai-siswa.update');
 
