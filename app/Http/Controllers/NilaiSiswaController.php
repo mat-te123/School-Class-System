@@ -111,6 +111,39 @@ class NilaiSiswaController extends Controller
 
         return view('nilai-siswa.index-siswa', compact('data'));
     }
+    /**
+     * Menampilkan detail nilai dari siswa yang spesifik (Admin Only).
+     */
+    public function show(Request $request, string $siswaId)
+    {
+        if ($denied = $this->denyIfNotAdmin()) {
+            return $denied;
+        }
+
+        $siswa = Siswa::findOrFail($siswaId);
+
+        $query = DetailNilaiSiswa::with([
+            'mataPelajaran:id,kode_mapel,nama_mapel',
+            'leger:id,siswa_id,tahun_ajaran,semester,rata_keseluruhan,rata_6_mapel',
+        ])
+        ->whereHas('leger', function ($q) use ($siswaId) {
+            $q->where('siswa_id', $siswaId);
+        })
+        ->orderBy('master_mata_pelajaran_id');
+
+        $data = $query->get();
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil detail nilai siswa.',
+                'siswa'   => $siswa->only(['id', 'nisn', 'nis', 'nama_lengkap', 'kelas_asal_id']),
+                'data'    => $data,
+            ]);
+        }
+
+        return view('nilai-siswa.show', compact('data', 'siswa'));
+    }
 
     /**
      * FR-14: Perbaiki satu nilai mata pelajaran siswa.
