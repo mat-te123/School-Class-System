@@ -74,4 +74,12 @@ class Siswa extends Authenticatable
     {
         return $this->hasMany(PendaftaranPilihan::class, 'siswa_id');
     }
+
+    /**
+     * Nilai leger siswa, dikelompokkan berdasarkan tahun ajaran dan semester.
+     */
+    public function nilaiLegerSiswa(): HasMany
+    {
+        return $this->hasMany(NilaiLegerSiswa::class, 'siswa_id');
+    }
 }

@@ -140,11 +140,22 @@ class SiswaAuthController extends Controller
             abort(401, 'Unauthenticated / Akses ditolak.');
         }
 
+        // Muat profil dan seluruh nilai dalam satu request agar halaman siswa
+        // dapat menampilkan identitas serta nilainya tanpa request terpisah.
+        $siswa->load([
+            'kelasAsalRelation:id,nama_kelas',
+            'nilaiLegerSiswa' => fn ($query) => $query
+                ->with(['details.mataPelajaran:id,kode_mapel,nama_mapel'])
+                ->orderByDesc('tahun_ajaran')
+                ->orderByDesc('semester'),
+        ]);
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'data' => [
                     'siswa' => $siswa,
+                    'nilai' => $siswa->nilaiLegerSiswa,
                 ],
             ]);
         }
