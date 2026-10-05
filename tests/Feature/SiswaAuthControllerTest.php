@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Siswa;
+use App\Models\DetailNilaiSiswa;
+use App\Models\MasterMataPelajaran;
+use App\Models\NilaiLegerSiswa;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -187,6 +190,43 @@ class SiswaAuthControllerTest extends TestCase
                     ],
                 ],
             ]);
+    }
+
+    /** Profil siswa dan nilai tersedia dalam satu response untuk frontend. */
+    public function test_authenticated_siswa_can_get_profile_with_nilai(): void
+    {
+        $siswa = Siswa::create([
+            'nisn' => '1234567890',
+            'nis' => '1001',
+            'nama_lengkap' => 'Budi Santoso',
+            'is_active' => true,
+        ]);
+        $mapel = MasterMataPelajaran::create([
+            'kode_mapel' => 'MTK',
+            'nama_mapel' => 'Matematika',
+            'kelompok_mapel' => 'umum',
+            'is_active' => true,
+        ]);
+        $leger = NilaiLegerSiswa::create([
+            'siswa_id' => $siswa->id,
+            'tahun_ajaran' => '2025/2026',
+            'semester' => 'Genap',
+            'rata_keseluruhan' => 88,
+        ]);
+        DetailNilaiSiswa::create([
+            'nilai_leger_siswa_id' => $leger->id,
+            'master_mata_pelajaran_id' => $mapel->id,
+            'nilai_angka' => 88,
+            'predikat' => 'B',
+        ]);
+
+        $response = $this->actingAs($siswa, 'siswa')->getJson('/siswa/profile');
+
+        $response->assertOk()
+            ->assertJsonPath('data.siswa.id', $siswa->id)
+            ->assertJsonPath('data.nilai.0.siswa_id', $siswa->id)
+            ->assertJsonPath('data.nilai.0.details.0.nilai_angka', 88)
+            ->assertJsonPath('data.nilai.0.details.0.mata_pelajaran.nama_mapel', 'Matematika');
     }
 
     /**
