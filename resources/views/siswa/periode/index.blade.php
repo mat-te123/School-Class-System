@@ -1,9 +1,7 @@
 <x-app-layout title="Periode" type="siswa">
     <span>
-        {{ json_encode($formattedMenus) }}
+        @dump($formattedMenus)
     </span>
-    <span>
-        {{ json_encode($activePeriods) }}
-    </span>
+    <pre>{{ json_encode($activePeriods, JSON_PRETTY_PRINT) }}</pre>
 
 </x-app-layout>
