@@ -9,8 +9,10 @@
                 <img src="{{ asset('Icon/Bell_light.svg') }}" alt="notification icon" class="w-6 h-6" />
             </div>
             @php
-                $name = 'Antonio Ledger';
-                $initials = collect(explode(' ', $name))->map(fn($word) => strtoupper(substr($word, 0, 1)))->join('');
+
+                $initials = collect(explode(' ', $siswa->nama_lengkap))
+                    ->map(fn($word) => strtoupper(substr($word, 0, 1)))
+                    ->join('');
             @endphp
             <div
                 class="flex flex-row items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-200 transition-all duration-300 ease-in-out cursor-pointer">
@@ -18,7 +20,7 @@
                     class="p-1 w-7 h-7 rounded-full bg-black text-white flex items-center justify-center font-bold text-sm leading-4">
                     {{ $initials }}
                 </div>
-                <span class="text-xs leading-4 font-semibold">{{ $name }}</span>
+                <span class="text-xs leading-4 font-semibold">{{ $siswa->nama_lengkap }}</span>
             </div>
         </div>
     </div>
@@ -28,10 +30,10 @@
             <div class="flex flex-row justify-between items-center border-b border-gray-300 pb-2">
                 <div class="flex flex-col gap-2">
                     <h1 class="text-2xl font-semibold leading-6">
-                        {{ $name }}
+                        {{ $siswa->nama_lengkap }}
                     </h1>
                     <span class="text-sm text-gray-500">
-                        NISN : - • NIS : -
+                        NISN : {{ $siswa->nisn ? $siswa->nisn : '-' }} • NIS : {{ $siswa->nisn ? $siswa->nisn : '-' }}
                     </span>
                 </div>
                 <div class="flex flex-row gap-4">
@@ -42,11 +44,12 @@
             </div>
             <div class="flex flex-row justify-between w-full">
                 @php
+                    $angkatan = "{$siswa->angkatan}/" . ($siswa->angkatan + 1);
                     $data = [
                         'Kelas' => '-',
-                        'Jenis Kelamin' => '-',
-                        'Angkatan' => '-',
-                        'Status' => false ? 'Aktif' : 'Tidak Aktif',
+                        'Jenis Kelamin' => $siswa->jenis_kelamin ? $siswa->jenis_kelamin : '-',
+                        'Angkatan' => $angkatan ? $angkatan : '-',
+                        'Status' => $siswa->is_active ? 'Aktif' : 'Tidak Aktif',
                     ];
                 @endphp
                 @foreach ($data as $key => $value)
@@ -79,7 +82,7 @@
             </a>
         </div>
         {{-- periode Hardcoded --}}
-        <x-siswa-periode-data tahun_ajaran="2026/2027" />
+        <x-siswa-periode-data tahun_ajaran="{{ $angkatan }}" />
 
     </div>
 
