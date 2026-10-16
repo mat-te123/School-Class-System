@@ -23,39 +23,29 @@
         </div>
     </div>
     <div class="grid grid-cols-4 p-8">
-        <div class="flex flex-col bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4">
+        <div class="col-span-3 flex flex-col bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4">
             <div class="flex flex-row justify-between items-center border-b border-gray-300 pb-2">
                 <div class="flex flex-col gap-2">
                     <h1 class="text-2xl font-semibold leading-6">
-                        {{ $siswa->nama_lengkap ? $siswa->nama_lengkap : '-' }}
+                        {{ $name }}
                     </h1>
                     <span class="text-sm text-gray-500">
-                        NISN : {{ $siswa->nisn }} • NIS : {{ $siswa->nis }}
+                        NISN : - • NIS : -
                     </span>
                 </div>
                 <div class="flex flex-row gap-4">
-                    <button class="text-sm bg-gray-900 w-fit py-1 px-3 text-white rounded-lg hover:bg-gray-800">
-                        edit
-                    </button>
-                    <button
-                        @click=" 
-                        showDeleteModal = true; 
-                        confirmationData='{{ $siswa->nama_lengkap }}';
-                        deleteUrl = '{{ route('siswa.destroy', $siswa->id) }}';
-
-                        "
-                        class="text-sm bg-red-600 w-fit py-1 px-3 text-white rounded-lg hover:bg-red-500">
-                        delete
+                    <button class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-lg hover:bg-gray-800">
+                        check detail
                     </button>
                 </div>
             </div>
             <div class="flex flex-row justify-between w-full">
                 @php
                     $data = [
-                        'Kelas' => $siswa->KelasAsalRelation ? $siswa->KelasAsalRelation->nama_kelas : '-',
-                        'Jenis Kelamin' => $siswa->jenis_kelamin ? $siswa->jenis_kelamin : '-',
-                        'Angkatan' => $siswa->angkatan ? $siswa->angkatan : '-',
-                        'Status' => $siswa->is_active ? 'Aktif' : 'Tidak Aktif',
+                        'Kelas' => '-',
+                        'Jenis Kelamin' => '-',
+                        'Angkatan' => '-',
+                        'Status' => false ? 'Aktif' : 'Tidak Aktif',
                     ];
                 @endphp
                 @foreach ($data as $key => $value)
