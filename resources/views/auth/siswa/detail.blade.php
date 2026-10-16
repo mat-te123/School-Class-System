@@ -20,6 +20,7 @@
                 class="bg-gradient-to-t from-[#273344] to-[#1a202c] text-white text-sm font-semibold py-2 px-4 rounded-lg w-fit">
                 Kembali
             </a>
+            {{-- Data Card --}}
             <div class="flex flex-col bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4">
                 <div class="flex flex-row justify-between items-center border-b border-gray-300 pb-2">
                     <div class="flex flex-col gap-2">

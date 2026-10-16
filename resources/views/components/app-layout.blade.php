@@ -1,4 +1,4 @@
-@props(['title' => 'Dashboard'])
+@props(['title' => 'Dashboard', 'type' => ''])
 
 <!DOCTYPE html>
 <html lang="id">
@@ -14,7 +14,11 @@
 </head>
 
 <body class="bg-gray-100 min-h-screen flex">
-    <x-sidebar />
+    @if ($type === 'siswa')
+        <x-siswa-sidebar />
+    @else
+        <x-admin-sidebar />
+    @endif
     <main class="flex-1 h-screen flex flex-col overflow-y-auto">
         {{ $slot }}
     </main>
