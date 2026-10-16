@@ -63,6 +63,7 @@
             </div>
 
         </div>
+        {{-- Reprt Card --}}
         <div class="col-span-1 flex flex-col bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4 justify-between">
             <div>
                 <h1 class="text-2xl font-semibold leading-6">
@@ -77,6 +78,8 @@
                 Hubungi Admin
             </a>
         </div>
+        {{-- periode Hardcoded --}}
+        <x-siswa-periode-data tahun_ajaran="2026/2027" />
 
     </div>
 
