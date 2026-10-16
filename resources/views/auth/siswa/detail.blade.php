@@ -71,5 +71,7 @@
             </div>
         </div>
 
+        <x-nilai-siswa-profile :siswa-id="$siswa->id" />
+
         <x-delete-modal />
 </x-app-layout>
