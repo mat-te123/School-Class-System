@@ -19,6 +19,7 @@ use App\Http\Controllers\ProyeksiUniversitasController;
 use App\Http\Controllers\ServerClockController;
 use App\Http\Controllers\SiswaAuthController;
 use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\SiswaDashboardController;
 use App\Http\Controllers\SiswaPertukaranController;
 use App\Http\Controllers\UserAuthController;
 use Illuminate\Support\Facades\Route;
@@ -69,9 +70,7 @@ Route::middleware(['auth:siswa'])->group(function () {
     Route::get('/siswa/live-ranking', [PendaftaranPilihanController::class, 'liveRankingSiswa'])->name('siswa.live-ranking');
 
     // Dashboard siswa (render Blade view)
-    Route::get('/siswa/dashboard', function () {
-        return view('siswa.dashboard.index');
-    })->name('siswa.dashboard');
+    Route::get('/siswa/dashboard', [SiswaDashboardController::class, 'index'])->name('siswa.dashboard');
 
     // Pertukaran kelas/paket siswa
     Route::get('/siswa/pertukaran', [SiswaPertukaranController::class, 'index'])->name('siswa.pertukaran.index');
