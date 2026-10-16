@@ -114,7 +114,7 @@ class UserAuthController extends Controller
             ]);
         }
 
-        return redirect()->intended('/admin/dashboard')->with('success', 'Selamat datang kembali, '.$user->username);
+        return redirect()->intended('/admin/siswa')->with('success', 'Selamat datang kembali, '.$user->username);
     }
 
     /**
