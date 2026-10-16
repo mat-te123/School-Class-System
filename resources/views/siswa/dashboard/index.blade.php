@@ -22,7 +22,8 @@
             </div>
         </div>
     </div>
-    <div class="grid grid-cols-4 p-8">
+    <div class="grid grid-cols-4 p-8 gap-4">
+        {{-- Student Card --}}
         <div class="col-span-3 flex flex-col bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4">
             <div class="flex flex-row justify-between items-center border-b border-gray-300 pb-2">
                 <div class="flex flex-col gap-2">
@@ -34,8 +35,8 @@
                     </span>
                 </div>
                 <div class="flex flex-row gap-4">
-                    <button class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-lg hover:bg-gray-800">
-                        check detail
+                    <button class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
+                        lihat detail
                     </button>
                 </div>
             </div>
@@ -61,6 +62,20 @@
 
             </div>
 
+        </div>
+        <div class="col-span-1 flex flex-col bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4 justify-between">
+            <div>
+                <h1 class="text-2xl font-semibold leading-6">
+                    Mengalami Kendala ?
+                </h1>
+                <span class="text-sm text-gray-500">
+                    Silahkan hubungi admin untuk mendapatkan bantuan.
+                </span>
+            </div>
+            <a href="#"
+                class="bg-gradient-to-t from-[#273344] to-[#1a202c] text-white text-sm font-semibold py-2 px-4 rounded-lg w-full text-center">
+                Hubungi Admin
+            </a>
         </div>
 
     </div>
