@@ -172,7 +172,7 @@ class PaketMenuPilihanController extends Controller
             ]);
         }
 
-        return view('paket-menu-pilihan.index-siswa', compact('formattedMenus', 'activePeriods'));
+        return view('siswa.periode.index', compact('formattedMenus', 'activePeriods'));
     }
 
     /**
