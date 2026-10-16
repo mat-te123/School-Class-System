@@ -20,6 +20,7 @@ use App\Http\Controllers\ServerClockController;
 use App\Http\Controllers\SiswaAuthController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\SiswaDashboardController;
+use App\Http\Controllers\SiswaPeriodeController;
 use App\Http\Controllers\SiswaPertukaranController;
 use App\Http\Controllers\UserAuthController;
 use Illuminate\Support\Facades\Route;
@@ -76,6 +77,10 @@ Route::middleware(['auth:siswa'])->group(function () {
     Route::get('/siswa/pertukaran', [SiswaPertukaranController::class, 'index'])->name('siswa.pertukaran.index');
     Route::post('/siswa/pertukaran', [SiswaPertukaranController::class, 'store'])->name('siswa.pertukaran.store');
     Route::delete('/siswa/pertukaran/{id}', [SiswaPertukaranController::class, 'cancel'])->name('siswa.pertukaran.cancel');
+
+    // Periode Pendaftaran (Melihat Periode Aktif)
+    Route::get('/siswa/periode', [SiswaPeriodeController::class, 'index'])->name('siswa.periode.index');
+    Route::get('/siswa/periode/{id}', [SiswaPeriodeController::class, 'show'])->name('siswa.periode.show');
 });
 
 // Route yang wajib login (bisa dari Siswa maupun Admin / Guru BK)
