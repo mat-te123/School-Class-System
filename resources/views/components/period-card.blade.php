@@ -54,9 +54,10 @@
         <button class="text-sm leading-4 w-full border border-gray-950 rounded-md text-gray-950 p-2">
             Cek persebaran kelas
         </button>
-        <button class="text-sm leading-4 w-full border bg-gray-950 rounded-md text-white p-2">
+        <a href="{{ route('admin.hasil-penjurusan.index', ['periode_id' => $item->id]) }}"
+            class="text-center text-sm leading-4 w-full border bg-gray-950 rounded-md text-white p-2">
             Cek hasil seleksi
-        </button>
+        </a>
     </div>
 
 

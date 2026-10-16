@@ -70,7 +70,7 @@ Route::middleware(['auth:siswa'])->group(function () {
 
     // Dashboard siswa (render Blade view)
     Route::get('/siswa/dashboard', function () {
-        return view('siswa.dashboard');
+        return view('siswa.dashboard.index');
     })->name('siswa.dashboard');
 
     // Pertukaran kelas/paket siswa

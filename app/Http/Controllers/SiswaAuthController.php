@@ -17,7 +17,7 @@ class SiswaAuthController extends Controller
      */
     public function showLoginForm()
     {
-        return view('siswa.login');
+        return view('siswa.auth.login');
     }
 
     /**
@@ -168,8 +168,8 @@ class SiswaAuthController extends Controller
      */
     public function showRegisterForm()
     {
-        if (view()->exists('siswa.register')) {
-            return view('siswa.register');
+        if (view()->exists('siswa.auth.register')) {
+            return view('siswa.auth.register');
         }
 
         return response()->json([

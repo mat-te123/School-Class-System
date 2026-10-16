@@ -13,6 +13,9 @@
         addUrl: '',
         confirmationData: '',
         addExcelUrl: '',
+        clickhandle(id) {
+            window.location.href = '/siswa/' + id;
+        }
     }">
 
         <div class="flex flex-col py-6 px-8 border border-b-black">
@@ -34,32 +37,38 @@
                 </span>
             </div>
 
-            <form method="GET" action="{{ route('admin-siswa.index') }}" class="flex flex-row bg-gray-100 p-3 w-full border border-gray-400 rounded-lg gap-6 items-center">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, NISN, atau NIS..."
+            <form method="GET" action="{{ route('admin-siswa.index') }}"
+                class="flex flex-row bg-gray-100 p-3 w-full border border-gray-400 rounded-lg gap-6 items-center">
+                <input type="text" name="search" value="{{ request('search') }}"
+                    placeholder="Cari nama, NISN, atau NIS..."
                     class="w-full py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
-                <select name="kelas_id" onchange="this.form.submit()" class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
+                <select name="kelas_id" onchange="this.form.submit()"
+                    class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
                     <option value="">Semua Kelas</option>
                     @foreach ($kelasAsal as $kelas)
-                        <option value="{{ $kelas->id }}" {{ request('kelas_id') == $kelas->id || request('kelas_asal_id') == $kelas->id ? 'selected' : '' }}>
+                        <option value="{{ $kelas->id }}"
+                            {{ request('kelas_id') == $kelas->id || request('kelas_asal_id') == $kelas->id ? 'selected' : '' }}>
                             {{ $kelas->nama_kelas }}
                         </option>
                     @endforeach
                 </select>
-                <select name="jenis_kelamin" onchange="this.form.submit()" class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
+                <select name="jenis_kelamin" onchange="this.form.submit()"
+                    class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
                     <option value="">Semua Kelamin</option>
                     <option value="L" {{ request('jenis_kelamin') === 'L' ? 'selected' : '' }}>Laki-laki</option>
                     <option value="P" {{ request('jenis_kelamin') === 'P' ? 'selected' : '' }}>Perempuan</option>
                 </select>
-                <select name="angkatan" onchange="this.form.submit()" class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
+                <select name="angkatan" onchange="this.form.submit()"
+                    class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
                     <option value="">Semua Angkatan</option>
                     @foreach ($tahunAjaranList as $tahun)
-                        <option value="{{ $tahun }}" {{ (request('angkatan') == $tahun || request('tahun_ajaran') == $tahun) ? 'selected' : '' }}>
+                        <option value="{{ $tahun }}"
+                            {{ request('angkatan') == $tahun || request('tahun_ajaran') == $tahun ? 'selected' : '' }}>
                             {{ $tahun }}
                         </option>
                     @endforeach
                 </select>
-                <button
-                    type="button"
+                <button type="button"
                     class="px-4 py-2 text-white rounded-md bg-[linear-gradient(180deg,#273344_11.77%,#000_166.84%)] whitespace-nowrap"
                     @click="
                     showaddmodal=true;
@@ -87,17 +96,19 @@
                     <tbody
                         class="[&_td]:p-3 border-gray-200 [&_td]:border-t [&_td]:text-base [&_td]:leading-6 [&_td]:font-normal [&_td]:text-left">
                         @forelse ($siswa as $index=> $item)
-                            <tr class="bg-gray-50 hover:bg-gray-200 hover:cursor-pointer group">
+                            <tr class="bg-gray-50 hover:bg-gray-200 hover:cursor-pointer group"
+                                @click="clickhandle('{{ $item->id }}')">
                                 <th class="border-r border-t border-gray-200 p-2">
                                     {{ $index + 1 }}
                                 </th>
                                 <td>
-                                    <div class="flex flex-row items-center gap-2 lowercase">
+                                    <div class="flex flex-row items-center gap-2 lowercase justify-between">
                                         {{ $item->nama_lengkap }}
-                                        <button type="button" class="opacity-0 group-hover:opacity-100">
+                                        <a href="{{ route('siswa.show', $item->id) }}"
+                                            class="opacity-0 group-hover:opacity-100 bg-white hover:bg-gray-300 rounded-lg p-1 transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
                                             <img src="{{ asset('Icon/Arrow_down.svg') }}" alt="Arrow icon"
                                                 class="w-4 h-4">
-                                        </button>
+                                        </a>
                                     </div>
                                 </td>
                                 <td>{{ $item->nisn }}</td>

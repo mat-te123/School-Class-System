@@ -9,7 +9,6 @@ use App\Models\PeriodePendaftaran;
 use App\Services\PenjurusanPlacementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class AdminHasilPenjurusanController extends Controller
 {
@@ -96,7 +95,7 @@ class AdminHasilPenjurusanController extends Controller
             ]);
         }
 
-        return view('admin-hasil-penjurusan.index', compact('results', 'summary'));
+        return view('auth.hasil-kelas.index', compact('results', 'summary'));
     }
 
     /**

@@ -108,7 +108,7 @@ class SiswaController extends Controller
             ]);
         }
 
-        return view('siswa.show', compact('siswa'));
+        return view('auth.siswa.detail', compact('siswa'));
     }
 
     public function update(Request $request, string $id)

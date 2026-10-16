@@ -54,7 +54,7 @@ class AdminPendaftaranReviewController extends Controller
             ]);
         }
 
-        return view('admin-pendaftaran-review.index', compact('pendaftaran'));
+        return view('auth.pendaftaran-pilihan.index', compact('pendaftaran'));
     }
 
     /**
