@@ -1,7 +1,7 @@
 <x-app-layout title="Selamat datang" type="siswa">
     <div class="flex flex-row py-6 px-8 justify-between items-center  border-b border-black">
         <h1 class="text-3xl leading-9 font-semibold">
-            Selamat Datang, Alesha
+            Selamat Datang, {{ $siswa->nama_lengkap }}
         </h1>
         <div class="flex flex-row items-center gap-4">
             <div
