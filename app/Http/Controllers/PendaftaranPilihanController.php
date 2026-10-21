@@ -68,7 +68,7 @@ class PendaftaranPilihanController extends Controller
             ]);
         }
 
-        return view('pendaftaran-pilihan.index-siswa', compact('pendaftaran'));
+        return view('siswa.pilih-kelas.index', compact('pendaftaran'));
     }
 
     /**
