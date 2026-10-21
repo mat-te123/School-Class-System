@@ -61,6 +61,10 @@ Route::middleware(['auth:siswa'])->group(function () {
 
     // FR-52: Pendaftaran pilihan paket prioritas siswa
     Route::get('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'indexSiswa'])->name('siswa.pendaftaran-pilihan.index');
+    // menambahkan endpoint unutk pendaftaran
+    // Route::get('/siswa/pendaftaran-pilihan/form', function () {
+    //     return view('siswa.pilih-kelas.index');
+    // })->name('siswa.pendaftaran-pilihan.form');
     Route::post('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'storeSiswa'])->name('siswa.pendaftaran-pilihan.store');
     Route::put('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'updateSiswa'])->name('siswa.pendaftaran-pilihan.update');
     Route::put('/siswa/pendaftaran-pilihan/dokumen', [PendaftaranPilihanController::class, 'uploadDokumenSiswa'])->name('siswa.pendaftaran-pilihan.dokumen');
