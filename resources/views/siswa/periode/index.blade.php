@@ -89,9 +89,10 @@
                 </p>
             </div>
 
-            <button class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
+            <a href="{{ route('siswa.pendaftaran-pilihan.index') }}"
+                class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
                 Pilih Kelas
-            </button>
+            </a>
         </div>
         @foreach ($formattedMenus as $index => $menu)
             <x-kelas-card :item="$menu" />
