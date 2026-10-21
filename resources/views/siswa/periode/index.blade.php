@@ -31,16 +31,13 @@
             </div>
         </div>
     </div>
-    <div class="grid grid-cols-4 p-8">
+    <div class="grid grid-cols-4 p-8 gap-4">
         <a href="{{ url()->previous() }}"
             class="col-span-4 text-white text-sm leading-4 bg-black rounded-lg px-3 py-2 w-fit">
             Kembali
         </a>
 
         {{-- Period Card --}}
-        <pre>
-            {{ json_encode($activePeriods, JSON_PRETTY_PRINT) }}
-        </pre>
         <div class="col-span-4 flex flex-col bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4">
             <div class="flex flex-row justify-between items-center border-b border-gray-300 pb-2">
                 <div class="flex flex-col gap-2">
@@ -57,9 +54,8 @@
                     $startDateFormated = new DateTimeImmutable($activePeriods[0]['tanggal_buka']);
                     $endDateFormated = new DateTimeImmutable($activePeriods[0]['tanggal_tutup']);
                     $data = [
-                        'Status Pengumuman' => ($activePeriods[0]['status_pengumuman'] = 'AKTIF'
-                            ? 'Sudah diumumkan'
-                            : 'Belum diumumkan'),
+                        'Status Pengumuman' =>
+                            $activePeriods[0]['status_pengumuman'] != 'AKTIF' ? 'Sudah diumumkan' : 'Belum diumumkan',
                         'Tanggal Mulai' => $startDateFormated->format('d M y')
                             ? $startDateFormated->format('d M y')
                             : '-',
@@ -82,6 +78,25 @@
             </div>
 
         </div>
+        {{-- Daftar Kelas --}}
+        <div class="flex flex-row justify-between items-end col-span-4">
+            <div class="flex flex-col ">
+                <h2 class="text-xl font-semibold">
+                    Daftar Kelas
+                </h2>
+                <p>
+                    Data kelas yang dapat dipilih oleh siswa
+                </p>
+            </div>
+
+            <button class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
+                Pilih Kelas
+            </button>
+        </div>
+        @foreach ($formattedMenus as $index => $menu)
+            <x-kelas-card :item="$menu" />
+        @endforeach
+
 
     </div>
 
