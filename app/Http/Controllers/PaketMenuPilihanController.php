@@ -108,11 +108,30 @@ class PaketMenuPilihanController extends Controller
         // 2. Cari periode aktif yang sedang berjalan
         $activePeriods = PeriodePendaftaran::query()
             ->where('is_active', true)
-            ->where('status_pengumuman', 'AKTIF')
             ->where('tanggal_buka', '<=', now())
             ->where('tanggal_tutup', '>=', now())
             ->orderByDesc('created_at')
             ->get(['id', 'nama_periode', 'tahun_ajaran', 'gelombang', 'tanggal_buka', 'tanggal_tutup', 'status_pengumuman']);
+
+        if ($activePeriods->isEmpty()) {
+            $activePeriods = PeriodePendaftaran::query()
+                ->where('is_active', true)
+                ->orderByDesc('tanggal_buka')
+                ->limit(1)
+                ->get(['id', 'nama_periode', 'tahun_ajaran', 'gelombang', 'tanggal_buka', 'tanggal_tutup', 'status_pengumuman']);
+        }
+
+        if ($activePeriods->isEmpty()) {
+            $activePeriods = collect([[
+                'id' => null,
+                'nama_periode' => 'Belum Ada Periode Aktif',
+                'tahun_ajaran' => '-',
+                'gelombang' => '1',
+                'tanggal_buka' => now()->toIso8601String(),
+                'tanggal_tutup' => now()->toIso8601String(),
+                'status_pengumuman' => 'NON-AKTIF',
+            ]]);
+        }
 
         // 3. Cari paket menu aktif yang minimal punya 1 kriteria bobot
         $paketMenus = PaketMenuPilihan::with(['kriteriaBobots.mataPelajaran:id,kode_mapel,nama_mapel'])

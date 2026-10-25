@@ -19,8 +19,37 @@ class SiswaPeriodeData extends Component
     public function __construct(?string $tahunAjaran)
     {
         $this->tahunAjaran = $tahunAjaran;
+        $now = now();
 
-        $this->DataPeriode = PeriodePendaftaran::where('tahun_ajaran', $tahunAjaran)->first();
+        $periode = null;
+
+        // 1. Cari periode yang sesuai tahun ajaran siswa dan sedang buka
+        if (! empty($tahunAjaran)) {
+            $periode = PeriodePendaftaran::where('tahun_ajaran', $tahunAjaran)
+                ->where('is_active', true)
+                ->where('tanggal_buka', '<=', $now)
+                ->where('tanggal_tutup', '>=', $now)
+                ->first();
+        }
+
+        // 2. Jika tidak ada, cari periode aktif lain yang sedang buka
+        if (! $periode) {
+            $periode = PeriodePendaftaran::where('is_active', true)
+                ->where('tanggal_buka', '<=', $now)
+                ->where('tanggal_tutup', '>=', $now)
+                ->first();
+        }
+
+        // Jika periode sudah lewat (atau belum ada periode yang dibuka), jangan tampilkan di dashboard
+        $this->DataPeriode = $periode;
+    }
+
+    /**
+     * Tentukan apakah komponen harus dirender di view.
+     */
+    public function shouldRender(): bool
+    {
+        return $this->DataPeriode !== null;
     }
 
     /**
@@ -28,6 +57,10 @@ class SiswaPeriodeData extends Component
      */
     public function render(): View|Closure|string
     {
+        if (! $this->DataPeriode) {
+            return '';
+        }
+
         return view('components.siswa-periode-data');
     }
 }

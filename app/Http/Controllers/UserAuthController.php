@@ -17,6 +17,14 @@ class UserAuthController extends Controller
      */
     public function showLoginForm()
     {
+        if (Auth::guard('siswa')->check()) {
+            return redirect()->route('siswa.dashboard');
+        }
+
+        if (Auth::guard('web')->check()) {
+            return redirect()->intended('/admin/siswa');
+        }
+
         if (view()->exists('auth.login')) {
             return view('auth.login');
         }
@@ -164,7 +172,13 @@ class UserAuthController extends Controller
      */
     public function logout(Request $request)
     {
-        Auth::guard('web')->logout();
+        $isSiswa = Auth::guard('siswa')->check();
+
+        if ($isSiswa) {
+            Auth::guard('siswa')->logout();
+        } else {
+            Auth::guard('web')->logout();
+        }
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -174,6 +188,10 @@ class UserAuthController extends Controller
                 'success' => true,
                 'message' => 'Berhasil logout dari sistem.',
             ]);
+        }
+
+        if ($isSiswa) {
+            return redirect('/login/siswa')->with('success', 'Anda telah berhasil logout.');
         }
 
         return redirect('/login')->with('success', 'Anda telah berhasil logout.');

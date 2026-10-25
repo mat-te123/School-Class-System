@@ -3,9 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\KelasAsal;
+use App\Models\PaketMenuPilihan;
+use App\Models\PendaftaranPilihan;
 use App\Models\PeriodePendaftaran;
 use App\Models\Siswa;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class SiswaPeriodeControllerTest extends TestCase
@@ -97,12 +100,159 @@ class SiswaPeriodeControllerTest extends TestCase
 
     public function test_siswa_can_view_period_detail(): void
     {
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'periode_id' => $this->periodeAktif->id,
+            'nama_menu' => 'Kelas MIPA 10',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'kuota_terisi' => 0,
+            'is_active' => true,
+        ]);
+
         $response = $this->actingAs($this->siswa, 'siswa')
             ->getJson("/siswa/periode/{$this->periodeAktif->id}");
 
         $response->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.id', $this->periodeAktif->id)
-            ->assertJsonPath('data.is_buka', true);
+            ->assertJsonPath('data.is_buka', true)
+            ->assertJsonStructure(['classes', 'periode'])
+            ->assertJsonPath('classes.0.id', $paket->id);
+    }
+
+    public function test_siswa_can_select_classes_for_period(): void
+    {
+        $paket1 = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'periode_id' => $this->periodeAktif->id,
+            'nama_menu' => 'Kelas MIPA 1',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'kuota_terisi' => 0,
+            'is_active' => true,
+        ]);
+
+        $paket2 = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'periode_id' => $this->periodeAktif->id,
+            'nama_menu' => 'Kelas IPS 1',
+            'rumpun' => 'sosial',
+            'kuota_kapasitas' => 36,
+            'kuota_terisi' => 0,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->postJson("/siswa/periode/{$this->periodeAktif->id}/pilih-kelas", [
+                'pilihan' => [$paket1->id, $paket2->id],
+            ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('success', true);
+
+        $this->assertDatabaseHas('pendaftaran_pilihan', [
+            'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periodeAktif->id,
+        ]);
+
+        $this->assertEquals(1, $paket1->fresh()->kuota_terisi);
+        $this->assertEquals(1, $paket2->fresh()->kuota_terisi);
+    }
+
+    public function test_siswa_can_update_selected_classes_for_period(): void
+    {
+        $paket1 = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'periode_id' => $this->periodeAktif->id,
+            'nama_menu' => 'Kelas A',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'kuota_terisi' => 0,
+            'is_active' => true,
+        ]);
+
+        $paket2 = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'periode_id' => $this->periodeAktif->id,
+            'nama_menu' => 'Kelas B',
+            'rumpun' => 'sosial',
+            'kuota_kapasitas' => 36,
+            'kuota_terisi' => 0,
+            'is_active' => true,
+        ]);
+
+        $paket3 = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'periode_id' => $this->periodeAktif->id,
+            'nama_menu' => 'Kelas C',
+            'rumpun' => 'bahasa',
+            'kuota_kapasitas' => 36,
+            'kuota_terisi' => 0,
+            'is_active' => true,
+        ]);
+
+        // Submit initial selection
+        $this->actingAs($this->siswa, 'siswa')
+            ->postJson("/siswa/periode/{$this->periodeAktif->id}/pilih-kelas", [
+                'pilihan' => [$paket1->id, $paket2->id],
+            ])
+            ->assertCreated();
+
+        // Update selection to paket2 and paket3
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->postJson("/siswa/periode/{$this->periodeAktif->id}/pilih-kelas", [
+                'pilihan' => [$paket2->id, $paket3->id],
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->assertEquals(0, $paket1->fresh()->kuota_terisi);
+        $this->assertEquals(1, $paket2->fresh()->kuota_terisi);
+        $this->assertEquals(1, $paket3->fresh()->kuota_terisi);
+    }
+
+    public function test_cannot_select_classes_when_period_is_closed(): void
+    {
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'periode_id' => $this->periodeTutup->id,
+            'nama_menu' => 'Kelas MIPA Tutup',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'kuota_terisi' => 0,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->postJson("/siswa/periode/{$this->periodeTutup->id}/pilih-kelas", [
+                'pilihan' => [$paket->id],
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('success', false);
+    }
+
+    public function test_siswa_can_submit_via_web_form_and_redirects(): void
+    {
+        $paket = PaketMenuPilihan::create([
+            'id' => (string) Str::uuid(),
+            'periode_id' => $this->periodeAktif->id,
+            'nama_menu' => 'Kelas X Web',
+            'rumpun' => 'eksakta',
+            'kuota_kapasitas' => 36,
+            'kuota_terisi' => 0,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->from('/siswa/periode')
+            ->post("/siswa/periode/{$this->periodeAktif->id}/pilih-kelas", [
+                'pilihan' => [$paket->id],
+            ]);
+
+        $response->assertRedirect('/siswa/periode');
+        $response->assertSessionHas('success');
     }
 }

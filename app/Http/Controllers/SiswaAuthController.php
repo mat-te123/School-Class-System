@@ -17,6 +17,10 @@ class SiswaAuthController extends Controller
      */
     public function showLoginForm()
     {
+        if (Auth::guard('siswa')->check()) {
+            return redirect()->route('siswa.dashboard');
+        }
+
         return view('siswa.auth.login');
     }
 
@@ -41,7 +45,7 @@ class SiswaAuthController extends Controller
 
         // Jika data siswa tidak ditemukan
         if (! $siswa) {
-            if ($request->expectsJson()) {
+            if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'NISN tidak terdaftar.',
@@ -118,7 +122,10 @@ class SiswaAuthController extends Controller
             ]);
         }
 
-        return redirect()->intended('/siswa/dashboard')->with('success', 'Selamat datang, '.$siswa->nama_lengkap);
+        // Bersihkan url.intended agar tidak teralihkan ke rute login admin atau rute guest lain
+        $request->session()->forget('url.intended');
+
+        return redirect()->route('siswa.dashboard')->with('success', 'Selamat datang, '.$siswa->nama_lengkap);
     }
 
     /**

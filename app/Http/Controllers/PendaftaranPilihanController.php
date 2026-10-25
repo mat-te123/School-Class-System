@@ -47,7 +47,9 @@ class PendaftaranPilihanController extends Controller
                 ]);
             }
 
-            return view('pendaftaran-pilihan.index-siswa', ['data' => null, 'message' => 'Tidak ada periode pendaftaran yang sedang berjalan saat ini.']);
+            $pendaftaran = null;
+
+            return view('siswa.pilih-kelas.index', compact('pendaftaran'))->with('message', 'Tidak ada periode pendaftaran yang sedang berjalan saat ini.');
         }
 
         $pendaftaran = PendaftaranPilihan::with([
@@ -116,7 +118,9 @@ class PendaftaranPilihanController extends Controller
                     'message' => 'Anda sudah pernah mengirimkan pilihan paket pada periode ini.',
                 ], 409);
             }
-            abort(409, 'Anda sudah pernah mengirimkan pilihan paket pada periode ini.');
+
+            // Untuk form browser web, alihkan ke pembaruan (update) relasi pilihan
+            return $this->updateSiswa($request);
         }
 
         $maxPilihan = $periodeAktif->max_pilihan_siswa ?? 3;
@@ -516,7 +520,141 @@ class PendaftaranPilihanController extends Controller
             ]);
         }
 
-        return view('pendaftaran-pilihan.hasil-penempatan', compact('hasil'));
+        if (\Illuminate\Support\Facades\View::exists('pendaftaran-pilihan.hasil-penempatan')) {
+            return view('pendaftaran-pilihan.hasil-penempatan', compact('hasil'));
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $hasil->id,
+                'pilihan_ke_diterima' => $hasil->pilihan_ke_diterima,
+                'mekanisme' => $hasil->mekanisme,
+                'status' => $hasil->pilihan_ke_diterima ? 'Diterima' : 'Belum diterima',
+                'skor_penempatan' => $hasil->skor_penempatan,
+                'rata_6_mapel' => $hasil->rata_6_mapel,
+                'rank_pada_pilihan' => $hasil->rank_pada_pilihan,
+                'paket_diterima' => $hasil->paketMenuPilihan?->nama_menu,
+                'tanggal_diproses' => $hasil->tanggal_diproses,
+            ],
+        ]);
+    }
+
+    /**
+     * FR-55/Alur 5: Siswa menampilkan hasil penilaian sementara berdasarkan periode dan kelas yang dipilih.
+     */
+    public function hasilSementaraSiswa(Request $request)
+    {
+        $siswa = Auth::guard('siswa')->user();
+        if (! $siswa) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Unauthenticated / Akses ditolak.'], 401);
+            }
+            abort(401, 'Unauthenticated / Akses ditolak.');
+        }
+
+        // Tentukan periode (berdasarkan query param periode_id atau periode aktif)
+        $periodeQuery = PeriodePendaftaran::query();
+        if ($request->filled('periode_id')) {
+            $periode = $periodeQuery->where('id', $request->input('periode_id'))->first();
+        } else {
+            $periode = $periodeQuery->where('is_active', true)->latest('tanggal_tutup')->first();
+        }
+
+        if (! $periode) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Periode tidak ditemukan.'], 404);
+            }
+            abort(404, 'Periode tidak ditemukan.');
+        }
+
+        // Cari data pendaftaran pilihan siswa pada periode tersebut
+        $pendaftaran = PendaftaranPilihan::with('detailPendaftaran.paketMenuPilihan')
+            ->where('siswa_id', $siswa->id)
+            ->where('periode_pendaftaran_id', $periode->id)
+            ->first();
+
+        // Cari hasil seleksi siswa
+        $hasil = HasilSeleksi::with('paketMenuPilihan')
+            ->where('siswa_id', $siswa->id)
+            ->first();
+
+        $isFinal = $periode->isPengumumanDibuka();
+
+        // Filter kelas/paket jika ada parameter kelas_id / paket_id / paket_menu_pilihan_id
+        $filterKelasId = $request->input('kelas_id')
+            ?? $request->input('paket_menu_pilihan_id')
+            ?? $request->input('paket_id');
+
+        $responsePilihan = [];
+        if ($pendaftaran) {
+            foreach ($pendaftaran->detailPendaftaran as $detail) {
+                if ($filterKelasId && $detail->paket_menu_pilihan_id !== $filterKelasId && $detail->paketMenuPilihan?->nama_menu !== $filterKelasId) {
+                    continue;
+                }
+
+                $status = 'Sedang Dikalkulasi';
+                $rank = null;
+                $kuota = $detail->paketMenuPilihan?->kuota_maksimal ?? $detail->paketMenuPilihan?->kuota_kapasitas;
+
+                if ($hasil) {
+                    if ($hasil->paket_menu_pilihan_id === null) {
+                        $status = 'Tergeser (Tidak Masuk Kuota)';
+                    } elseif ($hasil->pilihan_ke_diterima === $detail->urutan_pilihan) {
+                        $status = $isFinal ? 'Lolos Final' : 'Lolos Sementara';
+                        $rank = $hasil->rank_pada_pilihan;
+                    } elseif ($detail->urutan_pilihan < $hasil->pilihan_ke_diterima) {
+                        $status = 'Tergeser (Tidak Masuk Kuota)';
+                    } elseif ($detail->urutan_pilihan > $hasil->pilihan_ke_diterima) {
+                        $status = 'Tidak Dievaluasi';
+                    }
+                }
+
+                $responsePilihan[] = [
+                    'urutan' => $detail->urutan_pilihan,
+                    'paket_menu_id' => $detail->paket_menu_pilihan_id,
+                    'paket_menu' => $detail->paketMenuPilihan?->nama_menu,
+                    'rumpun' => $detail->paketMenuPilihan?->rumpun,
+                    'kuota_maksimal' => $kuota,
+                    'status' => $status,
+                    'rank' => $rank,
+                ];
+            }
+        }
+
+        $riwayatProses = [];
+        if ($hasil && $hasil->riwayat_proses) {
+            $riwayatProses = is_array($hasil->riwayat_proses)
+                ? $hasil->riwayat_proses
+                : json_decode($hasil->riwayat_proses, true);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil mendapatkan hasil penilaian dan penempatan sementara.',
+            'periode' => [
+                'id' => $periode->id,
+                'nama_periode' => $periode->nama_periode,
+                'tahun_ajaran' => $periode->tahun_ajaran,
+                'status_pengumuman' => $periode->status_pengumuman,
+                'is_pengumuman_dibuka' => $isFinal,
+            ],
+            'hasil_penilaian' => $hasil ? [
+                'id' => $hasil->id,
+                'pilihan_ke_diterima' => $hasil->pilihan_ke_diterima,
+                'paket_diterima' => $hasil->paketMenuPilihan?->nama_menu,
+                'skor_penempatan' => $hasil->skor_penempatan,
+                'rata_6_mapel' => $hasil->rata_6_mapel,
+                'rank_pada_pilihan' => $hasil->rank_pada_pilihan,
+                'mekanisme' => $hasil->mekanisme,
+                'status' => ($hasil->paket_menu_pilihan_id === null)
+                    ? 'Tergeser (Tidak Masuk Kuota)'
+                    : ($isFinal ? 'Lolos Final' : 'Lolos Sementara'),
+                'tanggal_diproses' => $hasil->tanggal_diproses,
+            ] : null,
+            'data' => $responsePilihan,
+            'riwayat_proses' => $riwayatProses,
+        ]);
     }
 
     /**
