@@ -38,30 +38,35 @@
                 Pilihlah kelas secara berurutan dengan pilihan pertama adalah prioritas pertama
             </p>
         </div>
-        <form class="flex flex-col gap-4 w-1/2">
+        @error('pilihan')
+            <p role="alert" class="text-sm font-medium text-red-600">{{ $message }}</p>
+        @enderror
+        <form action="{{ route('siswa.pilih-kelas.store') }}" method="POST" class="flex flex-col gap-4 w-1/2">
+            @csrf
             @php
-                $MaxStudentChoice = 3;
+                $maxStudentChoice = $pendaftaran?->periodePendaftaran?->max_pilihan_siswa ?? 3;
+                $pilihanSaatIni = $pendaftaran?->detailPendaftaran
+                    ->pluck('paket_menu_pilihan_id', 'urutan_pilihan')
+                    ->all() ?? [];
             @endphp
-            @for ($i = 1; $i <= $MaxStudentChoice; $i++)
+            @for ($i = 1; $i <= $maxStudentChoice; $i++)
+                @php($pilihanIndex = $i - 1)
                 <div>
                     <label for="kelas{{ $i }}" class="block text-sm font-medium text-gray-700">Pilihan
                         {{ $i }}</label>
-                    <select id="kelas{{ $i }}" name="kelas{{ $i }}"
-                        class="select-primary mt-1 block w-full">
+                    <select id="kelas{{ $i }}" name="pilihan[]" required class="select-primary mt-1 block w-full">
                         <option value="">Pilih Kelas</option>
-                        <option value="kelas1">Kelas 1</option>
-                        <option value="kelas2">Kelas 2</option>
-                        <option value="kelas3">Kelas 3</option>
+                        @foreach ($kelasTersedia as $kelas)
+                            <option value="{{ $kelas->id }}" @selected(old('pilihan.'.$pilihanIndex, $pilihanSaatIni[$i] ?? null) === $kelas->id)>
+                                {{ $kelas->nama_menu }}{{ $kelas->rumpun ? " ({$kelas->rumpun})" : '' }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
             @endfor
             <div class="flex flex-row gap-4 mt-4 justify-end">
-                <a href="{{ url()->previous() }}">
-                    Kembali
-                </a>
-                <a>
-                    Kirim
-                </a>
+                <a href="{{ url()->previous() }}">Kembali</a>
+                <button type="submit">Kirim</button>
             </div>
         </form>
 

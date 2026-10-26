@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             KelasAsalSeeder::class,
             PeriodePendaftaranSeeder::class,
             PaketMenuPilihanSeeder::class,
+            PaketKriteriaBobotSeeder::class,
         ]);
     }
 }

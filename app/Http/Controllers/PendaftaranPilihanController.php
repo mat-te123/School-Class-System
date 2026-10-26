@@ -48,8 +48,9 @@ class PendaftaranPilihanController extends Controller
             }
 
             $pendaftaran = null;
+            $kelasTersedia = collect();
 
-            return view('siswa.pilih-kelas.index', compact('pendaftaran'))->with('message', 'Tidak ada periode pendaftaran yang sedang berjalan saat ini.');
+            return view('siswa.pilih-kelas.index', compact('pendaftaran', 'kelasTersedia'))->with('message', 'Tidak ada periode pendaftaran yang sedang berjalan saat ini.');
         }
 
         $pendaftaran = PendaftaranPilihan::with([
@@ -62,15 +63,22 @@ class PendaftaranPilihanController extends Controller
             ->where('periode_pendaftaran_id', $periodeAktif->id)
             ->first();
 
+        $kelasTersedia = PaketMenuPilihan::with('kriteriaBobots.mataPelajaran')
+            ->where('is_active', true)
+            ->orderBy('rumpun')
+            ->orderBy('nama_menu')
+            ->get();
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Berhasil mendapatkan data pendaftaran pilihan siswa.',
                 'data' => $pendaftaran,
+                'kelas_tersedia' => $kelasTersedia,
             ]);
         }
 
-        return view('siswa.pilih-kelas.index', compact('pendaftaran'));
+        return view('siswa.pilih-kelas.index', compact('pendaftaran', 'kelasTersedia'));
     }
 
     /**
@@ -148,9 +156,8 @@ class PendaftaranPilihanController extends Controller
                     'message' => 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.',
                 ], 422);
             }
-            abort(422, 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.');
+            return back()->withErrors(['pilihan' => 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.'])->withInput();
         }
-
         // 5. Pastikan semua paket menu yang dipilih berstatus is_active = true
         $activePackagesCount = PaketMenuPilihan::whereIn('id', $pilihanIds)
             ->where('is_active', true)
@@ -395,6 +402,7 @@ class PendaftaranPilihanController extends Controller
 
         $pilihanIds = $validated['pilihan'];
 
+        // Pastikan tidak ada pilihan yang duplikat
         if (count($pilihanIds) !== count(array_unique($pilihanIds))) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
@@ -402,9 +410,8 @@ class PendaftaranPilihanController extends Controller
                     'message' => 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.',
                 ], 422);
             }
-            abort(422, 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.');
+            return back()->withErrors(['pilihan' => 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.'])->withInput();
         }
-
         $activePackagesCount = PaketMenuPilihan::whereIn('id', $pilihanIds)
             ->where('is_active', true)
             ->count();
