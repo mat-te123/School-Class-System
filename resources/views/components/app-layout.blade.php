@@ -22,7 +22,7 @@
     <main class="flex-1 h-screen flex flex-col overflow-y-auto">
         {{ $slot }}
     </main>
-
+    @stack('scripts')
 </body>
 
 </html>
