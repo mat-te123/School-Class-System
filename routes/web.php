@@ -23,6 +23,7 @@ use App\Http\Controllers\SiswaDashboardController;
 use App\Http\Controllers\SiswaPeriodeController;
 use App\Http\Controllers\SiswaPertukaranController;
 use App\Http\Controllers\UserAuthController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -61,15 +62,11 @@ Route::middleware(['auth:siswa'])->group(function () {
 
     // FR-52: Pendaftaran pilihan paket prioritas siswa (Pemilihan Kelas)
     Route::get('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'indexSiswa'])->name('siswa.pendaftaran-pilihan.index');
-    Route::post('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'storeSiswa'])->name('siswa.pendaftaran-pilihan.store');
+    Route::post('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'storeSiswa'])->name('siswa.pilih-kelas.store');
     Route::put('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'updateSiswa'])->name('siswa.pendaftaran-pilihan.update');
     Route::put('/siswa/pendaftaran-pilihan/dokumen', [PendaftaranPilihanController::class, 'uploadDokumenSiswa'])->name('siswa.pendaftaran-pilihan.dokumen');
     Route::delete('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'cancelSiswa'])->name('siswa.pendaftaran-pilihan.cancel');
 
-    // Alias Rute Pemilihan Kelas Siswa
-    Route::get('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'indexSiswa'])->name('siswa.pilih-kelas.index');
-    Route::post('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'storeSiswa'])->name('siswa.pilih-kelas.store');
-    Route::put('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'updateSiswa'])->name('siswa.pilih-kelas.update');
 
     // FR-54 s/d FR-56: Siswa melihat hasil penempatan & status pengumuman & hasil sementara
     Route::get('/siswa/hasil-penempatan', [PendaftaranPilihanController::class, 'hasilPenempatanSiswa'])->name('siswa.hasil-penempatan');
@@ -128,13 +125,14 @@ Route::middleware(['auth:web'])->group(function () {
     Route::post('/nilai-siswa/import-mapel', [NilaiSiswaController::class, 'importMapel'])->name('nilai-siswa.import-mapel');
     Route::put('/nilai-siswa/{id}', [NilaiSiswaController::class, 'update'])->name('nilai-siswa.update');
 
-    Route::get('admin/periode-penjurusan', function (\Illuminate\Http\Request $request) {
+    Route::get('admin/periode-penjurusan', function (Request $request) {
         if (Auth::guard('siswa')->check()) {
             return redirect()->route('siswa.periode.index');
         }
         if (! Auth::guard('web')->check()) {
             return redirect()->guest(route('login'));
         }
+
         return app(PeriodePenjurusanController::class)->index($request);
     })->withoutMiddleware(['auth:web'])->name('admin-periode-penjurusan.index');
     Route::post('/periode-penjurusan', [PeriodePenjurusanController::class, 'store'])->name('periode-penjurusan.store');
@@ -160,13 +158,14 @@ Route::middleware(['auth:web'])->group(function () {
     Route::delete('/master-mata-pelajaran/{id}', [MasterMataPelajaranController::class, 'destroy'])->name('master-mapel.destroy');
 
     // Siswa CRUD (Khusus Admin)
-    Route::get('admin/siswa', function (\Illuminate\Http\Request $request) {
+    Route::get('admin/siswa', function (Request $request) {
         if (Auth::guard('siswa')->check()) {
             return redirect()->route('siswa.dashboard');
         }
         if (! Auth::guard('web')->check()) {
             return redirect()->guest(route('login'));
         }
+
         return app(SiswaController::class)->index($request);
     })->withoutMiddleware(['auth:web'])->name('admin-siswa.index');
     Route::get('/siswa', [SiswaController::class, 'index'])->name('siswa.index');
