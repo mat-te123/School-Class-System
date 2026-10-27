@@ -23,15 +23,15 @@
                     $items = [
                         'Siswa' => [
                             'title' => 'Total Siswa',
-                            'count' => $pendaftaran->count(),
+                            'count' => $summary['total_siswa'],
                         ],
                         'is_filled' => [
                             'title' => 'Sudah Mengisi',
-                            'count' => $pendaftaran->where('is_filled', true)->count(),
+                            'count' => $summary['sudah_memilih'],
                         ],
                         'not_filled' => [
                             'title' => 'Belum Mengisi',
-                            'count' => $pendaftaran->where('is_filled', false)->count(),
+                            'count' => $summary['belum_memilih'],
                         ],
                     ];
                 @endphp
@@ -124,7 +124,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if ($pendaftaran->isEmpty())
+                        @if ($siswaSudahMemilih->isEmpty())
                             <tr class="h-full">
                                 <td colspan="6"
                                     class="h-full border border-gray-200 bg-white py-4 text-center align-middle">
@@ -132,7 +132,7 @@
                                 </td>
                             </tr>
                         @else
-                            @foreach ($pendaftaran as $index => $item)
+                            @foreach ($siswaSudahMemilih as $index => $item)
                                 <tr class="bg-gray-50 hover:cursor-pointer hover:bg-gray-200 group">
                                     <th class="border-r border-t border-gray-200 p-2">
                                         {{ $index + 1 }}
@@ -141,20 +141,20 @@
                                         {{ $item->nama_lengkap }}
                                     </td>
                                     <td>
-                                        @if ($item->is_filled)
+                                        @if ($item->pendaftaranPilihan->isNotEmpty())
                                             <span class="font-semibold text-green-600">Sudah Mengisi</span>
                                         @else
                                             <span class="font-semibold text-red-600">Belum Mengisi</span>
                                         @endif
                                     </td>
                                     <td>
-                                        {{ $item->pilihan_kelas_1 }}
+                                        {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 1)?->paketMenuPilihan?->nama_menu ?? '—' }}
                                     </td>
                                     <td>
-                                        {{ $item->pilihan_kelas_2 }}
+                                        {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 2)?->paketMenuPilihan?->nama_menu ?? '—' }}
                                     </td>
                                     <td>
-                                        {{ $item->pilihan_kelas_3 }}
+                                        {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 3)?->paketMenuPilihan?->nama_menu ?? '—' }}
                                     </td>
                                 </tr>
                             @endforeach

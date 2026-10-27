@@ -48,7 +48,7 @@ class PemantauanMinatController extends Controller
             })
             ->with(['pendaftaranPilihan' => function ($q) use ($periodeId) {
                 $q->where('periode_pendaftaran_id', $periodeId)
-                    ->with('detailPendaftaranPilihan.paketMenuPilihan');
+                    ->with('detailPendaftaran.paketMenuPilihan');
             }])
             ->paginate((int) $request->input('per_page_sudah', 10), ['*'], 'page_sudah');
 
@@ -72,7 +72,6 @@ class PemantauanMinatController extends Controller
             ->join('pendaftaran_pilihan', 'pendaftaran_pilihan.id', '=', 'detail_pendaftaran_pilihan.pendaftaran_pilihan_id')
             ->join('paket_menu_pilihan', 'paket_menu_pilihan.id', '=', 'detail_pendaftaran_pilihan.paket_menu_pilihan_id')
             ->where('pendaftaran_pilihan.periode_pendaftaran_id', $periodeId)
-            ->whereNull('pendaftaran_pilihan.deleted_at')
             ->select('paket_menu_pilihan.id', 'paket_menu_pilihan.nama_menu', DB::raw('count(detail_pendaftaran_pilihan.id) as total'))
             ->groupBy('paket_menu_pilihan.id', 'paket_menu_pilihan.nama_menu')
             ->get();
