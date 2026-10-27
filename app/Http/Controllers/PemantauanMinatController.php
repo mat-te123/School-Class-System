@@ -100,7 +100,7 @@ class PemantauanMinatController extends Controller
             ]);
         }
 
-        return view('admin.pemantauan-minat.index', compact(
+        return view('auth.pemantauan-kelas.index', compact(
             'summary',
             'siswaSudahMemilih',
             'siswaBelumMemilih',
