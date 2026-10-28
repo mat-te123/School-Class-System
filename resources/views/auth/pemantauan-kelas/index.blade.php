@@ -1,14 +1,5 @@
 <x-app-layout title="Pendaftaran Pilihan">
-    <div x-data="{
-        showDeleteModal: false,
-        showupdateModal: false,
-        showaddmodal: false,
-        confirmationData: '',
-        addUrl: '',
-        deleteUrl: '',
-        updateUrl: '',
-        Data: {},
-    }" class="flex min-h-0 flex-1 flex-col">
+    <div class="flexflex-1 flex-col">
         <div class="flex flex-col py-6 px-8 border border-b-black">
             <h1 class="text-4xl leading-9 font-semibold">
                 Daftar Pilihan Siswa
@@ -17,7 +8,7 @@
                 Kelola daftar pilihan siswa yang telah mengisi formulir pendaftaran
             </span>
         </div>
-        <div class="flex min-h-0 flex-1 flex-col gap-4 px-8 py-6">
+        <div class="flex flex-1 flex-col gap-4 px-8 py-6">
             <div class="flex flex-row w-full justify-start gap-8">
                 @php
                     $items = [
@@ -47,40 +38,13 @@
             <h2 class="text-base font-semibold leading-6">
                 Ringkasan Data Perkelas
             </h2>
+
             <div class="flex flex-row w-full justify-start gap-8">
-                @php
-                    $class = [
-                        'Kelas A' => [
-                            'title' => 'Kelas A',
-                            // ini place holder
-                            'count' => 32,
-                            'rumpun' => 'eksakta',
-                        ],
-                        'Kelas B' => [
-                            'title' => 'Kelas B',
-                            // ini place holder
-                            'count' => 28,
-                            'rumpun' => 'eksakta',
-                        ],
-                        'Kelas C' => [
-                            'title' => 'Kelas C',
-                            // ini place holder
-                            'count' => 30,
-                            'rumpun' => 'sosial',
-                        ],
-                        'Kelas D' => [
-                            'title' => 'Kelas D',
-                            // ini place holder
-                            'count' => 25,
-                            'rumpun' => 'sosial',
-                        ],
-                    ];
-                @endphp
-                @foreach ($class as $key => $value)
+                @foreach ($summary['detail_paket'] as $value)
                     <div class="flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
                         <div class="flex flex-col border-l border-green-600 px-4">
-                            <span class="text-lg font-semibold">{{ $value['title'] }} - {{ $value['rumpun'] }}</span>
-                            <span class="text-base font-normal">{{ $value['count'] }} siswa • Pilihan 1</span>
+                            <span class="text-lg font-semibold">{{ $value->nama_menu }}</span>
+                            <span class="text-base font-normal">{{ $value->total }}</span>
                         </div>
                     </div>
                 @endforeach
@@ -94,74 +58,163 @@
                     Daftar Kelas yang dipilih oleh siswa pada formulir pendaftaran
                 </span>
             </div>
-            <form class="flex flex-row  p-3 justify-between bg-gray-200 border border-gray-300 rounded-lg w-full gap-2">
-                <input type="text" placeholder="Cari nama, NISN, atau NIS..."
-                    class="px-4 py-2 rounded-lg border border-gray-400 w-full">
-                <select class="px-4 py-2 rounded-lg border border-gray-400 w-fit">
-                    <option value="">Status : semua (sudah / belum )</option>
-                    <option value="1">Status : sudah</option>
-                    <option value="0">Status : belum</option>
-                </select>
 
-                <select class="px-4 py-2 rounded-lg border border-gray-400 w-fit">
+            <form method="GET" action="{{ route('admin.pemantauan-minat.index') }}"
+                class="flex flex-row  p-3 justify-between bg-gray-200 border border-gray-300 rounded-lg w-full gap-2">
+                <button type="submit" id="status-default" name="status" value="{{ $status }}" class="hidden"
+                    tabindex="-1" aria-hidden="true"></button>
+
+                <input type="text" name="search" value="{{ request('search') }}"
+                    placeholder="Cari nama, NISN, atau NIS..."
+                    class="px-4 py-2 rounded-lg border border-gray-400 w-full">
+
+
+                <div class="flex flex-row rounded-lg border border-gray-400 overflow-hidden w-fit shrink-0">
+
+                    @foreach (['sudah' => 'Sudah', 'belum' => 'Belum'] as $value => $label)
+                        <button type="submit" name="status" value="{{ $value }}"
+                            class="px-4 py-2 {{ $status == $value ? 'bg-green-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100' }}">
+                            {{ $label }}
+                        </button>
+                    @endforeach
+                </div>
+
+
+
+                <select name="kelas_pilihan" onchange="this.form.submit()"
+                    class="px-4 py-2 rounded-lg border border-gray-400 w-fit">
                     <option value="">Pilihan Kelas : semua</option>
-                    @foreach ($class as $key => $value)
-                        <option value="{{ $value['title'] }}">Pilihan Kelas : {{ $value['title'] }}</option>
+                    @foreach ($summary['detail_paket'] as $value)
+                        <option value="{{ $value->id }}" @selected(request('kelas_pilihan') == $value->id)>
+                            Pilihan Kelas : {{ $value->nama_menu }}
+                        </option>
                     @endforeach
                 </select>
             </form>
-            <div class="min-h-0 flex-1 overflow-auto rounded-b-lg">
-                <table class="h-full min-w-full border-separate border-spacing-0">
+            <div class="flex flex-col rounded-xl overflow-hidden border border-gray-300 w-full">
+                <table class="min-w-full border-separate border-spacing-0">
                     <thead>
                         <tr
-                            class="bg-gray-300 text-xs font-semibold uppercase text-gray-600 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left first:[&_th]:w-0 first:[&_th]:rounded-l-xl last:[&_th]:rounded-r-xl">
+                            class="bg-gray-300 text-xs font-semibold uppercase text-gray-600 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left first:[&_th]:w-0">
                             <th>#</th>
                             <th>Nama Lengkap</th>
-                            <th>Status</th>
-                            <th>Pilihan Kelas 1</th>
-                            <th>Pilihan Kelas 2</th>
-                            <th>Pilihan Kelas 3</th>
+                            @if ($status == 'sudah')
+                                <th>Pilihan Kelas 1</th>
+                                <th>Pilihan Kelas 2</th>
+                                <th>Pilihan Kelas 3</th>
+                            @else
+                                <th>NISN</th>
+                                <th>NIS</th>
+                                <th>Status</th>
+                            @endif
                         </tr>
                     </thead>
-                    <tbody>
-                        @if ($siswaSudahMemilih->isEmpty())
-                            <tr class="h-full">
-                                <td colspan="6"
-                                    class="h-full border border-gray-200 bg-white py-4 text-center align-middle">
-                                    Tidak ada data pendaftaran siswa.
-                                </td>
-                            </tr>
-                        @else
-                            @foreach ($siswaSudahMemilih as $index => $item)
-                                <tr class="bg-gray-50 hover:cursor-pointer hover:bg-gray-200 group">
+                    @if ($status == 'sudah')
+                        <tbody>
+                            @if ($siswaSudahMemilih->isEmpty())
+                                <tr class="h-full">
+                                    <td colspan="6"
+                                        class="h-full border border-gray-200 bg-white py-4 text-center align-middle">
+                                        Belum ada siswa yang memilih.
+                                    </td>
+                                </tr>
+                            @else
+                                @foreach ($siswaSudahMemilih as $index => $item)
+                                    <tr
+                                        class="hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
+                                        <th class="border-r border-t border-gray-200 p-2">
+                                            {{ $index + 1 }}
+                                        </th>
+                                        <td class="px-3 lowercase">
+                                            {{ $item->nama_lengkap }}
+                                        </td>
+                                        <td>
+                                            {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 1)?->paketMenuPilihan?->nama_menu ?? '—' }}
+                                        </td>
+                                        <td>
+                                            {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 2)?->paketMenuPilihan?->nama_menu ?? '—' }}
+                                        </td>
+                                        <td>
+                                            {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 3)?->paketMenuPilihan?->nama_menu ?? '—' }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
+                        </tbody>
+                    @elseif ($status == 'belum')
+                        <tbody>
+                            @if ($siswaBelumMemilih->isEmpty())
+                                <tr>
+                                    <td colspan="6"
+                                        class="h-full border border-gray-200 bg-white py-4 text-center align-middle">
+                                        Semua ssiswa telah memilih kelas.
+                                    </td>
+                                </tr>
+                            @endif
+                            @foreach ($siswaBelumMemilih as $index => $item)
+                                <tr class="hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
                                     <th class="border-r border-t border-gray-200 p-2">
                                         {{ $index + 1 }}
                                     </th>
-                                    <td>
+                                    <td class="px-3 lowercase">
                                         {{ $item->nama_lengkap }}
                                     </td>
                                     <td>
-                                        @if ($item->pendaftaranPilihan->isNotEmpty())
-                                            <span class="font-semibold text-green-600">Sudah Mengisi</span>
-                                        @else
-                                            <span class="font-semibold text-red-600">Belum Mengisi</span>
-                                        @endif
+                                        {{ $item->nisn }}
                                     </td>
                                     <td>
-                                        {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 1)?->paketMenuPilihan?->nama_menu ?? '—' }}
+                                        {{ $item->nisn }}
                                     </td>
-                                    <td>
-                                        {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 2)?->paketMenuPilihan?->nama_menu ?? '—' }}
-                                    </td>
-                                    <td>
-                                        {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 3)?->paketMenuPilihan?->nama_menu ?? '—' }}
-                                    </td>
+                                    @if ($item->is_active == false)
+                                        <td class=" text-red-600 font-semibold">
+                                            Tidak Aktif
+                                        </td>
+                                    @else
+                                        <td class=" text-green-600 font-semibold">
+                                            Aktif
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
-                        @endif
-                    </tbody>
+                        </tbody>
+                    @endif
                 </table>
+                @php $data = $status == 'sudah' ? $siswaSudahMemilih : $siswaBelumMemilih; @endphp
+
+                @if ($data->hasPages())
+                    <div class="flex flex-row py-3 px-4 bg-gray-300 w-full justify-between items-center">
+                        <p class="text-black text-sm leading-5">
+                            {{ $data->firstItem() }} sampai {{ $data->lastItem() }} dari {{ $data->total() }} hasil
+                        </p>
+                        <div class="flex flex-row w-fit gap-3 items-center">
+                            @if ($data->onFirstPage())
+                                <span class="text-gray-400 cursor-not-allowed">&lt; sebelum</span>
+                            @else
+                                <a href="{{ $data->previousPageUrl() }}" class="text-gray-800 hover:underline">&lt;
+                                    sebelum</a>
+                            @endif
+
+                            <div class="flex flex-row gap-2">
+                                @foreach (range(1, $data->lastPage()) as $halaman)
+                                    <a href="{{ $data->url($halaman) }}"
+                                        class="font-bold {{ $halaman == $data->currentPage() ? 'text-gray-800' : 'text-gray-500 hover:text-gray-800' }}">
+                                        {{ $halaman }}
+                                    </a>
+                                @endforeach
+                            </div>
+
+                            @if ($data->hasMorePages())
+                                <a href="{{ $data->nextPageUrl() }}" class="text-gray-800 hover:underline">selanjutnya
+                                    &gt;</a>
+                            @else
+                                <span class="text-gray-500 cursor-not-allowed">selanjutnya &gt;</span>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             </div>
+
+
 
         </div>
 
