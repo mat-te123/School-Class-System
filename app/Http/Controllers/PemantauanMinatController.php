@@ -26,6 +26,21 @@ class PemantauanMinatController extends Controller
     {
         $this->ensureAdmin();
 
+        $validate = $request->validate([
+            'search' => 'nullable|string|max:150',
+            'status' => 'nullable|in:sudah,belum',
+            'kelas_pilihan' => 'nullable|uuid|exists:paket_menu_pilihan,id',
+        ]);
+
+        $search = $validate['search'] ?? null;
+        $status = $validate['status'] ?? 'sudah';
+        $kelas = $validate['kelas_pilihan'] ?? null;
+
+        $cari = fn ($q) => $q->when($search, fn ($q, $s) => $q->where(fn ($q) => $q
+            ->where('nama_lengkap', 'like', "%{$s}%")
+            ->orWhere('nisn', 'like', "%{$s}%")
+            ->orWhere('nis', 'like', "%{$s}%")));
+
         $periodeId = $request->periode_id;
 
         // Jika tidak ada filter, ambil periode aktif
@@ -43,20 +58,25 @@ class PemantauanMinatController extends Controller
         $siswaQuery = Siswa::query();
 
         $siswaSudahMemilih = (clone $siswaQuery)
-            ->whereHas('pendaftaranPilihan', function ($q) use ($periodeId) {
-                $q->where('periode_pendaftaran_id', $periodeId);
+            ->tap($cari)
+            ->whereHas('pendaftaranPilihan', function ($q) use ($periodeId, $kelas) {
+                $q->where('periode_pendaftaran_id', $periodeId)
+                ->when($kelas, fn ($q, $k) => $q->whereHas('detailPendaftaran', fn ($q) => $q->where('paket_menu_pilihan_id', $k)));
             })
             ->with(['pendaftaranPilihan' => function ($q) use ($periodeId) {
                 $q->where('periode_pendaftaran_id', $periodeId)
                     ->with('detailPendaftaran.paketMenuPilihan');
             }])
-            ->paginate((int) $request->input('per_page_sudah', 10), ['*'], 'page_sudah');
+            ->paginate((int) $request->input('per_page_sudah', 10), ['*'], 'page_sudah')
+            ->withQueryString();
 
         $siswaBelumMemilih = (clone $siswaQuery)
+            ->tap($cari)
             ->whereDoesntHave('pendaftaranPilihan', function ($q) use ($periodeId) {
                 $q->where('periode_pendaftaran_id', $periodeId);
             })
-            ->paginate((int) $request->input('per_page_belum', 10), ['*'], 'page_belum');
+            ->paginate((int) $request->input('per_page_belum', 10), ['*'], 'page_belum')
+            ->withQueryString();
 
         // Hitung total keseluruhan
         $totalSudah = (clone $siswaQuery)->whereHas('pendaftaranPilihan', function ($q) use ($periodeId) {
@@ -104,7 +124,8 @@ class PemantauanMinatController extends Controller
             'siswaSudahMemilih',
             'siswaBelumMemilih',
             'paketMenu',
-            'periodes'
+            'periodes',
+            'status'
         ));
     }
 }
