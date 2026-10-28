@@ -13,19 +13,34 @@ class PeriodePendaftaranSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('periode_pendaftaran')->updateOrInsert(
-            ['nama_periode' => 'Pemilihan Mapel Fase F 2026/2027'],
-            [
+        $periodeName = 'Pemilihan Mapel Fase F 2026/2027';
+        $existing = DB::table('periode_pendaftaran')->where('nama_periode', $periodeName)->first();
+
+        if ($existing) {
+            DB::table('periode_pendaftaran')
+                ->where('id', $existing->id)
+                ->update([
+                    'tahun_ajaran' => '2026/2027',
+                    'gelombang' => 'Utama',
+                    'max_pilihan_siswa' => 3,
+                    'tanggal_buka' => now()->subDay(),
+                    'tanggal_tutup' => now()->addMonth(),
+                    'status_pengumuman' => 'NON-AKTIF',
+                    'is_active' => true,
+                ]);
+        } else {
+            DB::table('periode_pendaftaran')->insert([
                 'id' => (string) Str::uuid(),
+                'nama_periode' => $periodeName,
                 'tahun_ajaran' => '2026/2027',
                 'gelombang' => 'Utama',
                 'max_pilihan_siswa' => 3,
-                'tanggal_buka' => '2026-07-01 08:00:00',
-                'tanggal_tutup' => '2026-07-15 23:59:59',
-                'status_pengumuman' => 'AKTIF',
+                'tanggal_buka' => now()->subDay(),
+                'tanggal_tutup' => now()->addMonth(),
+                'status_pengumuman' => 'NON-AKTIF',
                 'is_active' => true,
                 'created_at' => now(),
-            ]
-        );
+            ]);
+        }
     }
 }

@@ -225,9 +225,29 @@ class PendaftaranPilihanControllerTest extends TestCase
                     'id' => $pendaftaran->id,
                     'siswa_id' => $this->siswa->id,
                 ],
+                'kelas_tersedia' => [
+                    [
+                        'id' => $this->paket1->id,
+                        'nama_menu' => 'Paket A',
+                    ],
+                ],
             ]);
 
+        $this->assertCount(3, $response->json('kelas_tersedia'));
         $this->assertEquals($this->paket1->id, $response->json('data.detail_pendaftaran.0.paket_menu_pilihan_id'));
+    }
+
+    public function test_siswa_can_view_available_classes_in_the_choice_form(): void
+    {
+        $response = $this->actingAs($this->siswa, 'siswa')
+            ->get('/siswa/pilih-kelas');
+
+        $response->assertOk()
+            ->assertViewIs('siswa.pilih-kelas.index')
+            ->assertViewHas('kelasTersedia')
+            ->assertSee('Paket A')
+            ->assertSee('Paket B')
+            ->assertSee('Paket C');
     }
 
     public function test_siswa_can_upload_dokumen_wali(): void

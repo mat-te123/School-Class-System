@@ -94,13 +94,14 @@ class PemantauanMinatController extends Controller
             ->where('pendaftaran_pilihan.periode_pendaftaran_id', $periodeId)
             ->select('paket_menu_pilihan.id', 'paket_menu_pilihan.nama_menu', DB::raw('count(detail_pendaftaran_pilihan.id) as total'))
             ->groupBy('paket_menu_pilihan.id', 'paket_menu_pilihan.nama_menu')
+            ->orderBy('paket_menu_pilihan.nama_menu', 'asc')
             ->get();
 
         $paketMenu = PaketMenuPilihan::where('periode_id', $periodeId)->orWhereNull('periode_id')->get(['id', 'nama_menu']);
 
         // Data periode untuk dropdown filter periode
         $periodes = PeriodePendaftaran::select('id', 'tahun_ajaran')->orderBy('tahun_ajaran', 'desc')->get();
-
+        
         $summary = [
             'total_siswa' => $totalSudah + $totalBelum,
             'sudah_memilih' => $totalSudah,

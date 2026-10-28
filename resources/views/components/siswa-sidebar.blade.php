@@ -18,11 +18,6 @@
                     'icon' => asset('Icon/placeholder.svg'),
                     'text' => 'Siswa',
                 ],
-                'Periode' => [
-                    'route' => route('admin-periode-penjurusan.index'),
-                    'icon' => asset('Icon/placeholder.svg'),
-                    'text' => 'Periode',
-                ],
             ];
         @endphp
 

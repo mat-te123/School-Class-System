@@ -24,6 +24,11 @@
             </div>
         </div>
     </div>
+    @if (! $periodeAktif)
+        <div class="mx-8 mt-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">
+            Saat ini tidak ada periode pendaftaran yang aktif.
+        </div>
+    @endif
     <div class="grid grid-cols-4 p-8 gap-4">
         {{-- Student Card --}}
         <div class="col-span-3 flex flex-col bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4">
@@ -46,7 +51,7 @@
                 @php
                     $angkatan = "{$siswa->angkatan}/" . ($siswa->angkatan + 1);
                     $data = [
-                        'Kelas' => '-',
+                        'Kelas' => $siswa->kelasAsalRelation?->nama_kelas ?? '-',
                         'Jenis Kelamin' => $siswa->jenis_kelamin ? $siswa->jenis_kelamin : '-',
                         'Angkatan' => $angkatan ? $angkatan : '-',
                         'Status' => $siswa->is_active ? 'Aktif' : 'Tidak Aktif',
