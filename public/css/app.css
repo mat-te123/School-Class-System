@@ -42,3 +42,23 @@ body {
         box-shadow: 0 0 0 1px #3b82f6;
     }
 }
+
+.positive-status {
+    background-color: #d1fae5; /* Tailwind's green-100 */
+    color: #1fc849; /* Tailwind's green-800 */
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.negative-status {
+    background-color: #fee2e2; /* Tailwind's red-100 */
+    color: #e22020; /* Tailwind's red-800 */
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
