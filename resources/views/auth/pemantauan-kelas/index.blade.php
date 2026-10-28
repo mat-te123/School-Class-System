@@ -39,12 +39,24 @@
                 Ringkasan Data Perkelas
             </h2>
 
+            @php
+                $detailPaketCollection = collect($summary['detail_paket']);
+            @endphp
+
+
             <div class="flex flex-row w-full justify-start gap-8">
-                @foreach ($summary['detail_paket'] as $value)
+
+                @foreach ($paketMenu as $paket)
+                    @php
+                        $detail = $detailPaketCollection->firstWhere('id', $paket->id);
+                        $total = $detail->total ?? 0;
+                    @endphp
+
+
                     <div class="flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
                         <div class="flex flex-col border-l border-green-600 px-4">
-                            <span class="text-lg font-semibold">{{ $value->nama_menu }}</span>
-                            <span class="text-base font-normal">{{ $value->total }}</span>
+                            <span class="text-lg font-semibold">{{ $paket->nama_menu }}</span>
+                            <span class="text-base font-normal">{{ $total }} siswa</span>
                         </div>
                     </div>
                 @endforeach
@@ -68,28 +80,25 @@
                     placeholder="Cari nama, NISN, atau NIS..."
                     class="px-4 py-2 rounded-lg border border-gray-400 w-full">
 
-
-                <div class="flex flex-row rounded-lg border border-gray-400 overflow-hidden w-fit shrink-0">
-
-                    @foreach (['sudah' => 'Sudah', 'belum' => 'Belum'] as $value => $label)
-                        <button type="submit" name="status" value="{{ $value }}"
-                            class="px-4 py-2 {{ $status == $value ? 'bg-green-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100' }}">
-                            {{ $label }}
-                        </button>
-                    @endforeach
-                </div>
+                @foreach (['sudah' => 'Sudah Mengisi', 'belum' => 'Belum Mengisi'] as $value => $label)
+                    <button type="submit" name="status" value="{{ $value }}"
+                        class="w-fit whitespace-nowrap text-sm rounded-lg px-4 {{ $status == $value ? 'bg-blue-600 text-white border border-blue-200' : 'bg-white text-gray-700  border border-gray-300 hover:border hover:border-[#3b82f6]' }}">
+                        {{ $label }}
+                    </button>
+                @endforeach
 
 
+                @if ($status == 'sudah')
+                    <select name="kelas_pilihan" onchange="this.form.submit()" class="select-primary">
+                        <option value="">Pilihan Kelas : semua</option>
+                        @foreach ($paketMenu as $value)
+                            <option value="{{ $value->id }}" @selected(request('kelas_pilihan') == $value->id)>
+                                Pilihan Kelas : {{ $value->nama_menu }}
+                            </option>
+                        @endforeach
+                    </select>
+                @endif
 
-                <select name="kelas_pilihan" onchange="this.form.submit()"
-                    class="px-4 py-2 rounded-lg border border-gray-400 w-fit">
-                    <option value="">Pilihan Kelas : semua</option>
-                    @foreach ($summary['detail_paket'] as $value)
-                        <option value="{{ $value->id }}" @selected(request('kelas_pilihan') == $value->id)>
-                            Pilihan Kelas : {{ $value->nama_menu }}
-                        </option>
-                    @endforeach
-                </select>
             </form>
             <div class="flex flex-col rounded-xl overflow-hidden border border-gray-300 w-full">
                 <table class="min-w-full border-separate border-spacing-0">
@@ -166,12 +175,16 @@
                                         {{ $item->nisn }}
                                     </td>
                                     @if ($item->is_active == false)
-                                        <td class=" text-red-600 font-semibold">
-                                            Tidak Aktif
+                                        <td>
+                                            <span class="negative-status">
+                                                Tidak Aktif
+                                            </span>
                                         </td>
                                     @else
-                                        <td class=" text-green-600 font-semibold">
-                                            Aktif
+                                        <td>
+                                            <span class="positive-status">
+                                                Aktif
+                                            </span>
                                         </td>
                                     @endif
                                 </tr>
