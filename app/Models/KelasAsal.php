@@ -26,4 +26,9 @@ class KelasAsal extends Model
     {
         return $this->hasMany(Siswa::class, 'kelas_asal_id');
     }
+
+    public function bobotNilai(): HasMany
+    {
+        return $this->hasMany(BobotNilaiKelas::class, 'kelas_asal_id');
+    }
 }
