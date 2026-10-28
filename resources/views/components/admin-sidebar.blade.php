@@ -1,9 +1,9 @@
+@props(['isAdmin' => true])
 <aside x-cloak x-data="{
     isSidebarOpen: false,
     toggleSidebar() {
         this.isSidebarOpen = !this.isSidebarOpen;
     },
-    isAdmin: true,
 }" :class="isSidebarOpen ? 'w-64' : 'w-20'"
     class="relative bg-slate-900 text-white min-h-screen p-4 flex flex-col justify-between gap-4 transition-all duration-300 shadow-[8px_0px_20px_-10px_#172034]">
     <div class="flex flex-col h-fit gap-4">
@@ -30,34 +30,57 @@
                     'text' => 'Kelas',
                 ],
             ];
+
+            $itemsSiswa = [
+                'Siswa' => [
+                    'route' => route('admin-siswa.index'),
+                    'icon' => asset('Icon/placeholder.svg'),
+                    'text' => 'Siswa',
+                ],
+            ];
         @endphp
         <p class="text-sm font-medium leading-6">
             menu
         </p>
-        @foreach ($items as $key => $value)
-            <a href="{{ $value['route'] }}"
-                class="flex flex-row items-center gap-2 p-2 rounded hover:bg-slate-800 opacity-100 transition-all duration-300 ease-in-out text-md leading-4 font-normal"
-                :class="{ 'bg-slate-800': window.location.href === '{{ $value['route'] }}' }">
-                <img src="{{ $value['icon'] }}" alt="{{ $key }}_icon" class="w-6 h-6" />
-                <span class="text-sm" :class="{ 'hidden': !isSidebarOpen }">{{ $value['text'] }}</span>
-            </a>
-        @endforeach
-        <p class="text-sm font-medium leading-6">
-            akun
-        </p>
-        <form action="{{ route('logout') }}" method="POST">
-            @csrf
-            <button type="submit"
-                class="flex flex-row items-center gap-2 p-2 rounded opacity-100 transition-all duration-300 ease-in-out hover:bg-red-700 text-white w-full">
-                <img src="{{ asset('Icon/Sign_out.svg') }}" alt="logout_icon" class="w-6 h-6" />
-                <span type="submit"
-                    class="text-sm font-bold leading-6 opacity-100 transition-all duration-300 ease-in-out"
-                    :class="{ 'hidden': !isSidebarOpen }">
-                    Logout
-                </span>
-            </button>
+        @if ($isAdmin)
+            @foreach ($items as $key => $value)
+                <a href="{{ $value['route'] }}"
+                    class="flex flex-row items-center gap-2 p-2 rounded hover:bg-slate-800 opacity-100 transition-all duration-300 ease-in-out text-md leading-4 font-normal"
+                    :class="{ 'bg-slate-800': window.location.href === '{{ $value['route'] }}' }">
+                    <img src="{{ $value['icon'] }}" alt="{{ $key }}_icon" class="w-6 h-6" />
+                    <span class="text-sm" :class="{ 'hidden': !isSidebarOpen }">{{ $value['text'] }}</span>
+                </a>
+            @endforeach
+            <p class="text-sm font-medium leading-6">
+                akun
+            </p>
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit"
+                    class="flex flex-row items-center gap-2 p-2 rounded opacity-100 transition-all duration-300 ease-in-out hover:bg-red-700 text-white w-full">
+                    <img src="{{ asset('Icon/Sign_out.svg') }}" alt="logout_icon" class="w-6 h-6" />
+                    <span type="submit"
+                        class="text-sm font-bold leading-6 opacity-100 transition-all duration-300 ease-in-out"
+                        :class="{ 'hidden': !isSidebarOpen }">
+                        Logout
+                    </span>
+                </button>
 
-        </form>
+            </form>
+        @else
+            @foreach ($itemsSiswa as $key => $value)
+                <a href="{{ $value['route'] }}"
+                    class="flex flex-row items-center gap-2 p-2 rounded hover:bg-slate-800 opacity-100 transition-all duration-300 ease-in-out text-md leading-4 font-normal"
+                    :class="{ 'bg-slate-800': window.location.href === '{{ $value['route'] }}' }">
+                    <img src="{{ $value['icon'] }}" alt="{{ $key }}_icon" class="w-6 h-6" />
+                    <span class="text-sm" :class="{ 'hidden': !isSidebarOpen }">{{ $value['text'] }}</span>
+                </a>
+            @endforeach
+        @endif
+
+
+
+
     </div>
     </div>
     <button @click="toggleSidebar()"

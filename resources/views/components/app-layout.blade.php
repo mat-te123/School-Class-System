@@ -14,11 +14,7 @@
 </head>
 
 <body class="bg-gray-100 min-h-screen flex">
-    @if ($type === 'siswa')
-        <x-siswa-sidebar />
-    @else
-        <x-admin-sidebar />
-    @endif
+    <x-admin-sidebar :isAdmin=" $type !== 'siswa' " />
     <main class="flex-1 h-screen flex flex-col overflow-y-auto">
         {{ $slot }}
     </main>
