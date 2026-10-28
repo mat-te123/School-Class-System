@@ -78,7 +78,7 @@
 
                 <input type="text" name="search" value="{{ request('search') }}"
                     placeholder="Cari nama, NISN, atau NIS..."
-                    class="px-4 py-2 rounded-lg border border-gray-400 w-full">
+                    class="px-4 rounded-lg border border-gray-400 w-full text-sm">
 
                 @foreach (['sudah' => 'Sudah Mengisi', 'belum' => 'Belum Mengisi'] as $value => $label)
                     <button type="submit" name="status" value="{{ $value }}"
@@ -89,7 +89,7 @@
 
 
                 @if ($status == 'sudah')
-                    <select name="kelas_pilihan" onchange="this.form.submit()" class="select-primary">
+                    <select name="kelas_pilihan" onchange="this.form.submit()" class="select-primary text-sm">
                         <option value="">Pilihan Kelas : semua</option>
                         @foreach ($paketMenu as $value)
                             <option value="{{ $value->id }}" @selected(request('kelas_pilihan') == $value->id)>
