@@ -82,7 +82,7 @@
 
                 @foreach (['sudah' => 'Sudah Mengisi', 'belum' => 'Belum Mengisi'] as $value => $label)
                     <button type="submit" name="status" value="{{ $value }}"
-                        class="w-fit whitespace-nowrap text-sm rounded-lg px-4 {{ $status == $value ? 'bg-blue-600 text-white border border-blue-200' : 'bg-white text-gray-700  border border-gray-300 hover:border hover:border-[#3b82f6]' }}">
+                        class="w-fit whitespace-nowrap text-sm rounded-lg px-4 py-2 {{ $status == $value ? 'bg-blue-600 text-white border border-blue-200' : 'bg-white text-gray-700  border border-gray-300 hover:border hover:border-[#3b82f6]' }}">
                         {{ $label }}
                     </button>
                 @endforeach
