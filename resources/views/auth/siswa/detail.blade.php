@@ -17,7 +17,7 @@
             </span>
         </div>
 
-        <div class="flex flex-col py-6 px-8 gap-4 relative">
+        <div class="flex flex-col pt-6 px-8 gap-4 relative">
             <a href="{{ route('admin-siswa.index') }}"
                 class="bg-gradient-to-t from-[#273344] to-[#1a202c] text-white text-sm font-semibold py-2 px-4 rounded-lg w-fit">
                 Kembali
@@ -73,22 +73,19 @@
 
             </div>
 
-            <div class="absolute bottom-0 flex flex-row gap-4"
-                x-effect="() => {console.log('Current Menu:', currentMenu)}">
+            <div class="flex flex-row gap-4 " x-effect="() => {console.log('Current Menu:', currentMenu)}">
                 <template x-for="item in menuItem" :key="item">
-                    <button @click="currentMenu = item" :class="currentMenu === item ? 'underline' : ''"
-                        class="px-4 font-semibold transition-all duration-200 ease-in-out">
+                    <button @click="currentMenu = item" :class="currentMenu === item ? 'border-b border-black' : ''"
+                        class="px-4 font-semibold transition-all duration-200 ease-in-out hover:border-b hover:border-gray-400">
                         <span x-text="item"></span>
                     </button>
                 </template>
             </div>
         </div>
-        <x-nilai-siswa-profile x-show="currentMenu === 'Nilai Siswa'" x-cloak :siswa-id="$siswa->id" />
-        <div x-show="currentMenu === 'Pilihan Siswa'" x-cloak
-            class="flex flex-col bg-white p-6 border-t border-slate-200 mt-6 gap-8">
-            <p>
-                Halo
-            </p>
+        <div class="flex-1">
+            <x-nilai-siswa-profile x-show="currentMenu === 'Nilai Siswa'" x-cloak :siswa-id="$siswa->id" />
+            <x-pilihan-siswa-profile x-show="currentMenu === 'Pilihan Siswa'" x-cloak :siswa-id="$siswa->id" />
+
         </div>
 
         <x-delete-modal />
