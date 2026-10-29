@@ -1,4 +1,6 @@
-<div class="flex flex-col bg-white p-6 rounded-lg shadow-md border border-slate-200 mt-6 gap-8">
+<div {{ $attributes->merge([
+    'class' => 'flex flex-col bg-white p-6 border-t border-slate-200 gap-8',
+]) }}>
     <div class="flex flex-col p-4 bg-white border border-slate-200 rounded-lg gap-4 w-fit">
         <div class="flex flex-col border-l border-slate-200 pl-4 gap-2">
             <span class="text-gray-700">
