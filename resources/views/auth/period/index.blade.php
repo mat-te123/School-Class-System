@@ -21,7 +21,7 @@
 
         </div>
         <div class="grid grid-cols-3 grid-rows-2 py-6 px-8 gap-3">
-            <div class="col-span-3 row-span-2 flex flex-row justify-end w-full h-fit">
+            <div class="col-span-3 row-span-2 flex flex-row justify-start w-full h-fit">
                 @if ($canAddPeriod)
                     <button
                         class="px-4 py-2 text-white rounded-md bg-[linear-gradient(180deg,#273344_11.77%,#000_166.84%)] whitespace-nowrap"
