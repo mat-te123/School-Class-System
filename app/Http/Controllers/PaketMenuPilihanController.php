@@ -315,7 +315,7 @@ class PaketMenuPilihanController extends Controller
             ]);
         }
 
-        return view('paket-menu-pilihan.show', compact('paketMenu'));
+        return view('any.kelas.kelas-detail', compact('paketMenu'));
     }
 
     /**
