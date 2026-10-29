@@ -1,6 +1,6 @@
-@props([($tahunAjaranSekarang = '')])
+@props(['tahunAjaranSekarang' => ''])
 
-<x-add-modal subtext="Menambahkan periode baru">
+<x-add-modal subtext="Menambahkan periode baru" tahunAjaranSekarang="{{ $tahunAjaranSekarang }}">
     @php
         $btn_primary = 'bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg py-2 px-4 transition';
     @endphp
@@ -18,7 +18,7 @@
         @php
             $currentyear = (int) date('Y');
         @endphp
-        <div class="flex flex-col gap-1">
+        {{-- <div class="flex flex-col gap-1">
             <label for="ftahun_ajaran" class="text-sm leading-4 font-semibold">Tahun Ajaran</label>
             <select name="tahun_ajaran" id="ftahun_ajaran" class="border border-black rounded-lg py-1 px-4 text-base"
                 required>
@@ -27,6 +27,15 @@
                         {{ $year }}/{{ $year + 1 }}
                     </option>
                 @endfor
+            </select>
+        </div> --}}
+        <div class="flex flex-col gap-1">
+            <label for="ftahun_ajaran" class="text-sm leading-4 font-semibold">Tahun Ajaran</label>
+            <select disabled name="tahun_ajaran" id="ftahun_ajaran"
+                class="border border-black rounded-lg py-1 px-4 text-base" required>
+                <option value="{{ $tahunAjaranSekarang }}" disabled selected>
+                    {{ $tahunAjaranSekarang }}
+                </option>
             </select>
         </div>
 
