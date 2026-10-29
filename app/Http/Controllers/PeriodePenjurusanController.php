@@ -10,6 +10,13 @@ use Illuminate\Validation\Rule;
 
 class PeriodePenjurusanController extends Controller
 {
+    public function getCurrentAcademicYear(): string
+    {
+        $year = now()->month >= 7 ? now()->year : now()->year - 1;
+
+        return $year.'/'.($year + 1);
+    }
+
     public function index(Request $request)
     {
         $validated = $request->validate([
@@ -36,7 +43,18 @@ class PeriodePenjurusanController extends Controller
             ]);
         }
 
-        return view('auth.period.index', compact('periode'));
+        $tahunAjaranSekarang = $this->getCurrentAcademicYear();
+
+        $latestAcademicYear = PeriodePendaftaran::orderByDesc('tahun_ajaran')->first()?->tahun_ajaran;
+
+        $canAddPeriod = $latestAcademicYear !== $tahunAjaranSekarang;
+
+        return view('auth.period.index', compact(
+            'periode',
+            'tahunAjaranSekarang',
+            'canAddPeriod',
+            'latestAcademicYear'
+        ));
     }
 
     public function show(Request $request, string $id)

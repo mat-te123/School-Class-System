@@ -1,3 +1,5 @@
+@props([($tahunAjaranSekarang = '')])
+
 <x-add-modal subtext="Menambahkan periode baru">
     @php
         $btn_primary = 'bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg py-2 px-4 transition';

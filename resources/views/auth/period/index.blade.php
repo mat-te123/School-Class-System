@@ -22,27 +22,24 @@
         </div>
         <div class="grid grid-cols-3 grid-rows-2 py-6 px-8 gap-3">
             <div class="col-span-3 row-span-2 flex flex-row justify-end w-full h-fit">
-                {{-- <div class="flex flex-row gap-4">
-                    <select id="fterbaru" class="px-1 bg-[#F9FAFB] border border-gray-400 rounded-lg text-gray-400">
-                        <option value="terbaru">new</option>
-                        <option value="terlama">old</option>
-                    </select>
-                    <select id="faktif" class="px-1 bg-[#F9FAFB] border border-gray-400 rounded-lg text-gray-400">
-                        <option value="">Status : semua(aktif/tidak aktif)</option>
-                        <option value="active">Status : aktif</option>
-                        <option value="not active">Status : tidak aktif</option>
-                    </select>
-                </div> --}}
-
-
-                <button
-                    class="px-4 py-2 text-white rounded-md bg-[linear-gradient(180deg,#273344_11.77%,#000_166.84%)] whitespace-nowrap"
-                    @click="
+                @if ($canAddPeriod)
+                    <button
+                        class="px-4 py-2 text-white rounded-md bg-[linear-gradient(180deg,#273344_11.77%,#000_166.84%)] whitespace-nowrap"
+                        @click="
                     showaddmodal=true;
                     addUrl='{{ route('periode-penjurusan.store') }}';
                     ">
-                    Tambah Periode
-                </button>
+                        Tambah Periode
+                    </button>
+                @else
+                    <button type="button" disabled
+                        title="Periode tahun ajaran {{ $tahunAjaranSekarang }} sudah tersedia"
+                        class="px-4 py-2 text-gray-500 bg-gray-300 rounded-md
+               cursor-not-allowed whitespace-nowrap">
+                        Tambah Periode
+                    </button>
+                @endif
+
 
             </div>
             @foreach ($periode as $item)
@@ -60,7 +57,8 @@
 
         </div>
         @if ($periode->lastPage() > 1)
-            <div class="flex flex-row items-center justify-center gap-3 bg-white border border-gray-300 py-2 px-5 rounded-full w-fit mx-auto">
+            <div
+                class="flex flex-row items-center justify-center gap-3 bg-white border border-gray-300 py-2 px-5 rounded-full w-fit mx-auto">
                 @if ($periode->onFirstPage())
                     <span class="text-gray-400 cursor-not-allowed">&lt; sebelum</span>
                 @else
@@ -85,7 +83,7 @@
         @endif
 
         <x-delete-modal />
-        <x-add-modal-periode />
+        <x-add-modal-periode :tahunAjaranSekarang="$tahunAjaranSekarang" />
         <x-update-modal-periode />
         <x-flash-message />
 </x-app-layout>
