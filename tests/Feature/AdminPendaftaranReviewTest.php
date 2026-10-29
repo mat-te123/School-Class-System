@@ -85,7 +85,6 @@ class AdminPendaftaranReviewTest extends TestCase
             'siswa_id' => $this->siswa->id,
             'periode_pendaftaran_id' => $this->periode->id,
             'tanggal_submit' => now(),
-            'status' => 'menunggu',
             'dokumen_wali_path' => 'dokumen_wali/test.pdf',
         ]);
 
@@ -118,36 +117,10 @@ class AdminPendaftaranReviewTest extends TestCase
                 'success' => true,
                 'data' => [
                     'id' => $this->pendaftaran->id,
-                    'status' => 'menunggu',
                 ],
             ]);
     }
 
-    public function test_admin_can_approve_pendaftaran(): void
-    {
-        $response = $this->actingAs($this->admin, 'web')
-            ->putJson('/admin/pendaftaran-pilihan/'.$this->pendaftaran->id.'/approve');
-
-        $response->assertStatus(200)
-            ->assertJson(['success' => true]);
-
-        $this->assertEquals('disetujui', $this->pendaftaran->fresh()->status);
-        $this->assertEquals($this->admin->id, $this->pendaftaran->fresh()->ditinjau_oleh);
-    }
-
-    public function test_admin_can_reject_pendaftaran_with_catatan(): void
-    {
-        $response = $this->actingAs($this->admin, 'web')
-            ->putJson('/admin/pendaftaran-pilihan/'.$this->pendaftaran->id.'/reject', [
-                'catatan_penolakan' => 'Dokumen wali tidak terbaca.',
-            ]);
-
-        $response->assertStatus(200)
-            ->assertJson(['success' => true]);
-
-        $this->assertEquals('ditolak', $this->pendaftaran->fresh()->status);
-        $this->assertEquals('Dokumen wali tidak terbaca.', $this->pendaftaran->fresh()->catatan_penolakan);
-    }
 
     public function test_admin_can_download_dokumen_wali(): void
     {
@@ -163,31 +136,6 @@ class AdminPendaftaranReviewTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /** Request browser non-JSON redirect setelah approve */
-    public function test_browser_approve_redirects_back_with_success_flash(): void
-    {
-        $response = $this->actingAs($this->admin, 'web')
-            ->from('/admin/pendaftaran-pilihan')
-            ->put('/admin/pendaftaran-pilihan/'.$this->pendaftaran->id.'/approve');
-
-        $response->assertRedirect('/admin/pendaftaran-pilihan');
-        $response->assertSessionHas('success', 'Pengajuan pilihan paket berhasil disetujui.');
-        $this->assertEquals('disetujui', $this->pendaftaran->fresh()->status);
-    }
-
-    /** Request browser non-JSON redirect setelah reject */
-    public function test_browser_reject_redirects_back_with_success_flash(): void
-    {
-        $response = $this->actingAs($this->admin, 'web')
-            ->from('/admin/pendaftaran-pilihan')
-            ->put('/admin/pendaftaran-pilihan/'.$this->pendaftaran->id.'/reject', [
-                'catatan_penolakan' => 'Dokumen wali tidak terbaca.',
-            ]);
-
-        $response->assertRedirect('/admin/pendaftaran-pilihan');
-        $response->assertSessionHas('success', 'Pengajuan pilihan paket berhasil ditolak.');
-        $this->assertEquals('ditolak', $this->pendaftaran->fresh()->status);
-    }
 
     /** FR-20: Admin melihat daftar siswa yang sudah dan belum mengisi pilihan kelas */
     public function test_admin_can_view_student_submission_status(): void
@@ -220,7 +168,6 @@ class AdminPendaftaranReviewTest extends TestCase
             'siswa_id' => $siswaSudah->id,
             'periode_pendaftaran_id' => $periode->id,
             'tanggal_submit' => now(),
-            'status' => 'menunggu',
         ]);
         DetailPendaftaranPilihan::create([
             'id' => (string) Str::uuid(),

@@ -21,8 +21,6 @@ class PendaftaranPilihan extends Model
         'siswa_id',
         'periode_pendaftaran_id',
         'tanggal_submit',
-        'status',
-        'catatan_penolakan',
         'dokumen_wali_path',
         'ditinjau_oleh',
         'tanggal_tinjauan',
@@ -30,7 +28,6 @@ class PendaftaranPilihan extends Model
 
     protected $casts = [
         'tanggal_submit' => 'datetime',
-        'status' => 'string',
         'tanggal_tinjauan' => 'datetime',
     ];
 

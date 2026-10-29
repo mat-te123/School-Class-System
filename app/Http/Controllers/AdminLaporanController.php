@@ -80,7 +80,6 @@ class AdminLaporanController extends Controller
             'periode_id' => 'required|uuid|exists:periode_pendaftaran,id',
             'paket_id' => 'nullable|uuid|exists:paket_menu_pilihan,id',
             'kelas_asal_id' => 'nullable|uuid|exists:kelas_asal,id',
-            'status' => 'nullable|string|in:menunggu,disetujui,ditolak',
             'search' => 'nullable|string|max:50',
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
@@ -102,9 +101,6 @@ class AdminLaporanController extends Controller
             });
         }
 
-        if (! empty($validated['status'])) {
-            $query->where('status', $validated['status']);
-        }
 
         if (! empty($validated['search'])) {
             $search = trim($validated['search']);
@@ -252,7 +248,6 @@ class AdminLaporanController extends Controller
             'periode_id' => 'required|uuid|exists:periode_pendaftaran,id',
             'paket_id' => 'nullable|uuid|exists:paket_menu_pilihan,id',
             'kelas_asal_id' => 'nullable|uuid|exists:kelas_asal,id',
-            'status' => 'nullable|string|in:menunggu,disetujui,ditolak',
             'format' => 'required|string|in:xlsx,csv,pdf',
         ]);
 
@@ -273,9 +268,6 @@ class AdminLaporanController extends Controller
             });
         }
 
-        if (! empty($validated['status'])) {
-            $query->where('status', $validated['status']);
-        }
 
         $data = $query->latest('tanggal_submit')->get();
 

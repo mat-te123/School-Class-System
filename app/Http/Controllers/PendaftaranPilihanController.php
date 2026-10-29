@@ -307,15 +307,6 @@ class PendaftaranPilihanController extends Controller
             abort(404, 'Tidak ada pengajuan yang ditemukan.');
         }
 
-        if ($pendaftaran->status !== 'menunggu') {
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Pengajuan yang sudah disetujui atau ditolak tidak dapat dibatalkan.',
-                ], 422);
-            }
-            abort(422, 'Pengajuan yang sudah disetujui atau ditolak tidak dapat dibatalkan.');
-        }
 
         DB::transaction(function () use ($pendaftaran) {
             // Decrement kuota_terisi untuk setiap paket yang dipilih
@@ -376,15 +367,6 @@ class PendaftaranPilihanController extends Controller
             abort(404, 'Belum ada pengajuan pilihan untuk periode ini. Silakan submit terlebih dahulu.');
         }
 
-        if ($pendaftaran->status !== 'menunggu') {
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Pilihan tidak dapat diubah karena pengajuan sudah direview oleh admin.',
-                ], 409);
-            }
-            abort(409, 'Pilihan tidak dapat diubah karena pengajuan sudah direview oleh admin.');
-        }
 
         $maxPilihan = $periodeAktif->max_pilihan_siswa ?? 3;
 
@@ -445,11 +427,6 @@ class PendaftaranPilihanController extends Controller
                 PaketMenuPilihan::where('id', $paketId)->increment('kuota_terisi');
             }
 
-            // Reset ke menunggu bila sempat ditolak (agar bisa di-review ulang)
-            $pendaftaran->update([
-                'status' => 'menunggu',
-                'catatan_penolakan' => null,
-            ]);
         });
 
         $pendaftaran->load([

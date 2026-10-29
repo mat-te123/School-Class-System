@@ -36,9 +36,4 @@ class MasterMataPelajaran extends Model
     {
         return $this->hasMany(KriteriaBobotMenu::class, 'master_mata_pelajaran_id');
     }
-
-    public function bobotNilaiKelas(): HasMany
-    {
-        return $this->hasMany(BobotNilaiKelas::class, 'master_mata_pelajaran_id');
-    }
 }

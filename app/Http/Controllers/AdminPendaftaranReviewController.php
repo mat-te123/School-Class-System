@@ -19,7 +19,6 @@ class AdminPendaftaranReviewController extends Controller
     public function index(Request $request)
     {
         $validated = $request->validate([
-            'status' => 'nullable|string|max:20',
             'search' => 'nullable|string|max:50',
             'per_page' => 'nullable|integer|min:1|max:100',
         ]);
@@ -31,9 +30,6 @@ class AdminPendaftaranReviewController extends Controller
             'peninjau',
         ]);
 
-        if (! empty($validated['status'])) {
-            $query->where('status', $validated['status']);
-        }
 
         if (! empty($validated['search'])) {
             $search = trim($validated['search']);
@@ -77,52 +73,6 @@ class AdminPendaftaranReviewController extends Controller
         }
 
         return view('admin-pendaftaran-review.show', compact('pendaftaran'));
-    }
-
-    /**
-     * FR-42: Admin menyetujui pengajuan.
-     */
-    public function approve(string $id, Request $request)
-    {
-        $pendaftaran = PendaftaranPilihan::findOrFail($id);
-
-        $pendaftaran->update([
-            'status' => 'disetujui',
-            'catatan_penolakan' => null,
-            'ditinjau_oleh' => Auth::guard('web')->id(),
-            'tanggal_tinjauan' => now(),
-        ]);
-
-        return $this->handleWriteResponse($request, [
-            'success' => true,
-            'message' => 'Pengajuan pilihan paket berhasil disetujui.',
-            'data' => $pendaftaran->fresh(),
-        ]);
-    }
-
-    /**
-     * FR-43: Admin menolak pengajuan dengan catatan penolakan.
-     */
-    public function reject(Request $request, string $id)
-    {
-        $validated = $request->validate([
-            'catatan_penolakan' => 'required|string|max:1000',
-        ]);
-
-        $pendaftaran = PendaftaranPilihan::findOrFail($id);
-
-        $pendaftaran->update([
-            'status' => 'ditolak',
-            'catatan_penolakan' => $validated['catatan_penolakan'],
-            'ditinjau_oleh' => Auth::guard('web')->id(),
-            'tanggal_tinjauan' => now(),
-        ]);
-
-        return $this->handleWriteResponse($request, [
-            'success' => true,
-            'message' => 'Pengajuan pilihan paket berhasil ditolak.',
-            'data' => $pendaftaran->fresh(),
-        ]);
     }
 
     /**
@@ -212,8 +162,6 @@ class AdminPendaftaranReviewController extends Controller
                 'submission' => $sub ? [
                     'id' => $sub->id,
                     'tanggal_submit' => $sub->tanggal_submit,
-                    'status' => $sub->status,
-                    'catatan_penolakan' => $sub->catatan_penolakan,
                 ] : null,
                 'pilihan' => $sub ? $sub->detailPendaftaran->map(function ($d) {
                     return [
@@ -280,8 +228,6 @@ class AdminPendaftaranReviewController extends Controller
                         'gelombang' => $p->periodePendaftaran?->gelombang,
                     ],
                     'tanggal_submit' => $p->tanggal_submit,
-                    'status' => $p->status,
-                    'catatan_penolakan' => $p->catatan_penolakan,
                     'dokumen_wali_path' => $p->dokumen_wali_path,
                     'ditinjau_oleh' => $p->peninjau?->name ?? $p->peninjau?->username,
                     'tanggal_tinjauan' => $p->tanggal_tinjauan,

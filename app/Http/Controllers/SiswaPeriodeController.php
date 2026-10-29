@@ -380,16 +380,6 @@ class SiswaPeriodeController extends Controller
             ->first();
 
         if ($existingPendaftaran) {
-            if ($existingPendaftaran->status !== 'menunggu') {
-                if ($request->wantsJson() || $request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Pilihan kelas tidak dapat diubah karena status pengajuan sudah diproses atau direview.',
-                    ], 409);
-                }
-
-                return redirect()->back()->with('error', 'Pilihan kelas tidak dapat diubah karena status pengajuan sudah diproses atau direview.');
-            }
 
             $pendaftaran = DB::transaction(function () use ($existingPendaftaran, $pilihanIds) {
                 foreach ($existingPendaftaran->detailPendaftaran as $detail) {
@@ -424,7 +414,6 @@ class SiswaPeriodeController extends Controller
                     'siswa_id' => $siswa->id,
                     'periode_pendaftaran_id' => $periode->id,
                     'tanggal_submit' => now(),
-                    'status' => 'menunggu',
                 ]);
 
                 foreach ($pilihanIds as $index => $paketId) {

@@ -9,6 +9,7 @@ use App\Models\PeriodePendaftaran;
 use App\Services\PenjurusanPlacementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AdminHasilPenjurusanController extends Controller
 {

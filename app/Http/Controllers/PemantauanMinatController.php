@@ -97,7 +97,10 @@ class PemantauanMinatController extends Controller
             ->orderBy('paket_menu_pilihan.nama_menu', 'asc')
             ->get();
 
-        $paketMenu = PaketMenuPilihan::where('periode_id', $periodeId)->orWhereNull('periode_id')->get(['id', 'nama_menu']);
+        $paketMenu = PaketMenuPilihan::where(function ($q) use ($periodeId) {
+            $q->where('periode_id', $periodeId)
+                ->orWhereNull('periode_id');
+        })->orderBy('nama_menu', 'asc')->get(['id', 'nama_menu']);
 
         // Data periode untuk dropdown filter periode
         $periodes = PeriodePendaftaran::select('id', 'tahun_ajaran')->orderBy('tahun_ajaran', 'desc')->get();

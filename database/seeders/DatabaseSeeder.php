@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder
             PeriodePendaftaranSeeder::class,
             PaketMenuPilihanSeeder::class,
             PaketKriteriaBobotSeeder::class,
-            BobotNilaiKelasSeeder::class,
         ]);
     }
 }

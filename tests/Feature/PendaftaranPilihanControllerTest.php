@@ -257,7 +257,6 @@ class PendaftaranPilihanControllerTest extends TestCase
             'siswa_id' => $this->siswa->id,
             'periode_pendaftaran_id' => $this->periode->id,
             'tanggal_submit' => now(),
-            'status' => 'menunggu',
         ]);
 
         Storage::fake('public');
@@ -290,7 +289,6 @@ class PendaftaranPilihanControllerTest extends TestCase
             'siswa_id' => $this->siswa->id,
             'periode_pendaftaran_id' => $this->periode->id,
             'tanggal_submit' => now(),
-            'status' => 'menunggu',
         ]);
 
         DetailPendaftaranPilihan::create([
@@ -309,26 +307,6 @@ class PendaftaranPilihanControllerTest extends TestCase
         $this->assertEquals(0, $this->paket1->fresh()->kuota_terisi);
     }
 
-    public function test_siswa_cannot_cancel_approved_submission(): void
-    {
-        $this->periode->update([
-            'tanggal_mulai_pertukaran' => now()->subHour(),
-            'tanggal_selesai_pertukaran' => now()->addHour(),
-        ]);
-
-        PendaftaranPilihan::create([
-            'id' => (string) Str::uuid(),
-            'siswa_id' => $this->siswa->id,
-            'periode_pendaftaran_id' => $this->periode->id,
-            'tanggal_submit' => now(),
-            'status' => 'disetujui',
-        ]);
-
-        $response = $this->actingAs($this->siswa, 'siswa')
-            ->deleteJson('/siswa/pendaftaran-pilihan');
-
-        $response->assertStatus(422);
-    }
 
     /** Request browser non-JSON redirect setelah storeSiswa */
     public function test_browser_store_siswa_redirects_back_with_success_flash(): void
@@ -356,7 +334,6 @@ class PendaftaranPilihanControllerTest extends TestCase
             'siswa_id' => $this->siswa->id,
             'periode_pendaftaran_id' => $this->periode->id,
             'tanggal_submit' => now(),
-            'status' => 'menunggu',
         ]);
 
         DetailPendaftaranPilihan::create([
@@ -405,7 +382,6 @@ class PendaftaranPilihanControllerTest extends TestCase
             'siswa_id' => $this->siswa->id,
             'periode_pendaftaran_id' => $this->periode->id,
             'tanggal_submit' => now(),
-            'status' => 'menunggu',
         ]);
 
         $file = UploadedFile::fake()->create('dokumen.pdf', 100, 'application/pdf');
@@ -434,7 +410,6 @@ class PendaftaranPilihanControllerTest extends TestCase
             'siswa_id' => $this->siswa->id,
             'periode_pendaftaran_id' => $this->periode->id,
             'tanggal_submit' => now(),
-            'status' => 'menunggu',
         ]);
 
         DetailPendaftaranPilihan::create([
