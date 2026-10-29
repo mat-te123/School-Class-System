@@ -134,8 +134,15 @@
                                         <th class="border-r border-t border-gray-200 p-2">
                                             {{ $index + 1 }}
                                         </th>
-                                        <td class="px-3 lowercase">
-                                            {{ $item->nama_lengkap }}
+                                        <td>
+                                            <div class="flex flex-row items-center gap-2 lowercase justify-between">
+                                                {{ $item->nama_lengkap }}
+                                                <a href="{{ route('siswa.show', $item->id) }}"
+                                                    class="opacity-0 group-hover:opacity-100 bg-white hover:bg-gray-300 rounded-lg p-1 transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
+                                                    <img src="{{ asset('Icon/Arrow_down.svg') }}" alt="Arrow icon"
+                                                        class="w-4 h-4">
+                                                </a>
+                                            </div>
                                         </td>
                                         <td>
                                             {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 1)?->paketMenuPilihan?->nama_menu ?? '—' }}
