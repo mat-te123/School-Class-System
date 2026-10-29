@@ -113,7 +113,6 @@ class AdminLaporanTest extends TestCase
             'siswa_id' => $this->siswa->id,
             'periode_pendaftaran_id' => $this->periode->id,
             'tanggal_submit' => now(),
-            'status' => 'disetujui',
         ]);
 
         DetailPendaftaranPilihan::insert([
@@ -171,20 +170,6 @@ class AdminLaporanTest extends TestCase
         $this->assertCount(3, $resp->json('data.data.0.detail_pendaftaran'));
     }
 
-    public function test_admin_can_filter_minat_siswa_by_status(): void
-    {
-        // Filter status = ditolak -> 0
-        $resp = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/laporan/minat-siswa?periode_id='.$this->periode->id.'&status=ditolak');
-        $resp->assertStatus(200)
-            ->assertJsonPath('data.total', 0);
-
-        // Filter status = disetujui -> 1
-        $resp2 = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/laporan/minat-siswa?periode_id='.$this->periode->id.'&status=disetujui');
-        $resp2->assertStatus(200)
-            ->assertJsonPath('data.total', 1);
-    }
 
     public function test_admin_can_view_peminat_vs_kuota(): void
     {

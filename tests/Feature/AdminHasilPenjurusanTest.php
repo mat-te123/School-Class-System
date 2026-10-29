@@ -157,7 +157,6 @@ class AdminHasilPenjurusanTest extends TestCase
             'siswa_id' => $this->siswa1->id,
             'periode_pendaftaran_id' => $this->periode->id,
             'tanggal_submit' => now(),
-            'status' => 'disetujui',
         ]);
 
         DetailPendaftaranPilihan::create([
@@ -172,7 +171,6 @@ class AdminHasilPenjurusanTest extends TestCase
             'siswa_id' => $this->siswa2->id,
             'periode_pendaftaran_id' => $this->periode->id,
             'tanggal_submit' => now(),
-            'status' => 'disetujui',
         ]);
 
         DetailPendaftaranPilihan::create([
@@ -470,7 +468,6 @@ class AdminHasilPenjurusanTest extends TestCase
             'siswa_id' => $siswa3->id,
             'periode_pendaftaran_id' => $this->periode->id,
             'tanggal_submit' => now(),
-            'status' => 'disetujui',
         ]);
 
         DetailPendaftaranPilihan::create([

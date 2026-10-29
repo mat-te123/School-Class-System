@@ -22,16 +22,15 @@ class PenjurusanPlacementService
     {
         $periode = PeriodePendaftaran::findOrFail($periodeId);
 
-        // Get all approved pendaftaran for this period
+        // Process every submitted registration; admin approval is not part of placement eligibility.
         $pendaftaranList = PendaftaranPilihan::with(['detailPendaftaran.paketMenuPilihan', 'siswa'])
             ->where('periode_pendaftaran_id', $periodeId)
-            ->where('status', 'disetujui')
             ->get();
 
         if ($pendaftaranList->isEmpty()) {
             return [
                 'success' => true,
-                'message' => 'Tidak ada pendaftaran yang disetujui untuk diproses.',
+                'message' => 'Tidak ada pendaftaran untuk diproses.',
                 'processed' => 0,
             ];
         }

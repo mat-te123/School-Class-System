@@ -62,8 +62,11 @@ Route::middleware(['auth:siswa'])->group(function () {
 
     // FR-52: Pendaftaran pilihan paket prioritas siswa (Pemilihan Kelas)
     Route::get('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'indexSiswa'])->name('siswa.pendaftaran-pilihan.index');
+    Route::get('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'indexSiswa'])->name('siswa.pilih-kelas.index');
     Route::post('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'storeSiswa'])->name('siswa.pilih-kelas.store');
+    Route::post('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'storeSiswa'])->name('siswa.pendaftaran-pilihan.store');
     Route::put('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'updateSiswa'])->name('siswa.pendaftaran-pilihan.update');
+    Route::put('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'updateSiswa'])->name('siswa.pilih-kelas.update');
     Route::put('/siswa/pendaftaran-pilihan/dokumen', [PendaftaranPilihanController::class, 'uploadDokumenSiswa'])->name('siswa.pendaftaran-pilihan.dokumen');
     Route::delete('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'cancelSiswa'])->name('siswa.pendaftaran-pilihan.cancel');
 
@@ -177,8 +180,6 @@ Route::middleware(['auth:web'])->group(function () {
     // Route Review Pengajuan Pilihan Siswa (FR-19, FR-40 s/d FR-44)
     Route::get('/admin/pendaftaran-pilihan', [AdminPendaftaranReviewController::class, 'index'])->name('admin-pendaftaran.index');
     Route::get('/admin/pendaftaran-pilihan/{id}', [AdminPendaftaranReviewController::class, 'show'])->name('admin-pendaftaran.show');
-    Route::put('/admin/pendaftaran-pilihan/{id}/approve', [AdminPendaftaranReviewController::class, 'approve'])->name('admin-pendaftaran.approve');
-    Route::put('/admin/pendaftaran-pilihan/{id}/reject', [AdminPendaftaranReviewController::class, 'reject'])->name('admin-pendaftaran.reject');
     Route::get('/admin/pendaftaran-pilihan/{id}/dokumen', [AdminPendaftaranReviewController::class, 'downloadDokumen'])->name('admin-pendaftaran.dokumen');
     Route::get('/admin/siswa/status-pilihan', [AdminPendaftaranReviewController::class, 'statusPilihan'])->name('admin.siswa.status-pilihan');
     Route::get('/admin/siswa/{siswaId}/pilihan', [AdminPendaftaranReviewController::class, 'prioritasPilihanSiswa'])->name('admin.siswa.pilihan');

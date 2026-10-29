@@ -92,7 +92,6 @@ class SiswaHasilPenempatanTest extends TestCase
             'siswa_id' => $this->siswa->id,
             'periode_pendaftaran_id' => $this->periode->id,
             'tanggal_submit' => now(),
-            'status' => 'menunggu',
         ]);
     }
 

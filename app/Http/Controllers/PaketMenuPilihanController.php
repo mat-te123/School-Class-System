@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KriteriaBobotMenu;
 use App\Models\PaketMenuPilihan;
 use App\Models\PeriodePendaftaran;
 use Illuminate\Http\JsonResponse;
@@ -288,6 +289,10 @@ class PaketMenuPilihanController extends Controller
         $paketMenu = PaketMenuPilihan::where('id', $identifier)
             ->orWhere('nama_menu', $identifier)
             ->first();
+            
+        $kriteriaBobotMenu = KriteriaBobotMenu::with(['masterMataPelajaran', 'paketMenuPilihan'])
+            ->where('paket_menu_pilihan_id', $paketMenu?->id)
+            ->get();
 
         if (! $paketMenu) {
             if ($request->wantsJson() || $request->ajax()) {
@@ -315,7 +320,7 @@ class PaketMenuPilihanController extends Controller
             ]);
         }
 
-        return view('paket-menu-pilihan.show', compact('paketMenu'));
+        return view('paket-menu-pilihan.show', compact('paketMenu', 'kriteriaBobotMenu'));
     }
 
     /**
