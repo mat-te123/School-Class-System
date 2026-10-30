@@ -11,6 +11,7 @@ use App\Models\PeriodePendaftaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 
 class PendaftaranPilihanController extends Controller
@@ -127,8 +128,11 @@ class PendaftaranPilihanController extends Controller
                 ], 409);
             }
 
-            // Untuk form browser web, alihkan ke pembaruan (update) relasi pilihan
-            return $this->updateSiswa($request);
+            // Redirect ke halaman index dengan pesan error
+            return redirect()->route('siswa.dashboard')
+                ->withErrors(['pilihan' => 'Anda sudah pernah mengirimkan pilihan paket pada periode ini.'])
+                ->withInput();
+
         }
 
         $maxPilihan = $periodeAktif->max_pilihan_siswa ?? 3;
@@ -156,6 +160,7 @@ class PendaftaranPilihanController extends Controller
                     'message' => 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.',
                 ], 422);
             }
+
             return back()->withErrors(['pilihan' => 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.'])->withInput();
         }
         // 5. Pastikan semua paket menu yang dipilih berstatus is_active = true
@@ -307,7 +312,6 @@ class PendaftaranPilihanController extends Controller
             abort(404, 'Tidak ada pengajuan yang ditemukan.');
         }
 
-
         DB::transaction(function () use ($pendaftaran) {
             // Decrement kuota_terisi untuk setiap paket yang dipilih
             foreach ($pendaftaran->detailPendaftaran as $detail) {
@@ -367,7 +371,6 @@ class PendaftaranPilihanController extends Controller
             abort(404, 'Belum ada pengajuan pilihan untuk periode ini. Silakan submit terlebih dahulu.');
         }
 
-
         $maxPilihan = $periodeAktif->max_pilihan_siswa ?? 3;
 
         $validated = $request->validate([
@@ -392,6 +395,7 @@ class PendaftaranPilihanController extends Controller
                     'message' => 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.',
                 ], 422);
             }
+
             return back()->withErrors(['pilihan' => 'Pilihan paket menu prioritas tidak boleh ada yang duplikat / sama.'])->withInput();
         }
         $activePackagesCount = PaketMenuPilihan::whereIn('id', $pilihanIds)
@@ -504,7 +508,7 @@ class PendaftaranPilihanController extends Controller
             ]);
         }
 
-        if (\Illuminate\Support\Facades\View::exists('pendaftaran-pilihan.hasil-penempatan')) {
+        if (View::exists('pendaftaran-pilihan.hasil-penempatan')) {
             return view('pendaftaran-pilihan.hasil-penempatan', compact('hasil'));
         }
 
