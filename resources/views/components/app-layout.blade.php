@@ -13,7 +13,9 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.svg') }}">
 </head>
 
-<body class="bg-gray-100 min-h-screen flex">
+<body class="relative bg-gray-100 min-h-screen flex">
+    <x-flash-message />
+
     <x-admin-sidebar :isAdmin=" $type !== 'siswa' " />
     <main class="flex-1 h-screen flex flex-col overflow-y-auto">
         {{ $slot }}

@@ -237,7 +237,5 @@
 
 
         </div>
-
-        <x-flash-message />
     </div>
 </x-app-layout>

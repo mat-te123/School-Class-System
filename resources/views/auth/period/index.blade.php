@@ -85,5 +85,5 @@
         <x-delete-modal />  
         <x-add-modal-periode :tahunAjaranSekarang="$tahunAjaranSekarang" />
         <x-update-modal-periode />
-        <x-flash-message />
+        
 </x-app-layout>

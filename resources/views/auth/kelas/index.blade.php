@@ -63,7 +63,6 @@
             <x-add-modal-kelas />
             <x-delete-modal />
             <x-update-modal-kelas />
-            <x-flash-message />
 
 
     </x-app-layout>

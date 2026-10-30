@@ -186,5 +186,5 @@
         <x-delete-modal />
         <x-update-modal-siswa :kelas-asal="$kelasAsal" />
         <x-add-modal-siswa :kelas-asal="$kelasAsal" />
-        <x-flash-message />
+    
 </x-app-layout>

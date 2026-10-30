@@ -175,7 +175,6 @@
 
 
 
-        <x-flash-message />
     </div>
     <p>
         @json($results)

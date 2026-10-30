@@ -1,4 +1,5 @@
 <x-app-layout title="Selamat datang" type="siswa">
+
     <div class="flex flex-row py-6 px-8 justify-between items-center  border-b border-black">
         <h1 class="text-3xl leading-9 font-semibold">
             Selamat Datang, {{ $siswa->nama_lengkap }}
@@ -24,8 +25,9 @@
             </div>
         </div>
     </div>
-    @if (! $periodeAktif)
-        <div class="mx-8 mt-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">
+    @if (!$periodeAktif)
+        <div class="mx-8 mt-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+            role="status">
             Saat ini tidak ada periode pendaftaran yang aktif.
         </div>
     @endif

@@ -55,7 +55,7 @@
                     $endDateFormated = new DateTimeImmutable($activePeriods[0]['tanggal_tutup']);
                     $data = [
                         'Status Pengumuman' =>
-                            $activePeriods[0]['status_pengumuman'] != 'AKTIF' ? 'Sudah diumumkan' : 'Belum diumumkan',
+                            $activePeriods[0]['status_pengumuman'] == 'AKTIF' ? 'Sudah diumumkan' : 'Belum diumumkan',
                         'Tanggal Mulai' => $startDateFormated->format('d M y')
                             ? $startDateFormated->format('d M y')
                             : '-',
