@@ -64,9 +64,9 @@
 
     </div>
     <div class="flex flex-row justify-end">
-        <span class="text-xs leading-4 font-normal cursor-pointer hover:underline">
+        <a href="{{ route('paket-menu.show', ['identifier' => $item['id']]) }}" class="text-xs leading-4 font-normal cursor-pointer hover:underline">
             Lihat Detail
-        </span>
+        </a>
     </div>
 
 </div>

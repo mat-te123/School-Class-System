@@ -320,7 +320,7 @@ class PaketMenuPilihanController extends Controller
             ]);
         }
 
-        return view('paket-menu-pilihan.show', compact('paketMenu', 'kriteriaBobotMenu'));
+        return view('any.kelas.kelas-detail', compact('paketMenu', 'kriteriaBobotMenu'));
     }
 
     /**
