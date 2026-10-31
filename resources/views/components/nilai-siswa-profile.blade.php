@@ -1,3 +1,4 @@
+@props(['isSiswaLoggedIn' => false])
 <div {{ $attributes->merge([
     'class' => 'flex flex-col bg-white p-6 border-t border-slate-200 gap-8',
 ]) }}>
@@ -26,7 +27,9 @@
                         <th class="p-3">no</th>
                         <th class="p-3">Mata Pelajaran</th>
                         <th class="p-3">Nilai</th>
-                        <th class="p-3">Aksi</th>
+                        @if (!$isSiswaLoggedIn)
+                            <th class="p-3">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -41,17 +44,19 @@
                             <td class="p-3 font-semibold text-slate-900">
                                 {{ $item->nilai_angka ?? '-' }}
                             </td>
-                            <td class="p-3 font-semibold text-slate-900">
-                                <button type="button"
-                                    @click="
-                                            showupdateModal = true;
-                                            studentData = {{ json_encode($item) }};
-                                            editUrl = '{{ route('siswa.update', $item->id) }}';
+                            @if (!$isSiswaLoggedIn)
+                                <td class="p-3 font-semibold text-slate-900">
+                                    <button type="button"
+                                        @click="
+                                                showupdateModal = true;
+                                                studentData = {{ json_encode($item) }};
+                                                editUrl = '{{ route('siswa.update', $item->id) }}';
                                         "
-                                    class="p-1 bg-blue-50 hover:bg-blue-300 rounded-lg transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
-                                    <img src="{{ asset('Icon/Edit.svg') }}" alt="edit icon">
-                                </button>
-                            </td>
+                                        class="p-1 bg-blue-50 hover:bg-blue-300 rounded-lg transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
+                                        <img src="{{ asset('Icon/Edit.svg') }}" alt="edit icon">
+                                    </button>
+                                </td>
+                            @endif
                         </tr>
                     @endforeach
                 </tbody>
