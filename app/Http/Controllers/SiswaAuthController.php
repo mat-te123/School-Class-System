@@ -136,6 +136,7 @@ class SiswaAuthController extends Controller
     public function profile(Request $request)
     {
         $siswa = Auth::guard('siswa')->user();
+        $isSiswaLoggedIn = $siswa !== null;
 
         if (! $siswa) {
             if ($request->wantsJson() || $request->ajax()) {
@@ -167,7 +168,7 @@ class SiswaAuthController extends Controller
             ]);
         }
 
-        return view('siswa.profile', compact('siswa'));
+        return view('siswa.siswa.index', compact('siswa', 'isSiswaLoggedIn'));
     }
 
     /**
