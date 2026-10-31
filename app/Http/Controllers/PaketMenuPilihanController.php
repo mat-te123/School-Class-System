@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\KriteriaBobotMenu;
 use App\Models\PaketMenuPilihan;
+use App\Models\PendaftaranPilihan;
 use App\Models\PeriodePendaftaran;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -171,6 +172,10 @@ class PaketMenuPilihanController extends Controller
             return $item;
         });
 
+        $isAlreadyAppyClasses = PendaftaranPilihan::where('siswa_id', $siswa->id)
+            ->whereIn('periode_pendaftaran_id', $activePeriods->pluck('id'))
+            ->exists();
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -192,7 +197,7 @@ class PaketMenuPilihanController extends Controller
             ]);
         }
 
-        return view('siswa.periode.index', compact('formattedMenus', 'activePeriods'));
+        return view('siswa.periode.index', compact('formattedMenus', 'activePeriods', 'isAlreadyAppyClasses'));
     }
 
     /**
@@ -289,7 +294,7 @@ class PaketMenuPilihanController extends Controller
         $paketMenu = PaketMenuPilihan::where('id', $identifier)
             ->orWhere('nama_menu', $identifier)
             ->first();
-            
+
         $kriteriaBobotMenu = KriteriaBobotMenu::with(['masterMataPelajaran', 'paketMenuPilihan'])
             ->where('paket_menu_pilihan_id', $paketMenu?->id)
             ->get();
