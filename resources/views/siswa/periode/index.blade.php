@@ -88,11 +88,18 @@
                     Data kelas yang dapat dipilih oleh siswa
                 </p>
             </div>
+            @if ($isAlreadyAppyClasses)
+                <a href="{{ route('siswa.profile') }}"
+                    class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
+                    Cek Pilihan Anda
+                </a>
+            @else
+                <a href="{{ route('siswa.pendaftaran-pilihan.index') }}"
+                    class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
+                    Pilih Kelas
+                </a>
+            @endif
 
-            <a href="{{ route('siswa.pendaftaran-pilihan.index') }}"
-                class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
-                Pilih Kelas
-            </a>
         </div>
         @foreach ($formattedMenus as $index => $menu)
             <x-kelas-card :item="$menu" />
