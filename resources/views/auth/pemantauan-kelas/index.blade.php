@@ -1,10 +1,12 @@
 <x-app-layout title="Pendaftaran Pilihan">
-    <div class="flexflex-1 flex-col">
+    <div class="flexflex-1 flex-col" x-data="{
+        showConfirmModal: false,
+    }">
         <div class="flex flex-col py-6 px-8 border border-b-black">
-            <h1 class="text-4xl leading-9 font-semibold">
+            <h1 class="text-3xl leading-9 font-semibold">
                 Daftar Pilihan Siswa
             </h1>
-            <span class="text-md leading-5 font-medium">
+            <span class="text-sm leading-5 font-medium">
                 Kelola daftar pilihan siswa yang telah mengisi formulir pendaftaran
             </span>
         </div>
@@ -62,13 +64,19 @@
                 @endforeach
 
             </div>
-            <div class="flex flex-col w-full ">
-                <h2 class="text-base font-semibold leading-6">
-                    Daftar Pilihan Kelas Siswa
-                </h2>
-                <span class="text-xs font-medium leading-5">
-                    Daftar Kelas yang dipilih oleh siswa pada formulir pendaftaran
-                </span>
+            <div class="flex flex-row w-full justify-between items-end">
+                <div class="flex flex-col w-full ">
+                    <h2 class="text-xl font-semibold">
+                        Daftar Pilihan Kelas Siswa
+                    </h2>
+                    <span class="text-sm text-gray-500">
+                        Daftar Kelas yang dipilih oleh siswa pada formulir pendaftaran
+                    </span>
+                </div>
+                <button type="button" @click="showConfirmModal = true"
+                    class="bg-black text-sm text-white whitespace-nowrap h-fit px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-100 ease-in-out active:shadow-lg">
+                    Proses Data
+                </button>
             </div>
 
             <form method="GET" action="{{ route('admin.pemantauan-minat.index') }}"
@@ -237,5 +245,34 @@
 
 
         </div>
+        <div x-show="showConfirmModal"
+            class="flex flex-col fixed top-0 left-0 w-full h-full bg-black/50 z-50 justify-center items-center"
+            style="display: none;">
+            <div class="flex flex-col bg-white rounded-lg p-6 gap-4 w-100" @click.away="showConfirmModal = false">
+                <h2 class="text-lg font-semibold">
+                    Konfirmasi Proses Data
+                </h2>
+                <p class="text-sm text-gray-500">
+                    Apakah Anda yakin ingin memproses data pilihan siswa? Tindakan ini tidak dapat dibatalkan.
+                </p>
+                <div class="flex flex-row justify-end gap-2">
+                    <button type="button" @click="showConfirmModal = false"
+                        class="text-sm px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600">
+                        Batal
+                    </button>
+                    <form method="POST" action={{ route('admin.hasil-penjurusan.process') }}>
+                        @csrf
+                        <input type="hidden" name="periode_id" value="{{ request('periode_id') }}">
+                        <button type="submit"
+                            class="text-sm px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                            Proses Data
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+
+        </div>
     </div>
+
 </x-app-layout>
