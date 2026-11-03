@@ -32,8 +32,7 @@
         </div>
     </div>
     <div class="grid grid-cols-4 p-8 gap-4">
-        <a href="{{ url()->previous() }}"
-            class="col-span-4 text-white text-sm leading-4 bg-black rounded-lg px-3 py-2 w-fit">
+        <a href="{{ route('siswa.dashboard') }}" class="back-button">
             Kembali
         </a>
 
