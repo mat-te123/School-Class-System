@@ -8,7 +8,7 @@
             Lihat detail kelas {{ $paketMenu->nama_menu }} dan mata pelajaran yang tersedia
         </span>
     </div>
-    <div class="flex flex-col pt-6 px-8 gap-4">
+    <div class="flex flex-col p-8 gap-4">
         <a href="{{ url()->previous() }}" class="back-button">
             Kembali
         </a>
