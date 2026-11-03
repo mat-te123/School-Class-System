@@ -295,7 +295,7 @@ class PaketMenuPilihanController extends Controller
             ->orWhere('nama_menu', $identifier)
             ->first();
 
-        $kriteriaBobotMenu = KriteriaBobotMenu::with(['masterMataPelajaran', 'paketMenuPilihan'])
+        $kriteriaBobotMenu = KriteriaBobotMenu::with(['masterMataPelajaran'])
             ->where('paket_menu_pilihan_id', $paketMenu?->id)
             ->get();
 
