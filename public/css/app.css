@@ -62,3 +62,20 @@ body {
     font-size: 0.875rem;
     font-weight: 600;
 }
+
+.back-button {
+    width: fit-content;
+    background: linear-gradient(to top, #273344, #1a202c);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.3s;
+
+    &:hover {
+        background: linear-gradient(to top, #1a202c, #273344);
+    }
+}
