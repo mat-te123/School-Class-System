@@ -43,10 +43,15 @@ class AdminHasilPenjurusanController extends Controller
     {
         $this->ensureAdmin();
 
+        $periodeId = $request->input('periode_id');
+
+        $isFinal = PeriodePendaftaran::where('id', $periodeId)->value('is_hasil_final');
+
         $validated = $request->validate([
             'periode_id' => 'required|uuid|exists:periode_pendaftaran,id',
             'search' => 'nullable|string|max:50',
             'per_page' => 'nullable|integer|min:1|max:100',
+            'paket_menu_pilihan_id' => 'nullable|uuid|exists:paket_menu_pilihan,id',
         ]);
 
         $query = HasilSeleksi::with(['siswa', 'paketMenuPilihan', 'pengubah'])
@@ -55,6 +60,10 @@ class AdminHasilPenjurusanController extends Controller
                     $pq->where('periode_pendaftaran_id', $validated['periode_id']);
                 });
             });
+
+        if (! empty($validated['paket_menu_pilihan_id'])) {
+            $query->where('paket_menu_pilihan_id', $validated['paket_menu_pilihan_id']);
+        }
 
         if (! empty($validated['search'])) {
             $search = trim($validated['search']);
@@ -74,6 +83,7 @@ class AdminHasilPenjurusanController extends Controller
             ->get()
             ->map(function ($item) {
                 return [
+                    'id' => $item->paket_menu_pilihan_id,
                     'nama_menu' => $item->paketMenuPilihan ? $item->paketMenuPilihan->nama_menu : 'Belum Ditentukan',
                     'total' => $item->total,
                 ];
@@ -96,7 +106,7 @@ class AdminHasilPenjurusanController extends Controller
             ]);
         }
 
-        return view('auth.hasil-kelas.index', compact('results', 'summary'));
+        return view('auth.hasil-kelas.index', compact('results', 'summary', 'isFinal'));
     }
 
     /**
