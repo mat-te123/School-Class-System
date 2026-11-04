@@ -1,26 +1,37 @@
 <x-app-layout title="Hasil Seleksi">
     <div x-data="{
-        showDeleteModal: false,
-        showupdateModal: false,
-        showaddmodal: false,
-        confirmationData: '',
-        addUrl: '',
-        deleteUrl: '',
-        updateUrl: '',
-        Data: {},
+        showConfirmModal: false,
+        ModalUrl: '',
+        mainTitle: '',
+        subTitle: '',
     }" class="flex min-h-0 flex-1 flex-col">
 
         <div class="flex flex-col py-6 px-8 border border-b-black">
-            <h1 class="text-4xl leading-9 font-semibold">
-                Hasil Seleksi
-            </h1>
+            <div class="flex flex-row items-center gap-2">
+                <h1 class="text-4xl leading-9 font-semibold">
+                    Hasil Seleksi
+                </h1>
+                @if (!$isFinal)
+                    <span
+                        class="text-sm leading-5 font-medium bg-amber-50 text-amber-600 px-2 py-1 rounded-lg border border-amber-600">
+                        draft / semetara
+                    </span>
+                @else
+                    <span
+                        class="text-sm leading-5 font-medium bg-green-50 text-green-600 px-4 py-1 rounded-lg border border-green-600">
+                        final
+                    </span>
+                @endif
+
+            </div>
+
             <span class="text-md leading-5 font-medium">
                 Kelola dan tinjau hasil seleksi siswa sebelum difinalisasi
             </span>
         </div>
 
         <div class="flex min-h-0 flex-1 flex-col gap-4 px-8 py-6">
-            <a href="{{ url()->previous() }}" class="text-white text-sm leading-4 bg-black rounded-lg px-3 py-2 w-fit">
+            <a href="{{ url()->previous() }}" class="back-button">
                 Kembali
             </a>
             <h2 class="text-base font-semibold leading-6">
@@ -94,41 +105,78 @@
                 @endforeach
 
             </div>
-            <div class="flex flex-col w-full ">
-                <h2 class="text-base font-semibold leading-6">
-                    Daftar Pilihan Kelas Siswa
-                </h2>
-                <span class="text-xs font-medium leading-5">
-                    Daftar Kelas yang dipilih oleh siswa pada formulir results
-                </span>
-            </div>
-            <form class="flex flex-row  p-3 justify-between bg-gray-200 border border-gray-300 rounded-lg w-full gap-2">
-                <input type="text" placeholder="Cari nama, NISN, atau NIS..."
-                    class="px-4 py-2 rounded-lg border border-gray-400 w-full">
-                <select class="px-4 py-2 rounded-lg border border-gray-400 w-fit">
-                    <option value="">Status : semua (sudah / belum )</option>
-                    <option value="1">Status : sudah</option>
-                    <option value="0">Status : belum</option>
-                </select>
+            <div class="flex flex-row w-full justify-between items-end">
+                <div class="flex flex-col w-full ">
+                    <h2 class="text-xl font-semibold leading-6">
+                        Daftar Pilihan Kelas Siswa
+                    </h2>
+                    <span class="text-sm leading-5 text-gray-500">
+                        Daftar Kelas yang dipilih oleh siswa pada formulir results
+                    </span>
 
-                <select class="px-4 py-2 rounded-lg border border-gray-400 w-fit">
+                </div>
+                @if (!$isFinal)
+                    <button type="button"
+                        @click="
+                        showConfirmModal = true;
+                        ModalUrl='{{ route('admin.hasil-penjurusan.lock') }}';
+                        mainTitle='Finalisasi Hasil Seleksi Siswa' ;
+                        subTitle='Apakah anda yakin ingin memfinalisasi hasil seleksi siswa untuk periode ini? Setelah difinalisasi, data tidak dapat diubah lagi.' "
+                        class="bg-black text-sm text-white whitespace-nowrap h-fit px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-100 ease-in-out active:shadow-lg">
+                        Finalisasi Hasil Seleksi
+                    </button>
+                @else
+                    <div class="flex flex-row gap-2">
+                        <button type="button"
+                            @click="
+                            showConfirmModal = true; 
+                            ModalUrl='{{ route('admin.hasil-penjurusan.unlock') }}'
+                        ; mainTitle='Buka Finalisasi Hasil Seleksi Siswa';
+                        subTitle='Apakah anda yakin ingin membuka finalisasi hasil seleksi siswa untuk periode ini? Setelah dibuka, data dapat diubah kembali.'"
+                            class="bg-black
+                            text-sm text-white whitespace-nowrap h-fit px-4 py-2 rounded-lg hover:bg-gray-800
+                            transition-all duration-100 ease-in-out active:shadow-lg">
+                            Buka Finalisasi
+                        </button>
+                        <button type="button"
+                            @click="showConfirmModal = true; ModalUrl='{{ route('admin.hasil-penjurusan.publish') }}';
+                        mainTitle='Publikasikan Hasil Seleksi Siswa';
+                        subTitle='Apakah anda yakin ingin mempublikasikan hasil seleksi siswa untuk periode ini? Setelah dipublikasikan, data dapat diakses oleh siswa.'"
+                            class="bg-black text-sm text-white whitespace-nowrap h-fit px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-100 ease-in-out active:shadow-lg">
+                            Publikasikan Hasil Seleksi
+                        </button>
+                    </div>
+                @endif
+
+            </div>
+
+            <form method="GET" action="{{ route('admin.hasil-penjurusan.index') }}"
+                class="flex flex-row  p-3 justify-between bg-gray-200 border border-gray-300 rounded-lg w-full gap-2">
+                <input type="text" placeholder="Cari nama, NISN, atau NIS..."
+                    class="text-sm px-4 py-2 rounded-lg border border-gray-400 w-full">
+
+                <select name="paket_menu_pilihan_id" onchange="this.form.submit()" class="select-primary text-sm">
                     <option value="">Pilihan Kelas : semua</option>
-                    @foreach ($class as $key => $value)
-                        <option value="{{ $value['title'] }}">Pilihan Kelas : {{ $value['title'] }}</option>
+                    @foreach ($summary['detail_kelas'] as $value)
+                        <option value="{{ $value['id'] }}">Pilihan Kelas :
+                            {{ $value['nama_menu'] }}</option>
                     @endforeach
                 </select>
             </form>
-            <div class="min-h-0 flex-1 overflow-auto rounded-b-lg">
-                <table class="h-full min-w-full border-separate border-spacing-0">
+            <div class="flex flex-col rounded-xl overflow-hidden border border-gray-300 w-full">
+                <table class="min-w-full border-separate border-spacing-0">
                     <thead>
                         <tr
-                            class="bg-gray-300 text-xs font-semibold uppercase text-gray-600 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left first:[&_th]:w-0 first:[&_th]:rounded-l-xl last:[&_th]:rounded-r-xl">
+                            class="bg-gray-300 text-xs font-semibold uppercase text-gray-600 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left first:[&_th]:w-0">
                             <th>#</th>
-                            <th>Nama Lengkap</th>
-                            <th>Status</th>
-                            <th>Pilihan Kelas 1</th>
-                            <th>Pilihan Kelas 2</th>
-                            <th>Pilihan Kelas 3</th>
+                            <th>Nama Siswa</th>
+                            <th>NISN</th>
+                            <th>NIS</th>
+                            <th>Kelas Pilihan</th>
+                            <th>Skor</th>
+                            @if (!$isFinal)
+                                <th>Aksi</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -141,29 +189,47 @@
                             </tr>
                         @else
                             @foreach ($results as $index => $item)
-                                <tr class="bg-gray-50 hover:cursor-pointer hover:bg-gray-200 group">
+                                <tr class="hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
                                     <th class="border-r border-t border-gray-200 p-2">
                                         {{ $index + 1 }}
                                     </th>
                                     <td>
-                                        {{ $item->nama_lengkap }}
+                                        <div class="flex flex-row items-center gap-2 lowercase justify-between">
+
+                                            {{ $item->siswa->nama_lengkap }}
+                                            <a href="{{ route('siswa.show', $item->siswa->id) }}"
+                                                class="opacity-0 group-hover:opacity-100 bg-white hover:bg-gray-300 rounded-lg p-1 transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
+                                                <img src="{{ asset('Icon/Arrow_down.svg') }}" alt="Arrow icon"
+                                                    class="w-4 h-4">
+                                            </a>
+                                        </div>
                                     </td>
                                     <td>
-                                        @if ($item->is_filled)
-                                            <span class="font-semibold text-green-600">Sudah Mengisi</span>
-                                        @else
-                                            <span class="font-semibold text-red-600">Belum Mengisi</span>
-                                        @endif
+                                        {{ $item->siswa->nisn }}
                                     </td>
                                     <td>
-                                        {{ $item->pilihan_kelas_1 }}
+                                        {{ $item->siswa->nis }}
                                     </td>
                                     <td>
-                                        {{ $item->pilihan_kelas_2 }}
+                                        {{ $item->paketMenuPilihan->nama_menu }}
                                     </td>
                                     <td>
-                                        {{ $item->pilihan_kelas_3 }}
+                                        {{ $item->skor_penempatan }}
                                     </td>
+                                    @if (!$isFinal)
+                                        <td>
+                                            <button type="button"
+                                                @click="
+                                                showupdateModal = true;
+                                                studentData = {{ json_encode($item) }};
+                                                editUrl = '{{ route('siswa.update', $item->id) }}';
+                                        "
+                                                class="p-1 bg-blue-50 hover:bg-blue-300 rounded-lg transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
+                                                <img src="{{ asset('Icon/Edit.svg') }}" alt="edit icon">
+                                            </button>
+                                        </td>
+                                    @endif
+
                                 </tr>
                             @endforeach
                         @endif
@@ -172,11 +238,11 @@
             </div>
 
         </div>
-
-
+        <pre>
+            {{ json_encode($isFinal, JSON_PRETTY_PRINT) }}
+        </pre>
+        <x-hasil-seleksi-confirm-modal />
 
     </div>
-    <p>
-        @json($results)
-    </p>
+
 </x-app-layout>
