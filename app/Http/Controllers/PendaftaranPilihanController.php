@@ -508,8 +508,8 @@ class PendaftaranPilihanController extends Controller
             ]);
         }
 
-        if (View::exists('pendaftaran-pilihan.hasil-penempatan')) {
-            return view('pendaftaran-pilihan.hasil-penempatan', compact('hasil'));
+        if (View::exists('siswa.hasil-kelas.index')) {
+            return view('siswa.hasil-kelas.index', compact('hasil'));
         }
 
         return response()->json([
