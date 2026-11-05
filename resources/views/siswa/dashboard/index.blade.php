@@ -25,7 +25,7 @@
             </div>
         </div>
     </div>
-    @if (!$periodeAktif)
+    @if (!$isperiodeAktif)
         <div class="mx-8 mt-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900"
             role="status">
             Saat ini tidak ada periode pendaftaran yang aktif.
@@ -44,9 +44,10 @@
                     </span>
                 </div>
                 <div class="flex flex-row gap-4">
-                    <button class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
+                    <a href="{{ route('siswa.profile') }}"
+                        class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
                         lihat detail
-                    </button>
+                    </a>
                 </div>
             </div>
             <div class="flex flex-row justify-between w-full">
@@ -91,7 +92,9 @@
         {{-- periode Hardcoded --}}
         <x-siswa-periode-data tahun_ajaran="{{ $angkatan }}" />
 
+
     </div>
+
 
 
 
