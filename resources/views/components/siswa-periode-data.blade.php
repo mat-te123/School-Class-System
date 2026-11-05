@@ -37,6 +37,12 @@
             {{ $tanggalBuka->format('d M Y') }} - {{ $tanggalTutup->format('d M Y') }}
         </span>
         <div class="flex flex-row w-full justify-end border-t border-gray-300 pt-2, gap-3">
+            @if ($DataPeriode->status_pengumuman == 'AKTIF')
+                <a href="{{ route('siswa.hasil-penempatan') }}"
+                    class="text-center text-sm leading-4 w-full border bg-gray-950 rounded-md text-white p-2">
+                    Lihat Hasil Seleksi
+                </a>
+            @endif
             <a href="{{ route('siswa.paket-menu-aktif.index', ['id' => $DataPeriode->id]) }}"
                 class="text-center text-sm leading-4 w-full border bg-gray-950 rounded-md text-white p-2">
                 Lihat Detail

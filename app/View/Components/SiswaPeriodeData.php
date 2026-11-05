@@ -23,7 +23,7 @@ class SiswaPeriodeData extends Component
 
         $periode = null;
 
-        // 1. Cari periode yang sesuai tahun ajaran siswa dan sedang buka
+        
         if (! empty($tahunAjaran)) {
             $periode = PeriodePendaftaran::where('tahun_ajaran', $tahunAjaran)
                 ->where('is_active', true)
@@ -32,7 +32,7 @@ class SiswaPeriodeData extends Component
                 ->first();
         }
 
-        // 2. Jika tidak ada, cari periode aktif lain yang sedang buka
+        
         if (! $periode) {
             $periode = PeriodePendaftaran::where('is_active', true)
                 ->where('tanggal_buka', '<=', $now)
