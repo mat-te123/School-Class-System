@@ -39,17 +39,19 @@ class SiswaDashboardController extends Controller
             ->where('tanggal_tutup', '>=', $now)
             ->first();
 
+        $isperiodeAktif = $periodeAktif !== null;
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'data' => [
                     'siswa' => $siswa,
-                    'periode_aktif' => $periodeAktif,
+                    'periode_aktif' => $isperiodeAktif,
                 ],
             ]);
         }
 
-        return view('siswa.dashboard.index', compact('siswa', 'periodeAktif'));
+        return view('siswa.dashboard.index', compact('siswa', 'isperiodeAktif'));
     }
 
     /**
