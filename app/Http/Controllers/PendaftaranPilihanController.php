@@ -414,6 +414,20 @@ class PendaftaranPilihanController extends Controller
             abort(422, 'Salah satu paket menu yang Anda pilih tidak aktif.');
         }
 
+        $existingIds = $pendaftaran->detailPendaftaran
+            ->sortBy('urutan_pilihan')
+            ->pluck('paket_menu_pilihan_id')
+            ->values()
+            ->all();
+
+        if ($existingIds === $pilihanIds) {
+            return $this->handleWriteResponse($request, [
+                'success' => true,
+                'message' => 'Tidak ada perubahan pada pilihan kelas.',
+                'data' => $pendaftaran,
+            ]);
+        }
+
         DB::transaction(function () use ($pendaftaran, $pilihanIds) {
             // Kembalikan kuota paket lama
             foreach ($pendaftaran->detailPendaftaran as $detail) {
