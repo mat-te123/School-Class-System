@@ -333,4 +333,34 @@ class LegerImportControllerTest extends TestCase
         $response->assertSessionHas('success', 'File XLSX Leger berhasil diterima dan sedang diproses di background queue (Asynchronous).');
         Queue::assertPushed(ProcessLegerImportJob::class);
     }
+    public function test_browser_import_duplicate_returns_error_flash_instead_of_error_page(): void
+    {
+        $kelas = KelasAsal::create([
+            'id' => (string) Str::uuid(),
+            'nama_kelas' => 'X D',
+            'is_active' => true,
+        ]);
+
+        RiwayatUploadLeger::create([
+            'id' => (string) Str::uuid(),
+            'kelas_asal_id' => $kelas->id,
+            'nama_kelas' => 'X D',
+            'angkatan' => '2024',
+            'file_name' => 'Leger_lama.xlsx',
+            'file_path' => '/tmp/Leger_lama.xlsx',
+            'jumlah_siswa' => 30,
+            'status' => 'completed',
+        ]);
+
+        $response = $this->actingAs($this->admin, 'web')
+            ->from('/admin/siswa')
+            ->post('/leger/import', [
+                'file' => UploadedFile::fake()->create('Leger_baru.xlsx', 10, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+                'kelas_asal_id' => $kelas->id,
+                'angkatan' => '2024/2025',
+            ]);
+
+        $response->assertRedirect('/admin/siswa')
+            ->assertSessionHas('error', "File Leger untuk Kelas 'X D' Angkatan '2024' sudah pernah diunggah. Satu kelas dan angkatan hanya diizinkan 1 file Excel.");
+    }
 }

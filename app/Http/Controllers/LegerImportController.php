@@ -39,7 +39,7 @@ class LegerImportController extends Controller
                     'message' => 'Akses ditolak. Hanya admin yang dapat mengunggah file Leger Excel.',
                 ], 403);
             }
-            abort(403, 'Akses ditolak. Hanya admin yang dapat mengunggah file Leger Excel.');
+            return redirect()->back()->with('error', 'Akses ditolak. Hanya admin yang dapat mengunggah file Leger Excel.');
         }
 
         // 1. Deteksi file yang diunggah
@@ -59,7 +59,7 @@ class LegerImportController extends Controller
                     ],
                 ], 422);
             }
-            abort(422, 'Validasi file gagal. File XLSX Leger wajib diunggah.');
+            return redirect()->back()->with('error', 'File XLSX Leger wajib diunggah.');
         }
 
         // 3. Validasi ekstensi
@@ -74,7 +74,7 @@ class LegerImportController extends Controller
                     ],
                 ], 422);
             }
-            abort(422, 'Validasi file gagal. Format file harus berupa .xlsx atau .xls');
+            return redirect()->back()->with('error', 'Format file harus berupa .xlsx atau .xls.');
         }
 
         // 3b. Validasi ukuran file maksimal 5 MB
@@ -89,7 +89,7 @@ class LegerImportController extends Controller
                     ],
                 ], 422);
             }
-            abort(422, 'Validasi file gagal. Ukuran file maksimal 5 MB.');
+            return redirect()->back()->with('error', 'Ukuran file maksimal 5 MB.');
         }
 
         // 4. Validasi kelas_asal_id dan angkatan wajib diisi dari form data
@@ -121,7 +121,7 @@ class LegerImportController extends Controller
                     'errors' => $validationErrors,
                 ], 422);
             }
-            abort(422, 'Validasi gagal. Field kelas_asal_id dan angkatan wajib diisi.');
+            return redirect()->back()->with('error', reset($validationErrors)[0]);
         }
 
         // Ambil tahun pertama (4 digit) untuk angkatan (contoh: "2024/2025" -> "2024")
@@ -143,7 +143,7 @@ class LegerImportController extends Controller
                     'message' => "File Leger untuk Kelas '{$kelasNama}' Angkatan '{$angkatan}' sudah pernah diunggah ({$duplicate->file_name}). Satu kelas dan angkatan hanya diizinkan 1 file Excel.",
                 ], 409);
             }
-            abort(409, "File Leger untuk Kelas '{$kelasNama}' Angkatan '{$angkatan}' sudah pernah diunggah.");
+            return redirect()->back()->with('error', "File Leger untuk Kelas '{$kelasNama}' Angkatan '{$angkatan}' sudah pernah diunggah. Satu kelas dan angkatan hanya diizinkan 1 file Excel.");
         }
 
         try {
@@ -190,7 +190,9 @@ class LegerImportController extends Controller
                     'message' => 'Gagal mengunggah file XLSX: '.$e->getMessage(),
                 ], 500);
             }
-            abort(500, 'Gagal mengunggah file XLSX: '.$e->getMessage());
+            report($e);
+
+            return redirect()->back()->with('error', 'Gagal mengunggah file XLSX. Periksa file dan data yang dikirim, lalu coba lagi.');
         }
     }
 

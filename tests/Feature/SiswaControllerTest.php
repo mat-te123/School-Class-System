@@ -90,7 +90,7 @@ class SiswaControllerTest extends TestCase
         $response = $this->actingAs($this->admin, 'web')->get('/siswa');
 
         $response->assertOk();
-        $response->assertViewIs('siswa.index');
+        $response->assertViewIs('auth.siswa.index');
         $response->assertViewHas('siswa');
         $response->assertViewHas('kelasAsal');
     }
@@ -116,7 +116,7 @@ class SiswaControllerTest extends TestCase
         $response = $this->actingAs($this->admin, 'web')->get('/siswa/'.$siswa->id);
 
         $response->assertOk();
-        $response->assertViewIs('siswa.show');
+        $response->assertViewIs('auth.siswa.detail');
         $response->assertViewHas('siswa');
     }
 
@@ -180,5 +180,40 @@ class SiswaControllerTest extends TestCase
         $response->assertRedirect('/siswa');
         $response->assertSessionHas('success', 'Berhasil menghapus data siswa');
         $this->assertSoftDeleted('siswa', ['id' => $siswa->id]);
+    }
+
+    /** Request store dengan NISN yang sudah ada menampilkan pesan validasi rapi tanpa log error */
+    public function test_browser_store_duplicate_nisn_returns_validation_error(): void
+    {
+        $response = $this->actingAs($this->admin, 'web')
+            ->from('/siswa')
+            ->post('/siswa', [
+                'nisn' => '1234567801',
+                'nis' => '9991',
+                'nama_lengkap' => 'Siswa Duplikat NISN',
+                'kelas_asal_id' => $this->kelas->id,
+            ]);
+
+        $response->assertRedirect('/siswa');
+        $response->assertSessionHasErrors(['nisn' => 'Data siswa dengan NISN ini sudah pernah didaftarkan.']);
+    }
+
+    /** Request store JSON dengan NISN yang sudah ada mengembalikan response 422 JSON */
+    public function test_json_store_duplicate_nisn_returns_422_json(): void
+    {
+        $response = $this->actingAs($this->admin, 'web')
+            ->postJson('/siswa', [
+                'nisn' => '1234567801',
+                'nis' => '9992',
+                'nama_lengkap' => 'Siswa Duplikat NISN JSON',
+                'kelas_asal_id' => $this->kelas->id,
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['nisn']);
+        $this->assertEquals(
+            'Data siswa dengan NISN ini sudah pernah didaftarkan.',
+            $response->json('errors.nisn.0')
+        );
     }
 }

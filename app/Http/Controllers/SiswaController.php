@@ -83,6 +83,18 @@ class SiswaController extends Controller
             'jenis_kelamin' => 'nullable|in:L,P',
             'tanggal_lahir' => 'nullable|date',
             'angkatan' => 'nullable|string|max:9',
+        ], [
+            'nisn.required' => 'NISN wajib diisi.',
+            'nisn.size' => 'NISN harus berjumlah 10 karakter.',
+            'nisn.unique' => 'Data siswa dengan NISN ini sudah pernah didaftarkan.',
+            'nis.required' => 'NIS wajib diisi.',
+            'nis.max' => 'NIS maksimal 10 karakter.',
+            'nis.unique' => 'Data siswa dengan NIS ini sudah pernah didaftarkan.',
+            'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
+            'nama_lengkap.max' => 'Nama lengkap maksimal 150 karakter.',
+            'kelas_asal_id.exists' => 'Kelas asal yang dipilih tidak valid.',
+            'jenis_kelamin.in' => 'Jenis kelamin harus L atau P.',
+            'tanggal_lahir.date' => 'Format tanggal lahir tidak valid.',
         ]);
 
         // is_active selalu false saat pembuatan (default)
@@ -124,6 +136,15 @@ class SiswaController extends Controller
             'tanggal_lahir' => 'nullable|date',
             'angkatan' => 'nullable|string|max:9',
             'is_active' => 'boolean',
+        ], [
+            'nisn.size' => 'NISN harus berjumlah 10 karakter.',
+            'nisn.unique' => 'Data siswa dengan NISN ini sudah pernah didaftarkan.',
+            'nis.max' => 'NIS maksimal 10 karakter.',
+            'nis.unique' => 'Data siswa dengan NIS ini sudah pernah didaftarkan.',
+            'nama_lengkap.max' => 'Nama lengkap maksimal 150 karakter.',
+            'kelas_asal_id.exists' => 'Kelas asal yang dipilih tidak valid.',
+            'jenis_kelamin.in' => 'Jenis kelamin harus L atau P.',
+            'tanggal_lahir.date' => 'Format tanggal lahir tidak valid.',
         ]);
 
         $siswa->update($validated);
