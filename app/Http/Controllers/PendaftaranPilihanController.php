@@ -70,6 +70,8 @@ class PendaftaranPilihanController extends Controller
             ->orderBy('nama_menu')
             ->get();
 
+        $siswaMaxChoose = $periodeAktif->max_pilihan_siswa;
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -79,7 +81,7 @@ class PendaftaranPilihanController extends Controller
             ]);
         }
 
-        return view('siswa.pilih-kelas.index', compact('pendaftaran', 'kelasTersedia'));
+        return view('siswa.pilih-kelas.index', compact('pendaftaran', 'kelasTersedia', 'siswaMaxChoose'));
     }
 
     /**

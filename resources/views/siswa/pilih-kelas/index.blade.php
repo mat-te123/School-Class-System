@@ -44,10 +44,10 @@
         <form action="{{ route('siswa.pilih-kelas.store') }}" method="POST" class="flex flex-col gap-4 w-1/2">
             @csrf
             @php
-                $maxStudentChoice = $pendaftaran?->periodePendaftaran?->max_pilihan_siswa ?? 3;
-                $pilihanSaatIni = $pendaftaran?->detailPendaftaran->pluck('paket_menu_pilihan_id', 'urutan_pilihan')->all() ?? [];
+                $pilihanSaatIni =
+                    $pendaftaran?->detailPendaftaran->pluck('paket_menu_pilihan_id', 'urutan_pilihan')->all() ?? [];
             @endphp
-            @for ($i = 1; $i <= $maxStudentChoice; $i++)
+            @for ($i = 1; $i <= $siswaMaxChoose; $i++)
                 @php($pilihanIndex = $i - 1)
                 <div>
                     <label for="kelas{{ $i }}" class="block text-sm font-medium text-gray-700">Pilihan
@@ -64,11 +64,8 @@
                 </div>
             @endfor
             <div class="flex flex-row gap-4 mt-4 justify-end">
-                <a class="text-white bg-red-500 text-sm py-1 px-4 rounded-lg hover:bg-red-600 hover:drop-shadow-md transition-all ease-in-out"
-                    href="{{ url()->previous() }}">Kembali</a>
-                <button
-                    class="text-white bg-blue-500 text-sm py-1 px-4 rounded-lg hover:bg-blue-600 hover:drop-shadow-md transition-all ease-in-out"
-                    type="submit">Kirim</button>
+                <a class="negative-primary-button w-fit" href="{{ url()->previous() }}">Kembali</a>
+                <button class="primary-button w-fit px-5!" type="submit">Kirim</button>
             </div>
         </form>
 
