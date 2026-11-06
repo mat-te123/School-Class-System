@@ -85,7 +85,7 @@
                 </span>
             </div>
             <a href="#"
-                class="bg-gradient-to-t from-[#273344] to-[#1a202c] text-white text-sm font-semibold py-2 px-4 rounded-lg w-full text-center">
+                class="primary-button">
                 Hubungi Admin
             </a>
         </div>
