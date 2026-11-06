@@ -46,6 +46,7 @@ class AdminHasilPenjurusanController extends Controller
         $periodeId = $request->input('periode_id');
 
         $isFinal = PeriodePendaftaran::where('id', $periodeId)->value('is_hasil_final');
+        $isPublished = PeriodePendaftaran::where('id', $periodeId)->value('status_pengumuman') === 'AKTIF';
 
         $validated = $request->validate([
             'periode_id' => 'required|uuid|exists:periode_pendaftaran,id',
@@ -106,7 +107,7 @@ class AdminHasilPenjurusanController extends Controller
             ]);
         }
 
-        return view('auth.hasil-kelas.index', compact('results', 'summary', 'isFinal'));
+        return view('auth.hasil-kelas.index', compact('results', 'summary', 'isFinal', 'isPublished'));
     }
 
     /**
