@@ -8,24 +8,31 @@
 
         <div class="flex flex-col py-6 px-8 border border-b-black">
             <div class="flex flex-row items-center gap-2">
-                <h1 class="text-4xl leading-9 font-semibold">
+                <h1 class="mainTitle">
                     Hasil Seleksi
                 </h1>
                 @if (!$isFinal)
-                    <span
-                        class="text-sm leading-5 font-medium bg-amber-50 text-amber-600 px-2 py-1 rounded-lg border border-amber-600">
+                    <span class="text-sm leading-5 font-medium bg-amber-50 text-amber-600 px-2 py-1 rounded-lg">
                         draft / semetara
                     </span>
                 @else
-                    <span
-                        class="text-sm leading-5 font-medium bg-green-50 text-green-600 px-4 py-1 rounded-lg border border-green-600">
+                    <span class="text-sm leading-5 font-medium bg-purple-50 text-purple-600 px-4 py-1 rounded-lg ">
                         final
+                    </span>
+                @endif
+                @if (!$isPublished)
+                    <span class="text-sm leading-5 font-medium bg-blue-50 text-blue-600 px-2 py-1 rounded-lg ">
+                        belum dipublish
+                    </span>
+                @else
+                    <span class="text-sm leading-5 font-medium bg-green-50 text-green-600 px-2 py-1 rounded-lg">
+                        sudah dipublish
                     </span>
                 @endif
 
             </div>
 
-            <span class="text-md leading-5 font-medium">
+            <span class="subTitle">
                 Kelola dan tinjau hasil seleksi siswa sebelum difinalisasi
             </span>
         </div>
@@ -72,7 +79,7 @@
                         'Kelas A' => [
                             'title' => 'Kelas A',
                             // ini place holder
-                            'count' => 32,
+                            'count' => 50,
                             'rumpun' => 'eksakta',
                         ],
                         'Kelas B' => [
@@ -96,8 +103,9 @@
                     ];
                 @endphp
                 @foreach ($class as $key => $value)
-                    <div class="flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
-                        <div class="flex flex-col border-l border-green-600 px-4">
+                    <div class="flex flex-col p-4 border {{ $value['count'] > 32 ? 'bg-red-100' : 'bg-white' }} border-gray-300 rounded-lg gap-2 w-fit">
+                        <div
+                            class="flex flex-col border-l {{ $value['count'] > 32 ? 'border-red-600' : 'border-green-600' }} px-4">
                             <span class="text-lg font-semibold">{{ $value['title'] }} - {{ $value['rumpun'] }}</span>
                             <span class="text-base font-normal">{{ $value['count'] }} siswa • Pilihan 1</span>
                         </div>
@@ -122,7 +130,7 @@
                         ModalUrl='{{ route('admin.hasil-penjurusan.lock') }}';
                         mainTitle='Finalisasi Hasil Seleksi Siswa' ;
                         subTitle='Apakah anda yakin ingin memfinalisasi hasil seleksi siswa untuk periode ini? Setelah difinalisasi, data tidak dapat diubah lagi.' "
-                        class="bg-black text-sm text-white whitespace-nowrap h-fit px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-100 ease-in-out active:shadow-lg">
+                        class="primary-button w-fit whitespace-nowrap">
                         Finalisasi Hasil Seleksi
                     </button>
                 @else
@@ -133,18 +141,27 @@
                             ModalUrl='{{ route('admin.hasil-penjurusan.unlock') }}'
                         ; mainTitle='Buka Finalisasi Hasil Seleksi Siswa';
                         subTitle='Apakah anda yakin ingin membuka finalisasi hasil seleksi siswa untuk periode ini? Setelah dibuka, data dapat diubah kembali.'"
-                            class="bg-black
-                            text-sm text-white whitespace-nowrap h-fit px-4 py-2 rounded-lg hover:bg-gray-800
-                            transition-all duration-100 ease-in-out active:shadow-lg">
+                            class="negative-primary-button whitespace-nowrap w-fit">
                             Buka Finalisasi
                         </button>
-                        <button type="button"
-                            @click="showConfirmModal = true; ModalUrl='{{ route('admin.hasil-penjurusan.publish') }}';
+                        @if ($isPublished)
+                            <button type="button"
+                                @click="showConfirmModal = true; ModalUrl='{{ route('admin.hasil-penjurusan.unpublish') }}';
+                        mainTitle='Batalkan Publikasi Hasil Seleksi';
+                        subTitle='Apakah anda yakin ingin membatalkan publikasi hasil seleksi siswa untuk periode ini? Setelah dibatalkan, data tidak dapat diakses oleh siswa.'"
+                                class="primary-button whitespace-nowrap w-fit">
+                                Batalkan Publikasi Hasil Seleksi
+                            </button>
+                        @else
+                            <button type="button"
+                                @click="showConfirmModal = true; ModalUrl='{{ route('admin.hasil-penjurusan.publish') }}';
                         mainTitle='Publikasikan Hasil Seleksi Siswa';
                         subTitle='Apakah anda yakin ingin mempublikasikan hasil seleksi siswa untuk periode ini? Setelah dipublikasikan, data dapat diakses oleh siswa.'"
-                            class="bg-black text-sm text-white whitespace-nowrap h-fit px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-100 ease-in-out active:shadow-lg">
-                            Publikasikan Hasil Seleksi
-                        </button>
+                                class="primary-button whitespace-nowrap w-fit">
+                                Publikasikan Hasil Seleksi
+                            </button>
+                        @endif
+
                     </div>
                 @endif
 
@@ -238,9 +255,6 @@
             </div>
 
         </div>
-        <pre>
-            {{ json_encode($isFinal, JSON_PRETTY_PRINT) }}
-        </pre>
         <x-hasil-seleksi-confirm-modal />
 
     </div>
