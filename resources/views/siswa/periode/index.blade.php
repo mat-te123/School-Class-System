@@ -4,7 +4,7 @@
             <h1 class="text-3xl leading-9 font-semibold">
                 Periode
             </h1>
-            <span class="text-sm leading-5 font-medium">
+            <span class="text-sm leading-5 font-medium text-slate-500">
                 Informasi detail terkait periode yang berjalan
             </span>
         </div>
@@ -93,18 +93,23 @@
                     Cek Pilihan Anda
                 </a>
             @else
-                <a href="{{ route('siswa.pendaftaran-pilihan.index') }}"
-                    class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
-                    Pilih Kelas
-                </a>
+                @if ($data['Status Pengumuman'] == 'Sudah diumumkan')
+                    <button type="button" disable class="primary-button w-fit cursor-not-allowed">
+                        Pilih Kelas
+                    </button>
+                @else
+                    <a href="{{ route('siswa.pendaftaran-pilihan.index') }}"
+                        class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
+                        Pilih Kelas
+                    </a>
+                @endif
+
             @endif
 
         </div>
         @foreach ($formattedMenus as $index => $menu)
             <x-kelas-card :item="$menu" />
         @endforeach
-
-
     </div>
 
 </x-app-layout>
