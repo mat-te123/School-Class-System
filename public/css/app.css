@@ -79,3 +79,38 @@ body {
         background: linear-gradient(to top, #1a202c, #273344);
     }
 }
+
+.primary-button {
+    background-image: linear-gradient(to top, #273344, #1a202c);
+    color: #ffffff;
+    font-size: 0.875rem; /* Sama dengan 14px */
+    font-weight: 600;
+    padding-top: 0.5rem; /* Sama dengan 8px */
+    padding-bottom: 0.5rem;
+    padding-left: 1rem; /* Sama dengan 16px */
+    padding-right: 1rem;
+    border-radius: 0.5rem; /* Sama dengan 8px */
+    width: 100%;
+    text-align: center;
+    &:hover {
+        background: linear-gradient(to top, #1a202c, #273344);
+    }
+}
+
+.negative-primary-button {
+    background: white;
+    border: 1px solid #d1d5db;
+    color: #1a202c;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border-radius: 0.5rem;
+    width: 100%;
+    text-align: center;
+    &:hover {
+        background: #f3f4f6;
+    }
+}
