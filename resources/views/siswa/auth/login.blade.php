@@ -8,6 +8,8 @@
     <title>Login Siswa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.svg') }}">
 </head>
 
 <body
@@ -87,9 +89,7 @@
                         @click="togglePasswordVisibility()">
                 </div>
             </div>
-            <button
-                class="bg-[#1E293B] text-lg py-1 text-white font-medium border border-gray-400 rounded-lg shadow-inner hover:scale-105 hover:bg-gray-700 hover:shadow-md active:bg-gray-900 active:scale-95 active:shadow-sm transition-all duration-300"
-                type="submit">
+            <button class="primary-button" type="submit">
                 Masuk
             </button>
             <span>

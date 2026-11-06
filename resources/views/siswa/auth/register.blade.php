@@ -8,6 +8,8 @@
     <title>Register Siswa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.svg') }}">
 </head>
 
 <body
@@ -31,8 +33,9 @@
     <div class="bg-white flex flex-col items-center justify-start p-8 gap-6 rounded-lg shadow-2xl max-w-md w-full"
         x-data="{
             showPassword: false,
-            togglePasswordVisibility() {
-                this.showPassword = !this.showPassword;
+            showConfirmPassword: false,
+            togglePasswordVisibility(object) {
+                this[object] = !this[object];
             }
         }">
 
@@ -133,7 +136,7 @@
                             '{{ asset('Icon/Eye_close.svg') }}'"
                             alt="Toggle Password Visibility"
                             class="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
-                            @click="togglePasswordVisibility()">
+                            @click="togglePasswordVisibility('showPassword')">
                     </div>
                 </div>
 
@@ -141,20 +144,25 @@
                     <label for="fpassword_confirmation" class="text-sm leading-4 font-semibold">
                         Konfirmasi Password
                     </label>
-                    <input name="password_confirmation" id="fpassword_confirmation"
-                        :type="showPassword ? 'text' : 'password'" placeholder="******" required
-                        class="border border-black rounded-lg py-1 px-4">
+                    <div class="relative w-full">
+                        <input name="password_confirmation" id="fpassword_confirmation"
+                            :type="showConfirmPassword ? 'text' : 'password'" placeholder="******" required
+                            class="w-full border border-black rounded-lg py-1 px-4">
+                        <img :src="showConfirmPassword ? '{{ asset('Icon/Eye_fill.svg') }}' :
+                            '{{ asset('Icon/Eye_close.svg') }}'"
+                            alt="Toggle Password Visibility"
+                            class="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+                            @click="togglePasswordVisibility('showConfirmPassword')">
+                    </div>
                 </div>
             @endif
 
             <div class="flex flex-row gap-2 w-full mt-2">
-                <a class="w-full text-center bg-white text-[#1E293B] border border-[#1E293B] text-lg py-1 font-medium rounded-lg shadow-inner hover:scale-105 hover:bg-gray-50 transition-all duration-300"
+                <a class="negative-primary-button"
                     href="{{ $step === 2 ? route('siswa.register.form') : route('siswa.login.form') }}">
                     {{ $step === 2 ? 'Batal' : 'Kembali' }}
                 </a>
-                <button
-                    class="w-full bg-[#1E293B] text-lg py-1 text-white font-medium border border-gray-400 rounded-lg shadow-inner hover:scale-105 hover:bg-gray-700 transition-all duration-300"
-                    type="submit">
+                <button class="primary-button" type="submit">
                     {{ $step === 2 ? 'Daftar' : 'Cek NISN' }}
                 </button>
             </div>
