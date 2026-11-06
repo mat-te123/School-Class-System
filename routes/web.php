@@ -64,12 +64,9 @@ Route::middleware(['auth:siswa'])->group(function () {
     Route::get('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'indexSiswa'])->name('siswa.pendaftaran-pilihan.index');
     Route::get('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'indexSiswa'])->name('siswa.pilih-kelas.index');
     Route::post('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'storeSiswa'])->name('siswa.pilih-kelas.store');
-    Route::post('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'storeSiswa'])->name('siswa.pendaftaran-pilihan.store');
-    Route::put('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'updateSiswa'])->name('siswa.pendaftaran-pilihan.update');
     Route::put('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'updateSiswa'])->name('siswa.pilih-kelas.update');
+    Route::delete('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'cancelSiswa'])->name('siswa.pilih-kelas.cancel');
     Route::put('/siswa/pendaftaran-pilihan/dokumen', [PendaftaranPilihanController::class, 'uploadDokumenSiswa'])->name('siswa.pendaftaran-pilihan.dokumen');
-    Route::delete('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'cancelSiswa'])->name('siswa.pendaftaran-pilihan.cancel');
-
 
     // FR-54 s/d FR-56: Siswa melihat hasil penempatan & status pengumuman & hasil sementara
     Route::get('/siswa/hasil-penempatan', [PendaftaranPilihanController::class, 'hasilPenempatanSiswa'])->name('siswa.hasil-penempatan');
