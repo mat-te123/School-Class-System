@@ -88,18 +88,23 @@
                 </p>
             </div>
             @if ($isAlreadyAppyClasses)
-                <a href="{{ route('siswa.profile') }}"
-                    class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
-                    Cek Pilihan Anda
-                </a>
+                <div class="flex flex-row gap-4">
+                    <a href="{{ route('siswa.profile') }}" class="negative-primary-button w-fit">
+                        Cek Pilihan Anda
+                    </a>
+                    <a href="{{ route('siswa.pendaftaran-pilihan.index') }}"
+                        class="primary-button w-fit whitespace-nowrap">
+                        Perbarui Pilihan
+                    </a>
+
+                </div>
             @else
                 @if ($data['Status Pengumuman'] == 'Sudah diumumkan')
                     <button type="button" disable class="primary-button w-fit cursor-not-allowed">
                         Pilih Kelas
                     </button>
                 @else
-                    <a href="{{ route('siswa.pendaftaran-pilihan.index') }}"
-                        class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
+                    <a href="{{ route('siswa.pendaftaran-pilihan.index') }}" class="primary-button w-fit">
                         Pilih Kelas
                     </a>
                 @endif
