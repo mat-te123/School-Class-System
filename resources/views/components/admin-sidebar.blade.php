@@ -51,22 +51,6 @@
                     <span class="text-sm" :class="{ 'hidden': !isSidebarOpen }">{{ $value['text'] }}</span>
                 </a>
             @endforeach
-            <p class="text-sm font-medium leading-6">
-                akun
-            </p>
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit"
-                    class="flex flex-row items-center gap-2 p-2 rounded opacity-100 transition-all duration-300 ease-in-out hover:bg-red-700 text-white w-full">
-                    <img src="{{ asset('Icon/Sign_out.svg') }}" alt="logout_icon" class="w-6 h-6" />
-                    <span type="submit"
-                        class="text-sm font-bold leading-6 opacity-100 transition-all duration-300 ease-in-out"
-                        :class="{ 'hidden': !isSidebarOpen }">
-                        Logout
-                    </span>
-                </button>
-
-            </form>
         @else
             @foreach ($itemsSiswa as $key => $value)
                 <a href="{{ $value['route'] }}"
@@ -77,6 +61,22 @@
                 </a>
             @endforeach
         @endif
+        <p class="text-sm font-medium leading-6">
+            akun
+        </p>
+        <form action="{{ route('logout') }}" method="POST">
+            @csrf
+            <button type="submit"
+                class="flex flex-row items-center gap-2 p-2 rounded opacity-100 transition-all duration-300 ease-in-out hover:bg-red-700 text-white w-full">
+                <img src="{{ asset('Icon/Sign_out.svg') }}" alt="logout_icon" class="w-6 h-6" />
+                <span type="submit"
+                    class="text-sm font-bold leading-6 opacity-100 transition-all duration-300 ease-in-out"
+                    :class="{ 'hidden': !isSidebarOpen }">
+                    Logout
+                </span>
+            </button>
+
+        </form>
 
 
 
