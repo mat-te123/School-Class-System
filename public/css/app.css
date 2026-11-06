@@ -24,6 +24,19 @@ body {
     font-family: "Plus Jakarta Sans", sans-serif;
 }
 
+.mainTitle {
+    font-size: 1.875rem; /* 30px */
+    line-height: 2.25rem; /* 36px */
+    font-weight: 600;
+}
+
+.subTitle {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.25rem; /* 20px */
+    font-weight: 500;
+    color: rgb(100 116 139); /* #64748b */
+}
+
 .select-primary {
     background-color: white;
     padding: 0.5rem;
