@@ -1,10 +1,10 @@
 <x-app-layout title="Periode" type="siswa">
     <div class="flex flex-row py-6 px-8 justify-between items-center  border-b border-black">
         <div class="flex flex-col">
-            <h1 class="text-3xl leading-9 font-semibold">
+            <h1 class="mainTitle">
                 Periode
             </h1>
-            <span class="text-sm leading-5 font-medium text-slate-500">
+            <span class="subTitle">
                 Informasi detail terkait periode yang berjalan
             </span>
         </div>
