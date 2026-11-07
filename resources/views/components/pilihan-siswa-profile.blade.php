@@ -13,17 +13,26 @@
 
         </div>
     @else
-        <div>
-            <h2 class="text-lg font-semibold leading-6">
-                Daftar Pilihan Siswa
-            </h2>
-            <span class="text-sm text-gray-500">
-                Daftar pilihan siswa yang telah diinputkan
-            </span>
+        <div class="flex flex-row justify-between items-baseline">
+            <div class="flex flex-col">
+                <h2 class="mainTitle">
+                    Daftar Pilihan Siswa
+                </h2>
+                <span class="subTitle">
+                    Daftar pilihan siswa yang telah diinputkan
+                </span>
+
+            </div>
+            <a href="{{ route('siswa.pilih-kelas.index') }}"
+                class="primary-button w-fit whitespace-nowrap h-fit self-baseline">
+                Perbarui pilihan kelas
+            </a>
+
         </div>
         <div class="grid grid-cols-2 gap-4">
             @foreach ($PilihanSiswa as $pilihan)
-                <div class="flex flex-row w-full bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4 items-center">
+                <div
+                    class="flex flex-row w-full bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4 items-center">
                     <span class="bg-black p-4 w-8 h-8 text-white rounded-xl flex items-center justify-center text-lg">
                         {{ $pilihan->urutan_pilihan }}
                     </span>
