@@ -1,29 +1,10 @@
 <x-app-layout title="Selamat datang" type="siswa">
 
-    <div class="flex flex-row py-6 px-8 justify-between items-center  border-b border-black">
-        <h1 class="text-3xl leading-9 font-semibold">
-            Selamat Datang, {{ $siswa->nama_lengkap }}
+    <div class="flex flex-col py-6 px-8 border-b border-black">
+        <h1 class="mainTitle">
+            Selamat datang
         </h1>
-        <div class="flex flex-row items-center gap-4">
-            <div
-                class="p-2 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-200 transition-all duration-300 ease-in-out cursor-pointer">
-                <img src="{{ asset('Icon/Bell_light.svg') }}" alt="notification icon" class="w-6 h-6" />
-            </div>
-            @php
-
-                $initials = collect(explode(' ', $siswa->nama_lengkap))
-                    ->map(fn($word) => strtoupper(substr($word, 0, 1)))
-                    ->join('');
-            @endphp
-            <div
-                class="flex flex-row items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-200 transition-all duration-300 ease-in-out cursor-pointer">
-                <div
-                    class="p-1 w-7 h-7 rounded-full bg-black text-white flex items-center justify-center font-bold text-sm leading-4">
-                    {{ $initials }}
-                </div>
-                <span class="text-xs leading-4 font-semibold">{{ $siswa->nama_lengkap }}</span>
-            </div>
-        </div>
+        <span class="lowercase subTitle">{{ $siswa->nama_lengkap }}</span>
     </div>
     @if (!$isperiodeAktif)
         <div class="mx-8 mt-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900"
@@ -44,9 +25,8 @@
                     </span>
                 </div>
                 <div class="flex flex-row gap-4">
-                    <a href="{{ route('siswa.profile') }}"
-                        class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
-                        lihat detail
+                    <a href="{{ route('siswa.profile') }}" class="negative-primary-button w-fit whitespace-nowrap">
+                        Cek profile
                     </a>
                 </div>
             </div>
@@ -84,8 +64,7 @@
                     Silahkan hubungi admin untuk mendapatkan bantuan.
                 </span>
             </div>
-            <a href="#"
-                class="primary-button">
+            <a href="#" class="primary-button">
                 Hubungi Admin
             </a>
         </div>

@@ -1,9 +1,9 @@
 <div class="col-span-2 flex flex-col gap-4">
     <div>
-        <h2>
+        <h2 class="mainTitle">
             Periode pendaftaran
         </h2>
-        <span class="text-sm text-gray-500">
+        <span class="subTitle">
             lihat daftar periode pendaftaran yang dapat anda daftarkan
         </span>
     </div>

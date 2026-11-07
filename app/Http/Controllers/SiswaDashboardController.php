@@ -32,6 +32,7 @@ class SiswaDashboardController extends Controller
         // 1. Ambil data profil lengkap dan relasi kelas asal
         $siswa->load('kelasAsalRelation');
 
+
         // 2. Ambil data periode aktif saat ini (hanya jika tanggal_buka <= now <= tanggal_tutup)
         $now = now();
         $periodeAktif = PeriodePendaftaran::where('is_active', true)
