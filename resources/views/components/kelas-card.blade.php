@@ -1,5 +1,6 @@
 @props([
     'item' => null,
+    'isSiswa' => false,
 ])
 
 <div class="bg-gray-50 flex flex-col p-2 border border-gray-300 rounded-lg gap-4" x-data="{ showeditdeletepopup: false, }">
@@ -31,21 +32,25 @@
                 </span>
             </div>
         </div>
-        <div class="hover:bg-gray-200 active:bg-gray-200 cursor-pointer h-fit py-1 rounded-2xl"
-            @click="
+        @if (!$isSiswa)
+            <div class="hover:bg-gray-200 active:bg-gray-200 cursor-pointer h-fit py-1 rounded-2xl"
+                @click="
                 showeditdeletepopup=true;
             ">
-            <img src="{{ asset('Icon/Meatballs_menu.svg') }}" />
-        </div>
-        @php
-            $formattedData = array_merge($item, [
-                'is_active' => $item['is_active'] ? 1 : 0,
-            ]);
-        @endphp
-        <div class="absolute top-0 right-0 z-10">
-            <x-delete-edit-popup :item="$item" :confirmationData="$item['nama_menu']" :deleteUrl="route('paket-menu.destroy', ['identifier' => $item['id']])" :data="$formattedData"
-                :updateUrl="route('paket-menu.update', ['identifier' => $item['id']])" />
-        </div>
+                <img src="{{ asset('Icon/Meatballs_menu.svg') }}" />
+            </div>
+            @php
+                $formattedData = array_merge($item, [
+                    'is_active' => $item['is_active'] ? 1 : 0,
+                ]);
+            @endphp
+
+            <div class="absolute top-0 right-0 z-10">
+                <x-delete-edit-popup :item="$item" :confirmationData="$item['nama_menu']" :deleteUrl="route('paket-menu.destroy', ['identifier' => $item['id']])" :data="$formattedData"
+                    :updateUrl="route('paket-menu.update', ['identifier' => $item['id']])" />
+            </div>
+        @endif
+
     </div>
     <div class="flex flex-col w-full">
         <div class="flex flex-row justify-between text-xs leading-4 font-normal">
@@ -64,7 +69,8 @@
 
     </div>
     <div class="flex flex-row justify-end">
-        <a href="{{ route('paket-menu.show', ['identifier' => $item['id']]) }}" class="text-xs leading-4 font-normal cursor-pointer hover:underline">
+        <a href="{{ route('paket-menu.show', ['identifier' => $item['id']]) }}"
+            class="text-xs leading-4 font-normal cursor-pointer hover:underline">
             Lihat Detail
         </a>
     </div>
