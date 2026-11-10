@@ -5,6 +5,7 @@
         confirmationData: '',
         deleteUrl: '',
         updateUrl: '',
+        item: { bobot_persen: '', master_mata_pelajaran: { nama_mapel: '' } },
     }">
         <div class ="flex flex-col py-6 px-8 border border-b-black">
             <h1 class="mainTitle">
@@ -86,11 +87,11 @@
                                 <td class="p-3 font-medium text-slate-800">
                                     <div class="flex flex-row gap-2">
                                         <button
-                                            @click="showupdateModal = true; confirmationData = '{{ $item->masterMataPelajaran?->nama_mapel ?? 'Mapel Tidak Ditemukan' }}'; updateUrl = '{{ route('master-mapel.update', ['id' => $paketMenu->id]) }}';"
+                                            @click="showupdateModal = true; item = {{ json_encode($item) }}; confirmationData = '{{ $item->masterMataPelajaran?->nama_mapel ?? 'Mapel Tidak Ditemukan' }}'; updateUrl = '{{ route('kriteria-bobot.update', ['id' => $item->id]) }}';"
                                             class="p-1 bg-blue-50 hover:bg-blue-300 rounded-lg transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
                                             <img src="{{ asset('Icon/Edit.svg') }}" alt="edit icon"></button>
                                         <button
-                                            @click="showDeleteModal = true; confirmationData = '{{ $item->masterMataPelajaran?->nama_mapel ?? 'Mapel Tidak Ditemukan' }}'; deleteUrl = '{{ route('master-mapel.destroy', ['id' => $paketMenu->id]) }}';"
+                                            @click="showDeleteModal = true; confirmationData = '{{ $item->masterMataPelajaran?->nama_mapel ?? 'Mapel Tidak Ditemukan' }}'; deleteUrl = '{{ route('kriteria-bobot.destroy', ['id' => $item->id]) }}';"
                                             class="p-1 bg-red-50
                                             hover:bg-red-300 rounded-lg transition-all duration-100 ease-in-out
                                             active:scale-110 active:shadow-lg">
@@ -106,6 +107,7 @@
         </div>
         <x-delete-modal />
         <x-update-modal-master-pelajaran />
+
 
     </div>
 </x-app-layout>
