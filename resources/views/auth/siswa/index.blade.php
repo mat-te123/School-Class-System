@@ -19,20 +19,20 @@
     }">
 
         <div class="flex flex-col py-6 px-8 border border-b-black">
-            <h1 class="text-4xl leading-9 font-semibold">
+            <h1 class="mainTitle">
                 Siswa
             </h1>
-            <span class="text-md leading-5 font-medium">
+            <span class="subTitle">
                 Kelola data murid, NISN, dan alokasi kelas
             </span>
         </div>
 
         <div class="flex flex-col py-6 px-8 gap-4">
             <div class="flex flex-col">
-                <h2 class="text-lg leading-6 font-semibold">
+                <h2 class="mainTitle text-2xl">
                     Data Siswa
                 </h2>
-                <span class="text-sm leading-4 font-medium">
+                <span class="subTitle">
                     Tampilkan Data siswa berdasarkan Tahun ajaran
                 </span>
             </div>
@@ -41,9 +41,8 @@
                 class="flex flex-row bg-gray-100 p-3 w-full border border-gray-400 rounded-lg gap-6 items-center">
                 <input type="text" name="search" value="{{ request('search') }}"
                     placeholder="Cari nama, NISN, atau NIS..."
-                    class="w-full py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
-                <select name="kelas_id" onchange="this.form.submit()"
-                    class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
+                    class="w-full py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg text-sm">
+                <select name="kelas_id" onchange="this.form.submit()" class="select-primary text-sm">
                     <option value="">Semua Kelas</option>
                     @foreach ($kelasAsal as $kelas)
                         <option value="{{ $kelas->id }}"
@@ -52,14 +51,12 @@
                         </option>
                     @endforeach
                 </select>
-                <select name="jenis_kelamin" onchange="this.form.submit()"
-                    class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
+                <select name="jenis_kelamin" onchange="this.form.submit()" class="select-primary text-sm">
                     <option value="">Semua Kelamin</option>
                     <option value="L" {{ request('jenis_kelamin') === 'L' ? 'selected' : '' }}>Laki-laki</option>
                     <option value="P" {{ request('jenis_kelamin') === 'P' ? 'selected' : '' }}>Perempuan</option>
                 </select>
-                <select name="angkatan" onchange="this.form.submit()"
-                    class="py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg">
+                <select name="angkatan" onchange="this.form.submit()" class="select-primary text-sm">
                     <option value="">Semua Angkatan</option>
                     @foreach ($tahunAjaranList as $tahun)
                         <option value="{{ $tahun }}"
@@ -68,20 +65,19 @@
                         </option>
                     @endforeach
                 </select>
-                <button type="button"
-                    class="px-4 py-2 text-white rounded-md bg-[linear-gradient(180deg,#273344_11.77%,#000_166.84%)] whitespace-nowrap"
+                <button type="button" class="primary-button w-fit whitespace-nowrap"
                     @click="
                     showaddmodal=true;
                     addUrl='{{ route('siswa.store') }}';
                     addExcelUrl='{{ route('leger.import') }}'; ">
                     Tambahkan Data
                 </button>
-            </form>
+            </form> 
 
-            <div class="rounded-xl border-gray-200 border overflow-hidden shadow-lg">
+            <div class="rounded-xl border-gray-200 border overflow-hidden">
                 <table class="w-full">
                     <thead
-                        class="bg-gray-300 text-xs font-semibold uppercase text-gray-600 border-gray-200 [&_th]:px-4 [&_th]:py-3 [&_th]:border-r [&_th]:border-gray-200 [&_th]:text-left last:[&_th]:border-r-0">
+                        class="bg-gray-300 text-xs font-semibold uppercase text-gray-600 border-gray-200 first:[&_th]:px-0 [&_th]:px-4 [&_th]:py-3 [&_th]:border-r [&_th]:border-gray-200 [&_th]:text-left last:[&_th]:border-r-0">
                         <tr>
                             <th class="flex justify-center">#</th>
                             <th>Nama Lengkap</th>
@@ -96,13 +92,12 @@
                     <tbody
                         class="[&_td]:p-3 border-gray-200 [&_td]:border-t [&_td]:text-base [&_td]:leading-6 [&_td]:font-normal [&_td]:text-left">
                         @forelse ($siswa as $index=> $item)
-                            <tr class="bg-gray-50 hover:bg-gray-200 hover:cursor-pointer group"
-                                @click="clickhandle('{{ $item->id }}')">
-                                <th class="border-r border-t border-gray-200 p-2">
+                            <tr class="bg-gray-50 hover:bg-gray-200 hover:cursor-pointer group">
+                                <th class="border-r border-t border-gray-200">
                                     {{ $index + 1 }}
                                 </th>
                                 <td>
-                                    <div class="flex flex-row items-center gap-2 lowercase justify-between">
+                                    <div class="flex flex-row items-center gap-2 lowercase justify-between text-md">
                                         {{ $item->nama_lengkap }}
                                         <a href="{{ route('siswa.show', $item->id) }}"
                                             class="opacity-0 group-hover:opacity-100 bg-white hover:bg-gray-300 rounded-lg p-1 transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
@@ -186,5 +181,5 @@
         <x-delete-modal />
         <x-update-modal-siswa :kelas-asal="$kelasAsal" />
         <x-add-modal-siswa :kelas-asal="$kelasAsal" />
-    
+
 </x-app-layout>
