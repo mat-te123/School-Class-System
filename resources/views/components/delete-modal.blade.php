@@ -1,6 +1,7 @@
 @props([
     'id' => 'delete-modal',
     'confirmationData' => '',
+    'deleteUrl' => '',
 ])
 
 <div x-show="showDeleteModal" x-cloak x-transition.opacity

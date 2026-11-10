@@ -10,10 +10,10 @@
             Data: {},
         }">
             <div class="flex flex-col py-6 px-8 border border-b-black">
-                <h1 class="text-4xl leading-9 font-semibold">
+                <h1 class="mainTitle">
                     Kelas
                 </h1>
-                <span class="text-md leading-5 font-medium">
+                <span class="subTitle">
                     Kelola kelas pada sistem
                 </span>
             </div>

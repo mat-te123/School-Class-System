@@ -291,6 +291,8 @@ class PaketMenuPilihanController extends Controller
      */
     public function show(Request $request, string $identifier)
     {
+        $isAdmin = session('user_role') === 'admin';
+
         $paketMenu = PaketMenuPilihan::where('id', $identifier)
             ->orWhere('nama_menu', $identifier)
             ->first();
@@ -325,7 +327,7 @@ class PaketMenuPilihanController extends Controller
             ]);
         }
 
-        return view('any.kelas.kelas-detail', compact('paketMenu', 'kriteriaBobotMenu'));
+        return view('any.kelas.kelas-detail', compact('paketMenu', 'kriteriaBobotMenu', 'isAdmin'));
     }
 
     /**
