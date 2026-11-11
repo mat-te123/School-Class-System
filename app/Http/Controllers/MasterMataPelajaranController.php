@@ -49,7 +49,7 @@ class MasterMataPelajaranController extends Controller
             });
         }
 
-        $mapels = $query->orderBy('kode_mapel', 'asc')->paginate((int) $request->input('per_page', 10));
+        $mapels = $query->orderBy('kode_mapel', 'asc')->get();
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([

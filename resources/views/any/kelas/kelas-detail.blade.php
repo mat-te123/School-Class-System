@@ -2,6 +2,7 @@
     <div x-data="{
         showDeleteModal: false,
         showupdateModal: false,
+        showaddmodal: false,
         confirmationData: '',
         deleteUrl: '',
         updateUrl: '',
@@ -55,15 +56,25 @@
             </div>
         </div>
         <div class="flex flex-col pb-6 px-8 gap-6">
-            <div class="flex flex-col">
-                <h2 class="mainTitle text-xl">
-                    Daftar Mata Pelajaran
-                </h2>
-                <span class="subTitle">
-                    Bobot penilaian dari masing-masing mata pelajaran untuk kelas {{ $paketMenu->nama_menu }} dalam
-                    persen
-                </span>
+            <div class="flex flex-row justify-between items-end">
+                <div class="flex flex-col">
+                    <h2 class="mainTitle text-xl">
+                        Daftar Mata Pelajaran
+                    </h2>
+                    <span class="subTitle">
+                        Bobot penilaian dari masing-masing mata pelajaran untuk kelas {{ $paketMenu->nama_menu }} dalam
+                        persen
+                    </span>
+                </div>
+                @if ($isAdmin)
+                    <button @click="showaddmodal = true" class="primary-button w-fit">
+                        Tambah Mata Pelajaran
+                    </button>
+                @endif
+
+
             </div>
+
             <table class="w-full text-left text-sm border-collapse">
                 <thead>
                     <tr
@@ -104,7 +115,7 @@
                     @endforeach
                 </tbody>
                 @php
-                    $totalBobot = $kriteriaBobotMenu->sum('bobot_persen');
+                    $totalBobot = round($kriteriaBobotMenu->sum('bobot_persen'), 2);
                 @endphp
                 <tfoot
                     class=" bg-[#D1D5DB] text-slate-700 font-semibold first:[&_td]:rounded-bl-xl last:[&_td]:rounded-br-xl">
@@ -116,9 +127,11 @@
 
 
                         @if ($isAdmin)
-                            @if ($totalBobot > 100)
+                            @if ($totalBobot == 100)
+                                <td class="p-3 text-green-600 font-semibold">Bobot sudah 100%</td>
+                            @elseif ($totalBobot > 100)
                                 <td class="p-3 text-red-600 font-semibold">Bobot melebihi 100%</td>
-                            @elseif ($totalBobot < 100)
+                            @else
                                 <td class="p-3 text-yellow-600 font-semibold">Bobot kurang dari 100%</td>
                             @endif
                         @endif
@@ -131,6 +144,7 @@
         </div>
         <x-delete-modal />
         <x-update-modal-master-pelajaran />
+        <x-add-modal-mata-pelajaran-bobot :paketMenuId="$paketMenu->id" />
 
 
     </div>
