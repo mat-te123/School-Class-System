@@ -126,9 +126,6 @@
                     </tr>
                 </tfoot>
             </table>
-            @php
-                $totalBobot = $kriteriaBobotMenu->sum('bobot_persen');
-            @endphp
 
 
         </div>
