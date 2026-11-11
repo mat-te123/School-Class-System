@@ -17,7 +17,7 @@
             </span>
         </div>
         <div class="flex flex-col p-8 gap-4">
-            <a href="{{ url()->previous() }}" class="back-button">
+            <a href="{{ route('admin-paket-menu.index') }}" class="back-button">
                 Kembali
             </a>
             {{-- Data Card --}}
