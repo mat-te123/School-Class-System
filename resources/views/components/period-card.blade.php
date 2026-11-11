@@ -8,7 +8,8 @@
 ])
 
 
-<div class="bg-gray-50 border border-gray-300 p-3 rounded-lg flex flex-col gap-2" x-data="{ showeditdeletepopup: false, }">
+<div class="bg-gray-50 border border-gray-300 p-3 rounded-lg flex flex-col gap-2 shadow-lg shadow-black/5"
+    x-data="{ showeditdeletepopup: false, }">
     <div class="flex flex-row w-full justify-between relative">
         <div class="flex flex-col gap-1">
             <h2 class="text-lg leading-7 font-bold">
