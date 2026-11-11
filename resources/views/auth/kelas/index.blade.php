@@ -19,19 +19,23 @@
             </div>
 
             <div class="grid grid-cols-4 py-6 px-8 gap-4">
-                <div class="flex flex-row justify-between items-start col-span-4 gap-3">
+                <div class="flex flex-row justify-between items-center col-span-4 gap-3">
                     <div class="flex flex-col ">
-                        <h2 class="text-lg leading-6 font-semibold">
-                            Data Kelas • T.A {{ $periodes->first()?->tahun_ajaran }}
+                        <h2 class="mainTitle text-lg">
+                            Data Kelas
                         </h2>
-                        <span class="text-sm font-medium leading-4">
+                        <span class="subTitle">
                             Daftar kelas yang tersedia pada sistem
                         </span>
                     </div>
-                    <div class="flex flex-row justify-between items-end gap-3">
+                    <div class="flex flex-row justify-between items-end gap-3 ">
                         <form method="GET" action="{{ route('admin-paket-menu.index') }}">
                             @php
                                 $selectedPeriodeId = request()->get('periode_id', $periodes->first()?->id);
+
+                                $selectedPeriode = $periodes->firstWhere('id', $selectedPeriodeId);
+
+                                $isPeriodeActive = $selectedPeriode ? (bool) $selectedPeriode->is_active : false;
                             @endphp
                             <select name="periode_id" id="periode_id" onchange="this.form.submit()"
                                 class="select-primary text-sm">
@@ -43,14 +47,21 @@
                             </select>
                         </form>
 
-                        <button
-                            class="text-sm px-4 py-2 text-white rounded-md bg-[linear-gradient(180deg,#273344_11.77%,#000_166.84%)] whitespace-nowrap"
-                            @click="
-                    showaddmodal=true;
-                    addUrl='{{ route('paket-menu.store') }}';
-                    ">
-                            Tambah Kelas
-                        </button>
+                        @if ($isPeriodeActive)
+                            <button
+                                class="text-sm px-4 py-2 text-white rounded-md bg-[linear-gradient(180deg,#273344_11.77%,#000_166.84%)] whitespace-nowrap"
+                                @click="
+                showaddmodal=true;
+                addUrl='{{ route('paket-menu.store') }}';
+            ">
+                                Tambah Kelas
+                            </button>
+                        @else
+                            <button type="button" disabled title="Periode yang dipilih sedang tidak aktif"
+                                class="text-sm px-4 py-2 text-gray-500 bg-gray-300 rounded-md cursor-not-allowed whitespace-nowrap">
+                                Tambah Kelas
+                            </button>
+                        @endif
                     </div>
                 </div>
 
@@ -63,6 +74,7 @@
             <x-add-modal-kelas />
             <x-delete-modal />
             <x-update-modal-kelas />
+
 
 
     </x-app-layout>

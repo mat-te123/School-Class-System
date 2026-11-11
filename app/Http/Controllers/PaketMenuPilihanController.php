@@ -75,7 +75,7 @@ class PaketMenuPilihanController extends Controller
             ];
         });
 
-        $periodes = PeriodePendaftaran::select('id', 'tahun_ajaran')
+        $periodes = PeriodePendaftaran::select('id', 'tahun_ajaran', 'is_active')
             ->orderBy('tahun_ajaran', 'desc')
             ->get();
 
