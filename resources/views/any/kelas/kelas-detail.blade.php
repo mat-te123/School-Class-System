@@ -67,7 +67,7 @@
             <table class="w-full text-left text-sm border-collapse">
                 <thead>
                     <tr
-                        class="bg-[#D1D5DB] text-slate-700 font-semibold border-b border-slate-200 [&_th]:p-3 first:[&_th]:rounded-l-xl first:[&_th]:w-0 last:[&_th]:rounded-r-xl">
+                        class="bg-[#D1D5DB] text-slate-700 font-semibold border-b border-slate-200 [&_th]:p-3 first:[&_th]:rounded-tl-xl first:[&_th]:w-0 last:[&_th]:rounded-tr-xl">
                         <th>No</th>
                         <th>Mata Pelajaran</th>
                         <th>Bobot ( % )</th>
@@ -103,7 +103,34 @@
                         </tr>
                     @endforeach
                 </tbody>
+                @php
+                    $totalBobot = $kriteriaBobotMenu->sum('bobot_persen');
+                @endphp
+                <tfoot
+                    class=" bg-[#D1D5DB] text-slate-700 font-semibold first:[&_td]:rounded-bl-xl last:[&_td]:rounded-br-xl">
+                    <tr>
+
+                        <td colspan="2" class="p-3 text-left">Total Bobot :</td>
+
+                        <td class="p-3 text-slate-900">{{ $totalBobot }}%</td>
+
+
+                        @if ($isAdmin)
+                            @if ($totalBobot > 100)
+                                <td class="p-3 text-red-600 font-semibold">Bobot melebihi 100%</td>
+                            @elseif ($totalBobot < 100)
+                                <td class="p-3 text-yellow-600 font-semibold">Bobot kurang dari 100%</td>
+                            @endif
+                        @endif
+
+                    </tr>
+                </tfoot>
             </table>
+            @php
+                $totalBobot = $kriteriaBobotMenu->sum('bobot_persen');
+            @endphp
+
+
         </div>
         <x-delete-modal />
         <x-update-modal-master-pelajaran />
