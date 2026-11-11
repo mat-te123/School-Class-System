@@ -52,11 +52,11 @@
     </span>
     <div class="flex flex-row w-full justify-end border-t border-gray-300 pt-2 gap-3">
         <a href="{{ route('admin.pemantauan-minat.index', ['periode_id' => $item->id]) }}"
-            class="text-center text-sm leading-4 w-full border border-gray-950 rounded-md text-gray-950 p-2">
+            class="negative-primary-button whitespace-nowrap">
             Cek persebaran kelas
         </a>
         <a href="{{ route('admin.hasil-penjurusan.index', ['periode_id' => $item->id]) }}"
-            class="text-center text-sm leading-4 w-full border bg-gray-950 rounded-md text-white p-2">
+            class="primary-button whitespace-nowrap">
             Cek hasil seleksi
         </a>
     </div>
