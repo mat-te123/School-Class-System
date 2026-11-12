@@ -4,7 +4,7 @@
         ModalUrl: '',
         mainTitle: '',
         subTitle: '',
-    }" class="flex min-h-0 flex-1 flex-col">
+    }" class="flex flex-1 flex-col">
 
         <div class="flex flex-col py-6 px-8 border border-b-black">
             <div class="flex flex-row items-center gap-2">
@@ -41,85 +41,86 @@
             <a href="{{ url()->previous() }}" class="back-button">
                 Kembali
             </a>
-            <h2 class="text-base font-semibold leading-6">
-                Ringkasan Data Umum
-            </h2>
-            <div class="flex flex-row w-full justify-start gap-8">
-                @php
-                    $items = [
-                        'Siswa' => [
-                            'title' => 'Total Siswa',
-                            'count' => $results->count(),
-                        ],
-                        'is_filled' => [
-                            'title' => 'Sudah Mengisi',
-                            'count' => $results->where('is_filled', true)->count(),
-                        ],
-                        'not_filled' => [
-                            'title' => 'Belum Mengisi',
-                            'count' => $results->where('is_filled', false)->count(),
-                        ],
-                    ];
-                @endphp
-                @foreach ($items as $key => $value)
-                    <div class="flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
-                        <div class="flex flex-col border-l border-green-600 px-4">
-                            <span class="text-lg font-semibold">{{ $value['title'] }}</span>
-                            <span class="text-base font-normal">{{ $value['count'] }} siswa</span>
-                        </div>
+            @if ($summary['detail_kelas']->isEmpty())
+                <h2 class="text-base font-semibold leading-6">
+                    Ringkasan Data Umum
+                </h2>
+                <div
+                    class="bg-gray-50 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit shadow-lg shadow-black/5">
+                    <div class="flex flex-col border-l border-red-600 px-4">
+                        <span class="text-lg font-semibold">Data tidak ditemukan</span>
+                        <span class="text-base font-normal">Tidak ada siswa yang ditempatkan pada kelas ini
+                        </span>
                     </div>
-                @endforeach
-            </div>
-            <h2 class="text-base font-semibold leading-6">
-                Ringkasan Data Perkelas
-            </h2>
-            <div class="flex flex-row w-full justify-start gap-8">
-                @php
-                    $class = [
-                        'Kelas A' => [
-                            'title' => 'Kelas A',
-                            // ini place holder
-                            'count' => 50,
-                            'rumpun' => 'eksakta',
-                        ],
-                        'Kelas B' => [
-                            'title' => 'Kelas B',
-                            // ini place holder
-                            'count' => 28,
-                            'rumpun' => 'eksakta',
-                        ],
-                        'Kelas C' => [
-                            'title' => 'Kelas C',
-                            // ini place holder
-                            'count' => 30,
-                            'rumpun' => 'sosial',
-                        ],
-                        'Kelas D' => [
-                            'title' => 'Kelas D',
-                            // ini place holder
-                            'count' => 25,
-                            'rumpun' => 'sosial',
-                        ],
-                    ];
-                @endphp
-                @foreach ($class as $key => $value)
-                    <div class="flex flex-col p-4 border {{ $value['count'] > 32 ? 'bg-red-100' : 'bg-white' }} border-gray-300 rounded-lg gap-2 w-fit">
+                </div>
+            @else
+                <h2 class="text-base font-semibold leading-6">
+                    Ringkasan Data Umum
+                </h2>
+                <div class="flex flex-row w-full justify-start gap-8">
+                    @php
+                        $items = [
+                            'Siswa' => [
+                                'title' => 'Total Siswa',
+                                'count' => $summary['total_siswa'],
+                            ],
+                            'Total kelas' => [
+                                'title' => 'Total Kelas',
+                                'count' => $summary['total_kelas'],
+                            ],
+                        ];
+                    @endphp
+                    @if ($items['Total kelas']['count'] < 2)
                         <div
-                            class="flex flex-col border-l {{ $value['count'] > 32 ? 'border-red-600' : 'border-green-600' }} px-4">
-                            <span class="text-lg font-semibold">{{ $value['title'] }} - {{ $value['rumpun'] }}</span>
-                            <span class="text-base font-normal">{{ $value['count'] }} siswa • Pilihan 1</span>
+                            class="bg-gray-50 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit shadow-lg shadow-black/5">
+                            <div class="flex flex-col border-l border-green-600 px-4">
+                                <span class="text-lg font-semibold">{{ $items['Siswa']['title'] }}</span>
+                                <span class="text-base font-normal">{{ $items['Siswa']['count'] }} siswa</span>
+                            </div>
                         </div>
-                    </div>
-                @endforeach
+                    @else
+                        @foreach ($items as $key => $value)
+                            <div
+                                class="bg-gray-50 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit shadow-lg shadow-black/5">
+                                <div class="flex flex-col border-l border-green-600 px-4">
+                                    <span class="text-lg font-semibold">{{ $value['title'] }}</span>
+                                    <span class="text-base font-normal">{{ $value['count'] }} @if ($value['title'] === 'Total Siswa')
+                                            siswa
+                                        @else
+                                            kelas
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
 
-            </div>
+                </div>
+
+                <h2 class="text-base font-semibold leading-6">
+                    Ringkasan Data Perkelas
+                </h2>
+                <div class="flex flex-row w-full justify-start gap-8">
+                    @foreach ($summary['detail_kelas'] as $key => $value)
+                        <div
+                            class="flex flex-col p-4 border {{ $value['total'] > 32 ? 'bg-red-100' : 'bg-white' }} border-gray-300 rounded-lg gap-2 w-fit shadow-lg shadow-black/5">
+                            <div
+                                class="flex flex-col border-l {{ $value['total'] > 32 ? 'border-red-600' : 'border-green-600' }} px-4">
+                                <span class="text-lg font-semibold">{{ $value['nama_menu'] }}</span>
+                                <span class="text-base font-normal">{{ $value['total'] }} siswa</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
             <div class="flex flex-row w-full justify-between items-end">
                 <div class="flex flex-col w-full ">
-                    <h2 class="text-xl font-semibold leading-6">
-                        Daftar Pilihan Kelas Siswa
+                    <h2 class="mainTitle text-xl">
+                        Daftar Hasil Seleksi Siswa
                     </h2>
-                    <span class="text-sm leading-5 text-gray-500">
-                        Daftar Kelas yang dipilih oleh siswa pada formulir results
+                    <span class="subTitle">
+                        Hasil seleksi siswa
                     </span>
 
                 </div>
@@ -169,14 +170,19 @@
 
             <form method="GET" action="{{ route('admin.hasil-penjurusan.index') }}"
                 class="flex flex-row  p-3 justify-between bg-gray-200 border border-gray-300 rounded-lg w-full gap-2">
-                <input type="text" placeholder="Cari nama, NISN, atau NIS..."
+                <input type="hidden" name="periode_id" value="{{ request()->input('periode_id') }}">
+                <input type="text" placeholder="Cari nama, NISN, atau NIS..." name="search"
+                    value="{{ request()->input('search') }}"
                     class="text-sm px-4 py-2 rounded-lg border border-gray-400 w-full">
 
                 <select name="paket_menu_pilihan_id" onchange="this.form.submit()" class="select-primary text-sm">
                     <option value="">Pilihan Kelas : semua</option>
-                    @foreach ($summary['detail_kelas'] as $value)
-                        <option value="{{ $value['id'] }}">Pilihan Kelas :
-                            {{ $value['nama_menu'] }}</option>
+                    @foreach ($AllKelas as $value)
+                        <option value="{{ $value->id }}"
+                            {{ request()->input('paket_menu_pilihan_id') === $value->id ? 'selected' : '' }}>
+                            Pilihan
+                            Kelas :
+                            {{ $value->nama_menu }}</option>
                     @endforeach
                 </select>
             </form>
@@ -184,8 +190,8 @@
                 <table class="min-w-full border-separate border-spacing-0">
                     <thead>
                         <tr
-                            class="bg-gray-300 text-xs font-semibold uppercase text-gray-600 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left first:[&_th]:w-0">
-                            <th>#</th>
+                            class=" bg-gray-300 text-xs font-semibold uppercase text-gray-600 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left first:[&_th]:w-0 last:[&_th]:rounded-tr-xl">
+                            <th class="rounded-tl-xl">#</th>
                             <th>Nama Siswa</th>
                             <th>NISN</th>
                             <th>NIS</th>
@@ -199,14 +205,15 @@
                     <tbody>
                         @if ($results->isEmpty())
                             <tr class="h-full">
-                                <td colspan="6"
-                                    class="h-full border border-gray-200 bg-white py-4 text-center align-middle">
-                                    Tidak ada data results siswa.
+                                <td colspan="7"
+                                    class="h-full border border-gray-200 bg-white py-4 text-center align-middle last:rounded-bl-xl last:rounded-br-xl">
+                                    Data tidak ditemukan
                                 </td>
                             </tr>
                         @else
                             @foreach ($results as $index => $item)
-                                <tr class="hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
+                                <tr
+                                    class="bg-gray-50 hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
                                     <th class="border-r border-t border-gray-200 p-2">
                                         {{ $index + 1 }}
                                     </th>
@@ -249,14 +256,49 @@
 
                                 </tr>
                             @endforeach
+
+
                         @endif
                     </tbody>
                 </table>
+                @if ($results->hasPages())
+                    <div class="flex flex-row py-3 px-8 bg-gray-300 w-full justify-between items-center">
+                        <p class="text-black text-sm leading-5">
+                            {{ $results->firstItem() ?? 0 }} sampai {{ $results->lastItem() ?? 0 }} dari
+                            {{ $results->total() }} hasil
+                        </p>
+                        <div class="flex flex-row w-fit gap-3 items-center">
+                            @if ($results->onFirstPage())
+                                <span class="text-gray-400 cursor-not-allowed">&lt; sebelum</span>
+                            @else
+                                <a href="{{ $results->previousPageUrl() }}" class="text-gray-800  hover:underline">&lt;
+                                    sebelum</a>
+                            @endif
+                            <div class="flex flex-row gap-2 ">
+                                @for ($halaman = 1; $halaman <= $results->lastPage(); $halaman++)
+                                    <a href="{{ $results->url($halaman) }}"
+                                        class="rounded {{ $halaman == $results->currentPage() ? ' text-gray-800 font-bold' : 'text-gray-500 hover:text-gray-800 font-bold' }}">
+                                        {{ $halaman }}
+                                    </a>
+                                @endfor
+                            </div>
+                            @if ($results->hasMorePages())
+                                <a href="{{ $results->nextPageUrl() }}"
+                                    class="text-gray-800 hover:underline">selanjutnya
+                                    &gt;</a>
+                            @else
+                                <span class="text-gray-500 cursor-not-allowed">selanjutnya &gt;</span>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
             </div>
 
         </div>
         <x-hasil-seleksi-confirm-modal />
 
     </div>
+
 
 </x-app-layout>

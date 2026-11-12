@@ -1,5 +1,5 @@
 <x-app-layout title="Pendaftaran Pilihan">
-    <div class="flexflex-1 flex-col" x-data="{
+    <div class="flex flex-1 flex-col" x-data="{
         showConfirmModal: false,
     }">
         <div class="flex flex-col py-6 px-8 border border-b-black">
@@ -138,7 +138,7 @@
                             @else
                                 @foreach ($siswaSudahMemilih as $index => $item)
                                     <tr
-                                        class="hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
+                                        class="bg-gray-50 hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
                                         <th class="border-r border-t border-gray-200 p-2">
                                             {{ $index + 1 }}
                                         </th>

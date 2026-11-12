@@ -43,22 +43,23 @@ class AdminHasilPenjurusanController extends Controller
     {
         $this->ensureAdmin();
 
-        $periodeId = $request->input('periode_id');
+        // $periodeId = $request->input('periode_id');
+        $periodeId = request()->query('periode_id') ?? request()->input('periode_id');
 
         $isFinal = PeriodePendaftaran::where('id', $periodeId)->value('is_hasil_final');
         $isPublished = PeriodePendaftaran::where('id', $periodeId)->value('status_pengumuman') === 'AKTIF';
+        $AllKelas = PaketMenuPilihan::select('id', 'nama_menu')->where('is_active', true)->where('periode_id', $periodeId)->get();
 
         $validated = $request->validate([
-            'periode_id' => 'required|uuid|exists:periode_pendaftaran,id',
             'search' => 'nullable|string|max:50',
             'per_page' => 'nullable|integer|min:1|max:100',
             'paket_menu_pilihan_id' => 'nullable|uuid|exists:paket_menu_pilihan,id',
         ]);
 
         $query = HasilSeleksi::with(['siswa', 'paketMenuPilihan', 'pengubah'])
-            ->whereHas('siswa', function ($q) use ($validated) {
-                $q->whereHas('pendaftaranPilihan', function ($pq) use ($validated) {
-                    $pq->where('periode_pendaftaran_id', $validated['periode_id']);
+            ->whereHas('siswa', function ($q) use ($periodeId) {
+                $q->whereHas('pendaftaranPilihan', function ($pq) use ($periodeId) {
+                    $pq->where('periode_pendaftaran_id', $periodeId);
                 });
             });
 
@@ -107,7 +108,7 @@ class AdminHasilPenjurusanController extends Controller
             ]);
         }
 
-        return view('auth.hasil-kelas.index', compact('results', 'summary', 'isFinal', 'isPublished'));
+        return view('auth.hasil-kelas.index', compact('results', 'summary', 'isFinal', 'isPublished', 'AllKelas'));
     }
 
     /**
@@ -182,7 +183,7 @@ class AdminHasilPenjurusanController extends Controller
             ]);
         }
 
-        return view('admin-hasil-penjurusan.show-siswa', compact('hasil'));
+        return view('auth.hasil-kelas.edit-hasil', compact('hasil'));
     }
 
     /**
