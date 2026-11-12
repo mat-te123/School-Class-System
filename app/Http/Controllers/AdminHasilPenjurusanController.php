@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\HasilSeleksi;
+use App\Models\DetailPendaftaranPilihan;
 use App\Models\PaketMenuPilihan;
 use App\Models\PendaftaranPilihan;
 use App\Models\PeriodePendaftaran;
@@ -162,7 +163,21 @@ class AdminHasilPenjurusanController extends Controller
     {
         $this->ensureAdmin();
 
-        $hasil = HasilSeleksi::with(['siswa', 'paketMenuPilihan.kriteriaBobots.mataPelajaran', 'pengubah'])
+
+        $hasil = HasilSeleksi::with([
+            'siswa.pendaftaranPilihan' => fn ($query) => $query
+                ->with([
+                    'periodePendaftaran:id,nama_periode,tahun_ajaran,gelombang',
+                    'detailPendaftaran.paketMenuPilihan:id,nama_menu,rumpun',
+                ])
+                ->orderByDesc('tanggal_submit'),
+            'siswa.nilaiLegerSiswa' => fn ($query) => $query
+                ->with(['details.mataPelajaran:id,kode_mapel,nama_mapel'])
+                ->orderByDesc('tahun_ajaran')
+                ->orderByDesc('semester'),
+            'paketMenuPilihan.kriteriaBobots.mataPelajaran',
+            'pengubah',
+        ])
             ->where('siswa_id', $siswaId)
             ->first();
 
@@ -199,6 +214,20 @@ class AdminHasilPenjurusanController extends Controller
         ]);
 
         $hasil = HasilSeleksi::findOrFail($hasilId);
+
+        $isPreviousChoice = DetailPendaftaranPilihan::where('paket_menu_pilihan_id', $validated['paket_menu_pilihan_id'])
+            ->whereHas('pendaftaranPilihan', fn ($query) => $query->where('siswa_id', $hasil->siswa_id))
+            ->exists();
+
+        if (! $isPreviousChoice) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kelas tujuan harus merupakan salah satu pilihan siswa.',
+                ], 422);
+            }
+            abort(422, 'Kelas tujuan harus merupakan salah satu pilihan siswa.');
+        }
 
         // Check if results are locked - get periode via the student's pendaftaran
         $pendaftaran = PendaftaranPilihan::where('siswa_id', $hasil->siswa_id)->latest('tanggal_submit')->first();
