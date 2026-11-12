@@ -243,11 +243,7 @@
                                     @if (!$isFinal)
                                         <td>
                                             <button type="button"
-                                                @click="
-                                                showupdateModal = true;
-                                                studentData = {{ json_encode($item) }};
-                                                editUrl = '{{ route('siswa.update', $item->id) }}';
-                                        "
+                                                @click="window.location.href='{{ route('admin.hasil-penjurusan.show-siswa', ['siswaId' => $item->siswa->id]) }}'"
                                                 class="p-1 bg-blue-50 hover:bg-blue-300 rounded-lg transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
                                                 <img src="{{ asset('Icon/Edit.svg') }}" alt="edit icon">
                                             </button>
