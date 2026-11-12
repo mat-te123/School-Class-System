@@ -20,15 +20,19 @@
                         final
                     </span>
                 @endif
-                @if (!$isPublished)
-                    <span class="text-sm leading-5 font-medium bg-blue-50 text-blue-600 px-2 py-1 rounded-lg ">
-                        belum dipublish
-                    </span>
-                @else
-                    <span class="text-sm leading-5 font-medium bg-green-50 text-green-600 px-2 py-1 rounded-lg">
-                        sudah dipublish
-                    </span>
+                @if ($isFinal)
+                    @if (!$isPublished)
+                        <span class="text-sm leading-5 font-medium bg-blue-50 text-blue-600 px-2 py-1 rounded-lg ">
+                            belum dipublish
+                        </span>
+                    @else
+                        <span class="text-sm leading-5 font-medium bg-green-50 text-green-600 px-2 py-1 rounded-lg">
+                            sudah dipublish
+                        </span>
+                    @endif
+
                 @endif
+
 
             </div>
 
