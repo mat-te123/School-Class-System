@@ -1,8 +1,14 @@
 <x-app-layout title="Detail Siswa">
     <div x-data="{
         showDeleteModal: false,
+        showupdateModal: false,
+        showNilaiUpdateModal: false,
         confirmationData: '',
         deleteUrl: '',
+        editUrl: '',
+        nilaieditUrl: '',
+        studentData: {},
+        nilaiData: {},
         currentMenu: 'Nilai Siswa',
         menuItem: ['Nilai Siswa', 'Pilihan Siswa']
     }" class="flex min-h-0 flex-1 flex-col">
@@ -18,8 +24,7 @@
         </div>
 
         <div class="flex flex-col pt-6 px-8 gap-4 relative">
-            <a href="{{ route('admin-siswa.index') }}"
-                class="bg-gradient-to-t from-[#273344] to-[#1a202c] text-white text-sm font-semibold py-2 px-4 rounded-lg w-fit">
+            <a href="{{ route('admin-siswa.index') }}" class="primary-button w-fit">
                 Kembali
             </a>
             {{-- Data Card --}}
@@ -34,7 +39,12 @@
                         </span>
                     </div>
                     <div class="flex flex-row gap-4">
-                        <button class="text-sm bg-gray-900 w-fit py-1 px-3 text-white rounded-lg hover:bg-gray-800">
+                        <button type="button" class="negative-primary-button"
+                            @click="
+                                showupdateModal = true;
+                                studentData = {{ Js::from($siswa) }};
+                                editUrl = '{{ route('siswa.update', $siswa->id) }}';
+                            ">
                             edit
                         </button>
                         <button
@@ -89,5 +99,7 @@
         </div>
 
         <x-delete-modal />
+        <x-update-modal-siswa :kelas-asal="$kelasAsal" />
+        <x-update-modal-nilai-siswa />
     </div>
 </x-app-layout>

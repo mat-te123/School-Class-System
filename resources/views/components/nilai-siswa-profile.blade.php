@@ -49,9 +49,9 @@
                                 <td class="p-3 font-semibold text-slate-900">
                                     <button type="button"
                                         @click="
-                                                showupdateModal = true;
-                                                studentData = {{ json_encode($item) }};
-                                                editUrl = '{{ route('siswa.update', $item->id) }}';
+                                                showNilaiUpdateModal = true;
+                                                nilaiData = {{ Js::from($item) }};
+                                                nilaieditUrl = '{{ route('nilai-siswa.update', $item->id) }}';
                                         "
                                         class="p-1 bg-blue-50 hover:bg-blue-300 rounded-lg transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
                                         <img src="{{ asset('Icon/Edit.svg') }}" alt="edit icon">
