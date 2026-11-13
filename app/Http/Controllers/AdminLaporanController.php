@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\HasilSeleksi;
 use App\Models\PaketMenuPilihan;
 use App\Models\PendaftaranPilihan;
+use App\Models\PeriodePendaftaran;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -276,29 +277,42 @@ class AdminLaporanController extends Controller
         }
 
         $data = $query->latest('tanggal_submit')->get();
+        $maxPilihan = (int) PeriodePendaftaran::whereKey($validated['periode_id'])
+            ->value('max_pilihan_siswa');
 
         if ($validated['format'] === 'pdf') {
-            return $this->renderPdfResponse('Laporan Minat Siswa', 'admin-laporan.pdf-minat', compact('data'));
+            return $this->renderPdfResponse(
+                'Laporan Minat Siswa',
+                'auth.laporan.pemantauan-kelas.pdf.admin-laporan-pdf-minat',
+                compact('data', 'maxPilihan')
+            );
         }
 
-        return $this->renderCsvResponse('laporan_minat_siswa_'.date('Ymd_His').'.csv', [
-            'NISN', 'Nama Lengkap', 'Kelas Asal', 'Pilihan 1', 'Pilihan 2', 'Pilihan 3', 'Tanggal Submit', 'Status Pendaftaran',
-        ], $data->map(function ($row) {
+        $headers = ['NISN', 'Nama Lengkap', 'Kelas Asal'];
+        for ($i = 1; $i <= $maxPilihan; $i++) {
+            $headers[] = 'Pilihan '.$i;
+        }
+        $headers = array_merge($headers, ['Tanggal Submit', 'Status Pendaftaran']);
+
+        return $this->renderCsvResponse('laporan_minat_siswa_'.date('Ymd_His').'.csv', $headers, $data->map(function ($row) use ($maxPilihan) {
             $pilihan = [];
             foreach ($row->detailPendaftaran as $d) {
                 $pilihan[$d->urutan_pilihan] = $d->paketMenuPilihan?->nama_menu;
             }
 
-            return [
+            $values = [
                 $row->siswa?->nisn,
                 $row->siswa?->nama_lengkap,
                 $row->siswa?->kelasAsalRelation?->nama_kelas,
-                $pilihan[1] ?? '-',
-                $pilihan[2] ?? '-',
-                $pilihan[3] ?? '-',
+            ];
+            for ($i = 1; $i <= $maxPilihan; $i++) {
+                $values[] = $pilihan[$i] ?? '-';
+            }
+
+            return array_merge($values, [
                 $row->tanggal_submit?->format('Y-m-d H:i:s'),
                 ucfirst($row->status),
-            ];
+            ]);
         })->toArray());
     }
 

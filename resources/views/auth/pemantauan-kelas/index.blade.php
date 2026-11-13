@@ -1,7 +1,9 @@
 <x-app-layout title="Pendaftaran Pilihan">
     <div class="flex flex-1 flex-col" x-data="{
         showConfirmModal: false,
-    }">
+        showDownloadModal: false,
+        downloadFormat: 'pdf',
+    }" @keydown.escape.window="showDownloadModal = false">
 
         <div class="flex flex-col py-6 px-8 border border-b-black">
             <h1 class="text-3xl leading-9 font-semibold">
@@ -82,9 +84,51 @@
                         Daftar Kelas yang dipilih oleh siswa pada formulir pendaftaran
                     </span>
                 </div>
-                <button type="button" @click="showConfirmModal = true" class="primary-button w-fit whitespace-nowrap">
-                    Proses Data
-                </button>
+                <div class="flex gap-2">
+                    <button type="button" @click="showDownloadModal = true"
+                        class="negative-primary-button w-fit whitespace-nowrap">
+                        Download data
+                    </button>
+                    <button type="button" @click="showConfirmModal = true"
+                        class="primary-button w-fit whitespace-nowrap">
+                        Proses Data
+                    </button>
+                </div>
+            </div>
+
+            <div x-show="showDownloadModal" x-cloak x-transition.opacity
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+                @click.self="showDownloadModal = false">
+                <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl" @click.stop>
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-semibold">Download data minat siswa</h2>
+                            <p class="mt-1 text-sm text-gray-600">Pilih format file yang ingin diunduh.</p>
+                        </div>
+                        <button type="button" class="text-2xl leading-none text-gray-500"
+                            aria-label="Tutup modal" @click="showDownloadModal = false">&times;</button>
+                    </div>
+
+                    <label for="minat-download-format"
+                        class="mt-5 block text-sm font-medium text-gray-700">Format</label>
+                    <select id="minat-download-format" x-model="downloadFormat"
+                        class="select-primary mt-2 w-full text-sm">
+                        <option value="pdf">PDF</option>
+                        <option value="csv">CSV</option>
+                    </select>
+
+                    <div class="mt-6 flex justify-end gap-2">
+                        <button type="button"
+                            class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            @click="showDownloadModal = false">Batal</button>
+                        <a x-show="downloadFormat === 'pdf'"
+                            href="{{ route('admin.laporan.export.minat-siswa', ['periode_id' => request('periode_id'), 'paket_id' => request('kelas_pilihan'), 'format' => 'pdf']) }}"
+                            class="primary-button" @click="showDownloadModal = false">Download</a>
+                        <a x-show="downloadFormat === 'csv'"
+                            href="{{ route('admin.laporan.export.minat-siswa', ['periode_id' => request('periode_id'), 'paket_id' => request('kelas_pilihan'), 'format' => 'csv']) }}"
+                            class="primary-button" @click="showDownloadModal = false">Download</a>
+                    </div>
+                </div>
             </div>
 
             <form method="GET" action="{{ route('admin.pemantauan-minat.index') }}"
