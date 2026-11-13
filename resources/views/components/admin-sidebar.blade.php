@@ -29,6 +29,13 @@
                     'icon' => asset('Icon/kelas_page_icon.svg'),
                     'text' => 'Kelas',
                 ],
+                'Laporan' => [
+                    'route' => route('admin.laporan.hasil-penjurusan', [
+                        'periode_id' => '92902ed2-bb90-4481-9905-c3aa3a26d3b0',
+                    ]),
+                    'icon' => asset('Icon/placeholder.svg'),
+                    'text' => 'Laporan',
+                ],
             ];
 
             $itemsSiswa = [

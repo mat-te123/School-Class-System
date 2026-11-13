@@ -1,44 +1,87 @@
 <x-app-layout title="Hasil Seleksi">
     <div x-data="{
         showConfirmModal: false,
+        showDownloadModal: false,
+        downloadFormat: 'pdf',
         ModalUrl: '',
         mainTitle: '',
         subTitle: '',
-    }" class="flex flex-1 flex-col">
+    }" @keydown.escape.window="showDownloadModal = false" class="flex flex-1 flex-col">
 
-        <div class="flex flex-col py-6 px-8 border border-b-black">
-            <div class="flex flex-row items-center gap-2">
-                <h1 class="mainTitle">
-                    Hasil Seleksi
-                </h1>
-                @if (!$isFinal)
-                    <span class="text-sm leading-5 font-medium bg-amber-50 text-amber-600 px-2 py-1 rounded-lg">
-                        draft / semetara
-                    </span>
-                @else
-                    <span class="text-sm leading-5 font-medium bg-purple-50 text-purple-600 px-4 py-1 rounded-lg ">
-                        final
-                    </span>
-                @endif
-                @if ($isFinal)
-                    @if (!$isPublished)
-                        <span class="text-sm leading-5 font-medium bg-blue-50 text-blue-600 px-2 py-1 rounded-lg ">
-                            belum dipublish
+        <div class="flex flex-row justify-between items-end py-6 px-8 border border-b-black">
+            <div class="flex flex-col">
+                <div class="flex flex-row items-center gap-2">
+                    <h1 class="mainTitle">
+                        Hasil Seleksi
+                    </h1>
+                    @if (!$isFinal)
+                        <span class="text-sm leading-5 font-medium bg-amber-50 text-amber-600 px-2 py-1 rounded-lg">
+                            draft / semetara
                         </span>
                     @else
-                        <span class="text-sm leading-5 font-medium bg-green-50 text-green-600 px-2 py-1 rounded-lg">
-                            sudah dipublish
+                        <span class="text-sm leading-5 font-medium bg-purple-50 text-purple-600 px-4 py-1 rounded-lg ">
+                            final
                         </span>
                     @endif
+                    @if ($isFinal)
+                        @if (!$isPublished)
+                            <span class="text-sm leading-5 font-medium bg-blue-50 text-blue-600 px-2 py-1 rounded-lg ">
+                                belum dipublish
+                            </span>
+                        @else
+                            <span class="text-sm leading-5 font-medium bg-green-50 text-green-600 px-2 py-1 rounded-lg">
+                                sudah dipublish
+                            </span>
+                        @endif
 
-                @endif
+                    @endif
 
 
+                </div>
+
+                <span class="subTitle">
+                    Kelola dan tinjau hasil seleksi siswa sebelum difinalisasi
+                </span>
             </div>
+            @if ($isFinal && $isPublished)
+                <button class="negative-primary-button w-fit whitespace-nowrap h-fit"
+                    @click="showDownloadModal = true;">
+                    Download data hasil
+                </button>
+            @endif
+            <div x-show="showDownloadModal" x-cloak x-transition.opacity
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+                @click.self="showDownloadModal = false">
+                <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl" @click.stop>
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-semibold">Download data hasil</h2>
+                            <p class="mt-1 text-sm text-gray-600">Pilih format file yang ingin diunduh.</p>
+                        </div>
+                        <button type="button" class="text-2xl leading-none text-gray-500"
+                            aria-label="Tutup modal" @click="showDownloadModal = false">&times;</button>
+                    </div>
 
-            <span class="subTitle">
-                Kelola dan tinjau hasil seleksi siswa sebelum difinalisasi
-            </span>
+                    <label for="download-format" class="mt-5 block text-sm font-medium text-gray-700">Format</label>
+                    <select id="download-format" x-model="downloadFormat"
+                        class="select-primary mt-2 w-full text-sm">
+                        <option value="pdf">PDF</option>
+                        <option value="csv">CSV</option>
+                    </select>
+
+                    <div class="mt-6 flex justify-end gap-2">
+                        <button type="button"
+                            class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            @click="showDownloadModal = false">Batal</button>
+                        <a x-show="downloadFormat === 'pdf'"
+                            href="{{ route('admin.laporan.export.hasil-penjurusan', ['periode_id' => request('periode_id'), 'format' => 'pdf']) }}"
+                            class="primary-button" @click="showDownloadModal = false">Download</a>
+                        <a x-show="downloadFormat === 'csv'"
+                            href="{{ route('admin.laporan.export.hasil-penjurusan', ['periode_id' => request('periode_id'), 'format' => 'csv']) }}"
+                            class="primary-button" @click="showDownloadModal = false">Download</a>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="flex min-h-0 flex-1 flex-col gap-4 px-8 py-6">
@@ -140,15 +183,17 @@
                     </button>
                 @else
                     <div class="flex flex-row gap-2">
-                        <button type="button"
-                            @click="
+                        @if (!$isPublished)
+                            <button type="button"
+                                @click="
                             showConfirmModal = true; 
                             ModalUrl='{{ route('admin.hasil-penjurusan.unlock') }}'
                         ; mainTitle='Buka Finalisasi Hasil Seleksi Siswa';
                         subTitle='Apakah anda yakin ingin membuka finalisasi hasil seleksi siswa untuk periode ini? Setelah dibuka, data dapat diubah kembali.'"
-                            class="negative-primary-button whitespace-nowrap w-fit">
-                            Buka Finalisasi
-                        </button>
+                                class="negative-primary-button whitespace-nowrap w-fit">
+                                Buka Finalisasi
+                            </button>
+                        @endif
                         @if ($isPublished)
                             <button type="button"
                                 @click="showConfirmModal = true; ModalUrl='{{ route('admin.hasil-penjurusan.unpublish') }}';
@@ -169,15 +214,13 @@
 
                     </div>
                 @endif
-
             </div>
 
             <form method="GET" action="{{ route('admin.hasil-penjurusan.index') }}"
                 class="flex flex-row  p-3 justify-between bg-gray-200 border border-gray-300 rounded-lg w-full gap-2">
                 <input type="hidden" name="periode_id" value="{{ request()->input('periode_id') }}">
                 <input type="text" placeholder="Cari nama, NISN, atau NIS..." name="search"
-                    value="{{ request()->input('search') }}"
-                    oninput="this.value = this.value.toLowerCase()"
+                    value="{{ request()->input('search') }}" oninput="this.value = this.value.toLowerCase()"
                     class="text-sm px-4 py-2 rounded-lg border border-gray-400 w-full">
 
                 <select name="paket_menu_pilihan_id" onchange="this.form.submit()" class="select-primary text-sm">
@@ -217,8 +260,7 @@
                             </tr>
                         @else
                             @foreach ($results as $index => $item)
-                                <tr
-                                    class="bg-gray-50 hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
+                                <tr class="bg-gray-50 hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
                                     <th class="border-r border-t border-gray-200 p-2">
                                         {{ $index + 1 }}
                                     </th>
@@ -272,7 +314,8 @@
                             @if ($results->onFirstPage())
                                 <span class="text-gray-400 cursor-not-allowed">&lt; sebelum</span>
                             @else
-                                <a href="{{ $results->previousPageUrl() }}" class="text-gray-800  hover:underline">&lt;
+                                <a href="{{ $results->previousPageUrl() }}"
+                                    class="text-gray-800  hover:underline">&lt;
                                     sebelum</a>
                             @endif
                             <div class="flex flex-row gap-2 ">
