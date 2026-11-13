@@ -66,7 +66,7 @@ class AdminLaporanController extends Controller
             ]);
         }
 
-        return view('admin-laporan.hasil-penjurusan', compact('results'));
+        return view('auth.laporan.hasil-penjurusan.index', compact('results'));
     }
 
     /**
@@ -100,7 +100,6 @@ class AdminLaporanController extends Controller
                 $q->where('kelas_asal_id', $validated['kelas_asal_id']);
             });
         }
-
 
         if (! empty($validated['search'])) {
             $search = trim($validated['search']);
@@ -215,10 +214,18 @@ class AdminLaporanController extends Controller
             $query->where('mekanisme', $validated['mekanisme']);
         }
 
+        if (! empty($validated['search'])) {
+            $search = mb_strtolower(trim($validated['search']));
+            $query->whereHas('siswa', function ($q) use ($search) {
+                $q->whereRaw('LOWER(nama_lengkap) like ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(nisn) like ?', ["%{$search}%"]);
+            });
+        }
+
         $data = $query->orderByDesc('skor_penempatan')->get();
 
         if ($validated['format'] === 'pdf') {
-            return $this->renderPdfResponse('Laporan Hasil Penjurusan', 'admin-laporan.pdf-hasil', compact('data'));
+            return $this->renderPdfResponse('Laporan Hasil Penjurusan', 'auth.laporan.hasil-penjurusan.pdf.admin-laporan-pdf-hasil', compact('data'));
         }
 
         return $this->renderCsvResponse('laporan_hasil_penjurusan_'.date('Ymd_His').'.csv', [
@@ -267,7 +274,6 @@ class AdminLaporanController extends Controller
                 $q->where('kelas_asal_id', $validated['kelas_asal_id']);
             });
         }
-
 
         $data = $query->latest('tanggal_submit')->get();
 
