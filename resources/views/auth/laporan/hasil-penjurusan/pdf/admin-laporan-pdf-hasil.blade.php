@@ -5,16 +5,58 @@
     <meta charset="UTF-8">
     <title>{{ $title }}</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; }
-        h1 { font-size: 18px; margin-bottom: 16px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #444; padding: 6px; text-align: left; }
-        th { background: #e5e7eb; }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid #444;
+            padding: 6px;
+            text-align: left;
+        }
+
+        th {
+            background: #e5e7eb;
+        }
+
+        .header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            flex-direction: row;
+            align-items: center;
+
+            .print-button {
+                height: fit-content;
+            }
+
+        }
+
+        @media print {
+            .print-button {
+                display: none;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <h1>{{ $title }}</h1>
+    <div class="header-wrapper">
+        <h1>{{ $title }}</h1>
+        <button class="print-button" type="button" onclick="window.print()">print pages</button>
+    </div>
+
     <table>
         <thead>
             <tr>
@@ -47,6 +89,7 @@
             @endforelse
         </tbody>
     </table>
+
 </body>
 
 </html>
