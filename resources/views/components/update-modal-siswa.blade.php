@@ -46,8 +46,7 @@
         </div>
         @php
             $currentyear = (int) date('Y');
-            $startyear = $currentyear - 5;
-            $endyear = $currentyear + 5;
+            $endyear = $currentyear + 2;
         @endphp
         <div class="flex flex-col gap-1">
             <label for="fangkatan" class="text-sm leading-4 font-semibold">Angkatan</label>
@@ -55,8 +54,8 @@
                 class="border border-black rounded-lg py-1 px-4 text-base">
                 <option value="">- Pilih angkatan -</option>
 
-                @for ($year = $endyear; $year >= $startyear; $year--)
-                    <option value="{{ $year }}/{{ $year + 1 }}">{{ $year }}/{{ $year + 1 }}
+                @for ($year = $currentyear; $year <= $endyear; $year++)
+                    <option value="{{ $year }}">{{ $year }}/{{ $year + 1 }}
                     </option>
                 @endfor
             </select>

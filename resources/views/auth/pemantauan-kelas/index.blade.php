@@ -2,6 +2,7 @@
     <div class="flex flex-1 flex-col" x-data="{
         showConfirmModal: false,
     }">
+
         <div class="flex flex-col py-6 px-8 border border-b-black">
             <h1 class="text-3xl leading-9 font-semibold">
                 Daftar Pilihan Siswa
@@ -10,7 +11,13 @@
                 Kelola daftar pilihan siswa yang telah mengisi formulir pendaftaran
             </span>
         </div>
+
         <div class="flex flex-1 flex-col gap-4 px-8 py-6">
+            <a href={{ route('admin-periode-penjurusan.index') }} class="primary-button w-fit">
+                kembali
+
+
+            </a>
             <div class="flex flex-row w-full justify-start gap-8">
                 @php
                     $items = [
@@ -29,7 +36,8 @@
                     ];
                 @endphp
                 @foreach ($items as $key => $value)
-                    <div class="flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
+                    <div
+                        class="bg-gray-50 shadow-2xl shadow-black/10 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
                         <div class="flex flex-col border-l border-green-600 px-4">
                             <span class="text-lg font-semibold">{{ $value['title'] }}</span>
                             <span class="text-base font-normal">{{ $value['count'] }} siswa</span>
@@ -55,7 +63,8 @@
                     @endphp
 
 
-                    <div class="flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
+                    <div
+                        class="shadow-2xl shadow-black/10 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
                         <div class="flex flex-col border-l border-green-600 px-4">
                             <span class="text-lg font-semibold">{{ $paket->nama_menu }}</span>
                             <span class="text-base font-normal">{{ $total }} siswa</span>
@@ -73,8 +82,7 @@
                         Daftar Kelas yang dipilih oleh siswa pada formulir pendaftaran
                     </span>
                 </div>
-                <button type="button" @click="showConfirmModal = true"
-                    class="bg-black text-sm text-white whitespace-nowrap h-fit px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-100 ease-in-out active:shadow-lg">
+                <button type="button" @click="showConfirmModal = true" class="primary-button w-fit whitespace-nowrap">
                     Proses Data
                 </button>
             </div>
@@ -85,7 +93,7 @@
                     tabindex="-1" aria-hidden="true"></button>
 
                 <input type="text" name="search" value="{{ request('search') }}"
-                    placeholder="Cari nama, NISN, atau NIS..."
+                    placeholder="Cari nama, NISN, atau NIS..." oninput="this.value = this.value.toLowerCase()"
                     class="px-4 rounded-lg border border-gray-400 w-full text-sm">
 
                 @foreach (['sudah' => 'Sudah Mengisi', 'belum' => 'Belum Mengisi'] as $value => $label)
@@ -116,9 +124,9 @@
                             <th>#</th>
                             <th>Nama Lengkap</th>
                             @if ($status == 'sudah')
-                                <th>Pilihan Kelas 1</th>
-                                <th>Pilihan Kelas 2</th>
-                                <th>Pilihan Kelas 3</th>
+                                @for ($i = 1; $i <= $currentPeriodeSelectionValue; $i++)
+                                    <th> Pilihan {{ $i }} </th>
+                                @endfor
                             @else
                                 <th>NISN</th>
                                 <th>NIS</th>
@@ -137,8 +145,7 @@
                                 </tr>
                             @else
                                 @foreach ($siswaSudahMemilih as $index => $item)
-                                    <tr
-                                        class="bg-gray-50 hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
+                                    <tr class="bg-gray-50 hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
                                         <th class="border-r border-t border-gray-200 p-2">
                                             {{ $index + 1 }}
                                         </th>
@@ -152,15 +159,11 @@
                                                 </a>
                                             </div>
                                         </td>
-                                        <td>
-                                            {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 1)?->paketMenuPilihan?->nama_menu ?? '—' }}
-                                        </td>
-                                        <td>
-                                            {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 2)?->paketMenuPilihan?->nama_menu ?? '—' }}
-                                        </td>
-                                        <td>
-                                            {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 3)?->paketMenuPilihan?->nama_menu ?? '—' }}
-                                        </td>
+                                        @for ($i = 1; $i <= $currentPeriodeSelectionValue; $i++)
+                                            <td>
+                                                {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', $i)?->paketMenuPilihan?->nama_menu ?? '—' }}
+                                            </td>
+                                        @endfor
                                     </tr>
                                 @endforeach
                             @endif
@@ -176,7 +179,7 @@
                                 </tr>
                             @endif
                             @foreach ($siswaBelumMemilih as $index => $item)
-                                <tr class="hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
+                                <tr class="hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
                                     <th class="border-r border-t border-gray-200 p-2">
                                         {{ $index + 1 }}
                                     </th>
@@ -248,13 +251,16 @@
         <div x-show="showConfirmModal"
             class="flex flex-col fixed top-0 left-0 w-full h-full bg-black/50 z-50 justify-center items-center"
             style="display: none;">
-            <div class="flex flex-col bg-white rounded-lg p-6 gap-4 w-100" @click.away="showConfirmModal = false">
-                <h2 class="text-lg font-semibold">
-                    Konfirmasi Proses Data
-                </h2>
-                <p class="text-sm text-gray-500">
-                    Apakah Anda yakin ingin memproses data pilihan siswa? Tindakan ini tidak dapat dibatalkan.
-                </p>
+            <div class="flex flex-col bg-white rounded-lg p-6 gap-4 w-[500px]" @click.away="showConfirmModal = false">
+                <div class="flex flex-col gap-1">
+                    <h2 class="mainTitle">
+                        Konfirmasi Proses Data
+                    </h2>
+                    <p class="subTitle">
+                        Data pilihan siswa akan diproses menjadi hasil penempatan. Tindakan ini tidak dapat dibatalkan.
+                    </p>
+                </div>
+
                 <div class="flex flex-row justify-end gap-2">
                     <button type="button" @click="showConfirmModal = false"
                         class="text-sm px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600">

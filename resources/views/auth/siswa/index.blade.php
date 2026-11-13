@@ -38,9 +38,10 @@
             </div>
 
             <form method="GET" action="{{ route('admin-siswa.index') }}"
-                class="flex flex-row bg-gray-100 p-3 w-full border border-gray-400 rounded-lg gap-6 items-center">
+                class="flex flex-row bg-gray-100 p-3 w-full border border-gray-400 rounded-lg gap-3 items-center">
                 <input type="text" name="search" value="{{ request('search') }}"
                     placeholder="Cari nama, NISN, atau NIS..."
+                    oninput="this.value = this.value.toLowerCase()"
                     class="w-full py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg text-sm">
                 <select name="kelas_id" onchange="this.form.submit()" class="select-primary text-sm">
                     <option value="">Semua Kelas</option>
@@ -59,8 +60,9 @@
                 <select name="angkatan" onchange="this.form.submit()" class="select-primary text-sm">
                     <option value="">Semua Angkatan</option>
                     @foreach ($tahunAjaranList as $tahun)
-                        <option value="{{ $tahun }}"
-                            {{ request('angkatan') == $tahun || request('tahun_ajaran') == $tahun ? 'selected' : '' }}>
+                        @php($angkatan = preg_match('/^\d{4}/', $tahun, $matches) ? $matches[0] : $tahun)
+                        <option value="{{ $angkatan }}"
+                            {{ request('angkatan') == $angkatan || request('tahun_ajaran') == $angkatan ? 'selected' : '' }}>
                             {{ $tahun }}
                         </option>
                     @endforeach
@@ -72,7 +74,7 @@
                     addExcelUrl='{{ route('leger.import') }}'; ">
                     Tambahkan Data
                 </button>
-            </form> 
+            </form>
 
             <div class="rounded-xl border-gray-200 border overflow-hidden">
                 <table class="w-full">
@@ -92,8 +94,8 @@
                     <tbody
                         class="[&_td]:p-3 border-gray-200 [&_td]:border-t [&_td]:text-base [&_td]:leading-6 [&_td]:font-normal [&_td]:text-left">
                         @forelse ($siswa as $index=> $item)
-                            <tr class="bg-gray-50 hover:bg-gray-200 hover:cursor-pointer group">
-                                <th class="border-r border-t border-gray-200">
+                            <tr class="bg-gray-50 hover:bg-gray-200 group">
+                                <th class="w-12 border-r border-t border-gray-200 text-center tabular-nums">
                                     {{ $index + 1 }}
                                 </th>
                                 <td>
@@ -113,7 +115,7 @@
                                 <td>{{ $item->angkatan }}</td>
                                 <td>
                                     <div class="flex flex-row gap-5 items-center">
-                                        {{-- Edit Button --}}
+
                                         <button type="button"
                                             @click="
                                             showupdateModal = true;

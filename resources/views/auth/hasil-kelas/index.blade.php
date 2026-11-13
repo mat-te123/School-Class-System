@@ -177,6 +177,7 @@
                 <input type="hidden" name="periode_id" value="{{ request()->input('periode_id') }}">
                 <input type="text" placeholder="Cari nama, NISN, atau NIS..." name="search"
                     value="{{ request()->input('search') }}"
+                    oninput="this.value = this.value.toLowerCase()"
                     class="text-sm px-4 py-2 rounded-lg border border-gray-400 w-full">
 
                 <select name="paket_menu_pilihan_id" onchange="this.form.submit()" class="select-primary text-sm">
@@ -217,7 +218,7 @@
                         @else
                             @foreach ($results as $index => $item)
                                 <tr
-                                    class="bg-gray-50 hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
+                                    class="bg-gray-50 hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
                                     <th class="border-r border-t border-gray-200 p-2">
                                         {{ $index + 1 }}
                                     </th>

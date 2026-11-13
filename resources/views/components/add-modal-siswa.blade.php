@@ -62,7 +62,7 @@
             <label for="fangkatan" class="text-sm leading-4 font-semibold">Tahun Ajaran</label>
             <select name="angkatan" id="fangkatan" class="border border-black rounded-lg py-1 px-4 text-base" required>
                 @for ($year = $currentyear; $year >= $currentyear - 2; $year--)
-                    <option @selected($year === $currentyear) value="{{ $year }}/{{ $year + 1 }}">
+                    <option @selected($year === $currentyear) value="{{ $year }}">
                         {{ $year }}/{{ $year + 1 }}
                     </option>
                 @endfor
@@ -104,7 +104,7 @@
                 <select name="angkatan" id="fangkatan" class="border border-black rounded-lg py-1 px-4 text-base"
                     required>
                     @for ($year = $currentyear; $year >= $currentyear - 2; $year--)
-                        <option @selected($year === $currentyear) value="{{ $year }}/{{ $year + 1 }}">
+                        <option @selected($year === $currentyear) value="{{ $year }}">
                             {{ $year }}/{{ $year + 1 }}
                         </option>
                     @endfor

@@ -73,7 +73,7 @@
         </div>
 
 
-        <div class="flex flex-row justify-end mt-4">
+        <div class="flex flex-row justify-end mt-4 gap-4">
             <button type="button" class="text-red-600 py-1 px-2 text-sm" @click="showupdateModal = false">
                 Batal
             </button>
