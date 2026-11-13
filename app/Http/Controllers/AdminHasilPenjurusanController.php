@@ -69,10 +69,10 @@ class AdminHasilPenjurusanController extends Controller
         }
 
         if (! empty($validated['search'])) {
-            $search = trim($validated['search']);
+            $search = mb_strtolower(trim($validated['search']));
             $query->whereHas('siswa', function ($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
-                    ->orWhere('nisn', 'like', "%{$search}%");
+                $q->whereRaw('LOWER(nama_lengkap) like ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(nisn) like ?', ["%{$search}%"]);
             });
         }
 

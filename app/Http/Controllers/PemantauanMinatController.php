@@ -32,14 +32,14 @@ class PemantauanMinatController extends Controller
             'kelas_pilihan' => 'nullable|uuid|exists:paket_menu_pilihan,id',
         ]);
 
-        $search = $validate['search'] ?? null;
+        $search = isset($validate['search']) ? mb_strtolower(trim($validate['search'])) : null;
         $status = $validate['status'] ?? 'sudah';
         $kelas = $validate['kelas_pilihan'] ?? null;
 
         $cari = fn ($q) => $q->when($search, fn ($q, $s) => $q->where(fn ($q) => $q
-            ->where('nama_lengkap', 'like', "%{$s}%")
-            ->orWhere('nisn', 'like', "%{$s}%")
-            ->orWhere('nis', 'like', "%{$s}%")));
+            ->whereRaw('LOWER(nama_lengkap) like ?', ["%{$s}%"])
+            ->orWhereRaw('LOWER(nisn) like ?', ["%{$s}%"])
+            ->orWhereRaw('LOWER(nis) like ?', ["%{$s}%"])));
 
         $periodeId = $request->periode_id;
 
@@ -61,7 +61,7 @@ class PemantauanMinatController extends Controller
             ->tap($cari)
             ->whereHas('pendaftaranPilihan', function ($q) use ($periodeId, $kelas) {
                 $q->where('periode_pendaftaran_id', $periodeId)
-                ->when($kelas, fn ($q, $k) => $q->whereHas('detailPendaftaran', fn ($q) => $q->where('paket_menu_pilihan_id', $k)));
+                    ->when($kelas, fn ($q, $k) => $q->whereHas('detailPendaftaran', fn ($q) => $q->where('paket_menu_pilihan_id', $k)));
             })
             ->with(['pendaftaranPilihan' => function ($q) use ($periodeId) {
                 $q->where('periode_pendaftaran_id', $periodeId)
@@ -103,8 +103,9 @@ class PemantauanMinatController extends Controller
         })->orderBy('nama_menu', 'asc')->get(['id', 'nama_menu']);
 
         // Data periode untuk dropdown filter periode
-        $periodes = PeriodePendaftaran::select('id', 'tahun_ajaran')->orderBy('tahun_ajaran', 'desc')->get();
-        
+        // $periodes = PeriodePendaftaran::select('id', 'tahun_ajaran')->orderBy('tahun_ajaran', 'desc')->get();
+        $currentPeriodeSelectionValue = PeriodePendaftaran::where('id', $periodeId)->value('max_pilihan_siswa');
+
         $summary = [
             'total_siswa' => $totalSudah + $totalBelum,
             'sudah_memilih' => $totalSudah,
@@ -119,7 +120,8 @@ class PemantauanMinatController extends Controller
                 'siswa_sudah_memilih' => $siswaSudahMemilih,
                 'siswa_belum_memilih' => $siswaBelumMemilih,
                 'paket_menu' => $paketMenu,
-                'periodes' => $periodes,
+                // 'periodes' => $periodes,
+                'currentPeriodeSelectionValue' => $currentPeriodeSelectionValue,
             ]);
         }
 
@@ -128,8 +130,9 @@ class PemantauanMinatController extends Controller
             'siswaSudahMemilih',
             'siswaBelumMemilih',
             'paketMenu',
-            'periodes',
-            'status'
+            // 'periodes',
+            'status',
+            'currentPeriodeSelectionValue'
         ));
     }
 }

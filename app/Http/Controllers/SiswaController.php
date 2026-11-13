@@ -25,11 +25,11 @@ class SiswaController extends Controller
         $query = Siswa::with('kelasAsalRelation');
 
         if (! empty($validated['search'])) {
-            $search = trim($validated['search']);
+            $search = mb_strtolower(trim($validated['search']));
             $query->where(function ($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
-                    ->orWhere('nisn', 'like', "%{$search}%")
-                    ->orWhere('nis', 'like', "%{$search}%");
+                $q->whereRaw('LOWER(nama_lengkap) like ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(nisn) like ?', ["%{$search}%"])
+                    ->orWhereRaw('LOWER(nis) like ?', ["%{$search}%"]);
             });
         }
 
@@ -43,6 +43,9 @@ class SiswaController extends Controller
         }
 
         $angkatan = $validated['angkatan'] ?? $validated['tahun_ajaran'] ?? null;
+        if ($angkatan && preg_match('/^\d{4}/', trim($angkatan), $matches)) {
+            $angkatan = $matches[0];
+        }
         if (! empty($angkatan)) {
             $query->where('angkatan', $angkatan);
         }
@@ -108,7 +111,9 @@ class SiswaController extends Controller
             ]);
         }
 
-        return view('auth.siswa.detail', compact('siswa'));
+        $kelasAsal = KelasAsal::orderBy('nama_kelas')->get();
+
+        return view('auth.siswa.detail', compact('siswa', 'kelasAsal'));
     }
 
     public function update(Request $request, string $id)
