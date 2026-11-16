@@ -1,7 +1,7 @@
 <div x-show="showConfirmModal" x-cloak
     class="flex flex-col fixed top-0 left-0 w-full h-full bg-black/50 z-50 justify-center items-center"
     style="display: none;">
-    <div class="flex flex-col bg-white rounded-lg p-6 gap-4 w-[500px]" @click.away="showConfirmModal = false">
+    <div class="flex flex-col bg-white rounded-lg p-6 gap-4 w-[36rem]" @click.away="showConfirmModal = false">
         <div class="flex flex-col gap-2">
             <h2 class="mainTitle" x-text="mainTitle">
             </h2>

@@ -105,8 +105,8 @@
                             <h2 class="text-lg font-semibold">Download data minat siswa</h2>
                             <p class="mt-1 text-sm text-gray-600">Pilih format file yang ingin diunduh.</p>
                         </div>
-                        <button type="button" class="text-2xl leading-none text-gray-500"
-                            aria-label="Tutup modal" @click="showDownloadModal = false">&times;</button>
+                        <button type="button" class="text-2xl leading-none text-gray-500" aria-label="Tutup modal"
+                            @click="showDownloadModal = false">&times;</button>
                     </div>
 
                     <label for="minat-download-format"
@@ -279,7 +279,8 @@
                             </div>
 
                             @if ($data->hasMorePages())
-                                <a href="{{ $data->nextPageUrl() }}" class="text-gray-800 hover:underline">selanjutnya
+                                <a href="{{ $data->nextPageUrl() }}"
+                                    class="text-gray-800 hover:underline">selanjutnya
                                     &gt;</a>
                             @else
                                 <span class="text-gray-500 cursor-not-allowed">selanjutnya &gt;</span>
@@ -295,7 +296,7 @@
         <div x-show="showConfirmModal"
             class="flex flex-col fixed top-0 left-0 w-full h-full bg-black/50 z-50 justify-center items-center"
             style="display: none;">
-            <div class="flex flex-col bg-white rounded-lg p-6 gap-4 w-[500px]" @click.away="showConfirmModal = false">
+            <div class="flex flex-col bg-white rounded-lg p-6 gap-4 w-[36rem]" @click.away="showConfirmModal = false">
                 <div class="flex flex-col gap-1">
                     <h2 class="mainTitle">
                         Konfirmasi Proses Data
