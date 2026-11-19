@@ -58,13 +58,12 @@
                             <h2 class="text-lg font-semibold">Download data hasil</h2>
                             <p class="mt-1 text-sm text-gray-600">Pilih format file yang ingin diunduh.</p>
                         </div>
-                        <button type="button" class="text-2xl leading-none text-gray-500"
-                            aria-label="Tutup modal" @click="showDownloadModal = false">&times;</button>
+                        <button type="button" class="text-2xl leading-none text-gray-500" aria-label="Tutup modal"
+                            @click="showDownloadModal = false">&times;</button>
                     </div>
 
                     <label for="download-format" class="mt-5 block text-sm font-medium text-gray-700">Format</label>
-                    <select id="download-format" x-model="downloadFormat"
-                        class="select-primary mt-2 w-full text-sm">
+                    <select id="download-format" x-model="downloadFormat" class="select-primary mt-2 w-full text-sm">
                         <option value="pdf">PDF</option>
                         <option value="csv">CSV</option>
                     </select>
@@ -85,7 +84,7 @@
         </div>
 
         <div class="flex min-h-0 flex-1 flex-col gap-4 px-8 py-6">
-            <a href="{{ url()->previous() }}" class="back-button">
+            <a href="{{ route('admin-periode-penjurusan.index') }}" class="back-button">
                 Kembali
             </a>
             @if ($summary['detail_kelas']->isEmpty())
