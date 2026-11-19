@@ -32,7 +32,6 @@ class SiswaDashboardController extends Controller
         // 1. Ambil data profil lengkap dan relasi kelas asal
         $siswa->load('kelasAsalRelation');
 
-
         // 2. Ambil data periode aktif saat ini (hanya jika tanggal_buka <= now <= tanggal_tutup)
         $now = now();
         $periodeAktif = PeriodePendaftaran::where('is_active', true)
@@ -42,17 +41,42 @@ class SiswaDashboardController extends Controller
 
         $isperiodeAktif = $periodeAktif !== null;
 
+        if (! $isperiodeAktif) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada periode pendaftaran yang aktif saat ini.',
+                ], 400);
+            }
+
+            return view('siswa.dashboard.index', compact('siswa', 'isperiodeAktif'));
+        }
+
+        $isPertukaranAvailable = $periodeAktif->tanggal_mulai_pertukaran != null && $periodeAktif->tanggal_selesai_pertukaran != null;
+        $isFinalAndPublished = $periodeAktif->status_pengumuman == 'AKTIF' && $periodeAktif->is_hasil_final;
+
+        if ($isPertukaranAvailable && $isFinalAndPublished) {
+            if ($now->between($periodeAktif->tanggal_mulai_pertukaran, $periodeAktif->tanggal_selesai_pertukaran)) {
+                $pertukaranDate = $periodeAktif->select('tanggal_mulai_pertukaran', 'tanggal_selesai_pertukaran')->first();
+            } else {
+                $pertukaranDate = null;
+            }
+        } else {
+            $pertukaranDate = null;
+        }
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'data' => [
                     'siswa' => $siswa,
+                    'Pertukaran_date' => $pertukaranDate,
                     'periode_aktif' => $isperiodeAktif,
                 ],
             ]);
         }
 
-        return view('siswa.dashboard.index', compact('siswa', 'isperiodeAktif'));
+        return view('siswa.dashboard.index', compact('siswa', 'isperiodeAktif', 'pertukaranDate'));
     }
 
     /**
