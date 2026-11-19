@@ -1,9 +1,9 @@
 <div class="col-span-2 flex flex-col gap-4">
     <div>
-        <h2 class="mainTitle">
+        <h2 class="mainTitle text-lg">
             Periode pendaftaran
         </h2>
-        <span class="subTitle">
+        <span class="subTitle text-sm">
             lihat daftar periode pendaftaran yang dapat anda daftarkan
         </span>
     </div>
@@ -18,16 +18,27 @@
                 </span>
             </div>
         </div>
+        <div class="flex flex-row gap-2">
+            @if ($DataPeriode->is_active)
+                <span class="text-xs leading-4 font-semibold text-green-600 px-3 py-1 rounded-lg bg-green-50 w-fit">
+                    Aktif
+                </span>
+            @else
+                <span class="text-xs leading-4 font-semibold text-red-600 px-3 py-1 rounded-lg bg-red-50 w-fit">
+                    Tidak aktif
+                </span>
+            @endif
+            @if ($DataPeriode->status_pengumuman == 'AKTIF')
+                <span class="text-xs leading-4 font-semibold text-blue-600 px-3 py-1 rounded-lg bg-blue-50 w-fit">
+                    Telah dipublikasikan
+                </span>
+            @else
+                <span class="text-xs leading-4 font-semibold text-gray-600 px-3 py-1 rounded-lg bg-gray-50 w-fit">
+                    Belum dipublikasikan
+                </span>
+            @endif
+        </div>
 
-        @if ($DataPeriode->is_active)
-            <span class="text-xs leading-4 font-semibold text-green-600 px-3 py-1 rounded-lg bg-green-50 w-fit">
-                Aktif
-            </span>
-        @else
-            <span class="text-xs leading-4 font-semibold text-red-600 px-3 py-1 rounded-lg bg-red-50 w-fit">
-                Tidak Aktif
-            </span>
-        @endif
         @php
             $tanggalBuka = new DateTimeImmutable($DataPeriode->tanggal_buka);
             $tanggalTutup = new DateTimeImmutable($DataPeriode->tanggal_tutup);
@@ -38,13 +49,11 @@
         </span>
         <div class="flex flex-row w-full justify-end border-t border-gray-300 pt-3 gap-3">
             @if ($DataPeriode->status_pengumuman == 'AKTIF')
-                <a href="{{ route('siswa.hasil-penempatan') }}"
-                    class="negative-primary-button">
+                <a href="{{ route('siswa.hasil-penempatan') }}" class="negative-primary-button">
                     Lihat Hasil Seleksi
                 </a>
             @endif
-            <a href="{{ route('siswa.paket-menu-aktif.index', ['id' => $DataPeriode->id]) }}"
-                class="primary-button">
+            <a href="{{ route('siswa.paket-menu-aktif.index', ['id' => $DataPeriode->id]) }}" class="primary-button">
                 Lihat Detail
             </a>
         </div>

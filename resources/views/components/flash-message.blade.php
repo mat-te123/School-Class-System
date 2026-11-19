@@ -1,23 +1,37 @@
 @if (session('success'))
-    <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 4000)"
-        class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between w-fit max-w-[90vw] sm:max-w-lg bg-emerald-100 border border-emerald-400 text-emerald-900 px-4 py-3 rounded-lg mb-4 shadow-md">
-        <span class="wrap-break-words">✅ {{ session('success') }}</span>
-        <button @click="show = false" class="font-bold text-emerald-900 hover:opacity-75">&times;</button>
+    <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms
+        x-init="setTimeout(() => show = false, 5000)" role="status" aria-live="polite"
+        class="fixed inset-x-4 top-4 z-50 mx-auto flex max-w-md items-start gap-3 rounded-lg border border-emerald-200 border-l-4 bg-white p-4 text-emerald-950 shadow-lg sm:inset-x-auto sm:right-6 sm:left-auto">
+        <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700"
+            aria-hidden="true">✓</span>
+        <p class="min-w-0 flex-1 wrap-break-words text-sm leading-5">{{ session('success') }}</p>
+        <button type="button" @click="show = false"
+            class="flex size-7 shrink-0 items-center justify-center rounded-md text-lg leading-none text-emerald-800 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+            aria-label="Tutup notifikasi">&times;</button>
     </div>
 @endif
 
 @if (session('error'))
-    <div x-data="{ show: true }" x-show="show"
-        class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between w-fit max-w-[90vw] sm:max-w-lg bg-red-100 border border-red-400 text-red-900 px-4 py-3 rounded-lg mb-4 shadow-md">
-        <span class="wrap-break-words">⚠️ {{ session('error') }}</span>
-        <button @click="show = false" class="font-bold text-red-900 hover:opacity-75">&times;</button>
+    <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms role="alert" aria-live="assertive"
+        class="fixed inset-x-4 top-4 z-50 mx-auto flex max-w-md items-start gap-3 rounded-lg border border-red-200 border-l-4 bg-white p-4 text-red-950 shadow-lg sm:inset-x-auto sm:right-6 sm:left-auto">
+        <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-red-100 text-sm font-bold text-red-700"
+            aria-hidden="true">!</span>
+        <p class="min-w-0 flex-1 wrap-break-words text-sm leading-5">{{ session('error') }}</p>
+        <button type="button" @click="show = false"
+            class="flex size-7 shrink-0 items-center justify-center rounded-md text-lg leading-none text-red-800 hover:bg-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700"
+            aria-label="Tutup notifikasi">&times;</button>
     </div>
 @endif
 
 @if ($errors->any())
-    <div x-data="{ show: true }" x-show="show"
-        class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between  w-fit max-w-[90vw] sm:max-w-lg bg-amber-100 border border-amber-400 text-amber-900 px-4 py-3 rounded-lg mb-4 shadow-md">
-        <span class="wrap-break-words">⚠️ {{ $errors->first() }}</span>
-        <button @click="show = false" class="font-bold text-amber-900 hover:opacity-75">&times;</button>
+    <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.200ms
+        x-init="setTimeout(() => show = false, 7000)" role="alert" aria-live="assertive"
+        class="fixed inset-x-4 top-4 z-50 mx-auto flex max-w-md items-start gap-3 rounded-lg border border-amber-200 border-l-4 bg-white p-4 text-amber-950 shadow-lg sm:inset-x-auto sm:right-6 sm:left-auto">
+        <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm font-bold text-amber-700"
+            aria-hidden="true">!</span>
+        <p class="min-w-0 flex-1 wrap-break-words text-sm leading-5">{{ $errors->first() }}</p>
+        <button type="button" @click="show = false"
+            class="flex size-7 shrink-0 items-center justify-center rounded-md text-lg leading-none text-amber-800 hover:bg-amber-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700"
+            aria-label="Tutup notifikasi">&times;</button>
     </div>
 @endif

@@ -60,34 +60,6 @@
                 </span>
             </div>
         </div>
-
-        {{-- <div class="flex flex-col gap-4 rounded-lg border border-[#D1D5DB] bg-[#F9FAFB] p-5">
-            <div class="border-b border-gray-300 pb-3">
-                <h2 class="text-xl font-semibold leading-6">Ringkasan Hasil Seleksi</h2>
-                <p class="mt-1 text-sm font-medium leading-5 text-slate-500">
-                    Detail hasil penempatan kelas Anda.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                @php
-                    $details = [
-                        'Kelas diterima' => $hasil->paketMenuPilihan?->nama_menu ?? '-',
-                        'Mekanisme' => $hasil->mekanisme ?? '-',
-                        'Skor penempatan' => $hasil->skor_penempatan ?? '-',
-                        'Rata-rata 6 mata pelajaran' => $hasil->rata_6_mapel ?? '-',
-                        'Peringkat pada pilihan' => $hasil->rank_pada_pilihan ?? '-',
-                        'Tanggal diproses' => $hasil->tanggal_diproses?->format('d M Y H:i') ?? '-',
-                    ];
-                @endphp
-                @foreach ($details as $label => $value)
-                    <div class="flex flex-col gap-1">
-                        <span class="text-sm text-slate-500">{{ $label }}</span>
-                        <span class="text-base font-semibold">{{ $value }}</span>
-                    </div>
-                @endforeach
-            </div>
-        </div> --}}
         @php
             $Penilaian = [
                 'Skor Penempatan' => $hasil->skor_penempatan ?? '-',

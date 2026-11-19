@@ -5,6 +5,7 @@
     'tanggal_buka' => '11 Agustus 2026',
     'tanggal_tutup' => '11 Agustus 2027',
     'is_active' => true,
+    'is_published' => false,
 ])
 
 
@@ -38,27 +39,36 @@
         </div>
     </div>
 
-    @if ($is_active)
-        <span class="text-xs leading-4 font-semibold text-green-600 px-3 py-1 rounded-lg bg-green-50 w-fit">
-            Aktif
-        </span>
-    @else
-        <span class="text-xs leading-4 font-semibold text-red-600 px-3 py-1 rounded-lg bg-red-50 w-fit">
-            Tidak Aktif
-        </span>
-    @endif
+    <div class="flex flex-row gap-2">
+        @if ($is_active)
+            <span class="text-xs leading-4 font-semibold text-green-600 px-3 py-1 rounded-lg bg-green-50 w-fit">
+                Aktif
+            </span>
+        @else
+            <span class="text-xs leading-4 font-semibold text-red-600 px-3 py-1 rounded-lg bg-red-50 w-fit">
+                Tidak Aktif
+            </span>
+        @endif
+        @if ($is_published)
+            <span class="text-xs leading-4 font-semibold text-blue-600 px-3 py-1 rounded-lg bg-blue-50 w-fit">
+                Telah Dipublikasikan
+            </span>
+        @else
+            <span class="text-xs leading-4 font-semibold text-gray-600 px-3 py-1 rounded-lg bg-gray-50 w-fit">
+                Belum Dipublikasikan
+            </span>
+        @endif
+    </div>
+
     <span class="text-xs leading-4 flex flex-row gap-2 ">
         <img src="{{ asset('Icon/Date_range.svg') }}" />
         {{ $tanggal_buka }} - {{ $tanggal_tutup }}
     </span>
-    <div class="flex flex-row w-full justify-end border-t border-gray-300 pt-2 gap-3">
-        <a href="{{ route('admin.pemantauan-minat.index', ['periode_id' => $item->id]) }}"
-            class="negative-primary-button whitespace-nowrap">
-            Cek persebaran kelas
-        </a>
-        <a href="{{ route('admin.hasil-penjurusan.index', ['periode_id' => $item->id]) }}"
-            class="primary-button whitespace-nowrap">
-            Cek hasil seleksi
+
+    <div class="border-t border-gray-300 pt-2">
+        <a href="{{ route('periode-penjurusan.show', ['id' => $item->id]) }}"
+            class="primary-button block w-full whitespace-nowrap">
+            Lihat detail periode
         </a>
     </div>
 

@@ -20,8 +20,18 @@
         <div class="flex flex-col ">
 
         </div>
-        <div class="grid grid-cols-3 grid-rows-2 py-6 px-8 gap-3">
-            <div class="col-span-3 row-span-2 flex flex-row justify-start w-full h-fit">
+        <div class="grid grid-cols-3 py-6 px-8 gap-7">
+            <div class="h-fit col-span-3 flex flex-row justify-between items-center">
+                <div class="flex flex-col">
+                    <h2 class="mainTitle text-lg">
+                        Daftar periode yang terdaftar pada sistem
+                    </h2>
+                    <span class="subTitle text-sm">
+                        Berikut adalah daftar periode yang telah terdaftar pada sistem. Anda dapat menambahkan,
+                        mengedit,
+                        atau menghapus periode sesuai kebutuhan.
+                    </span>
+                </div>
                 @if ($canAddPeriod)
                     <button class="primary-button whitespace-nowrap w-fit"
                         @click="
@@ -37,8 +47,6 @@
                         Tambah Periode
                     </button>
                 @endif
-
-
             </div>
             @foreach ($periode as $item)
                 @php
@@ -48,9 +56,10 @@
                         strlen($item->nama_periode) > 20
                             ? substr($item->nama_periode, 0, 20) . '...'
                             : $item->nama_periode;
+                    $isPublished = $item->status_pengumuman === 'AKTIF' ? true : false;
                 @endphp
                 <x-period-card :nama_periode="$nama_periode" :tahun_ajaran="$item->tahun_ajaran" :tanggal_buka="$tanggal_buka->format('d F Y')" :tanggal_tutup="$tanggal_tutup->format('d F Y')" :is_active="$item->is_active"
-                    :item="$item" />
+                    :item="$item" :is_published="$isPublished" />
             @endforeach
 
         </div>
