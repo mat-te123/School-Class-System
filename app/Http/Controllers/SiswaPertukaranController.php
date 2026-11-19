@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\HasilSeleksi;
+use App\Models\PaketMenuPilihan;
 use App\Models\PengajuanPertukaran;
 use App\Models\PeriodePendaftaran;
 use Illuminate\Http\Request;
@@ -18,6 +19,20 @@ class SiswaPertukaranController extends Controller
             abort(401, 'Unauthenticated / Akses ditolak.');
         }
 
+        $periode_data = PeriodePendaftaran::where('is_active', true)
+            ->where('tanggal_mulai_pertukaran', '<=', now())
+            ->where('tanggal_selesai_pertukaran', '>=', now())
+            ->first();
+
+        $hasilSeleksi = HasilSeleksi::where('siswa_id', $siswa->id)->value('paket_menu_pilihan_id');
+
+        $paket_list = PaketMenuPilihan::where('periode_id', $periode_data->id)
+            ->when($hasilSeleksi, function ($query, $hasilSeleksi) {
+                return $query->where('id', '!=', $hasilSeleksi);
+            })
+            ->select('id', 'nama_menu')
+            ->get();
+
         $pengajuan = PengajuanPertukaran::with(['paketAsal', 'paketTujuan', 'peninjau'])
             ->where('siswa_id', $siswa->id)
             ->latest()
@@ -30,7 +45,7 @@ class SiswaPertukaranController extends Controller
             ]);
         }
 
-        return view('siswa.pertukaran.index', compact('pengajuan'));
+        return view('siswa.penukaran.index', compact('pengajuan', 'paket_list'));
     }
 
     public function store(Request $request)
@@ -67,10 +82,10 @@ class SiswaPertukaranController extends Controller
             ->first();
 
         if ($existingPengajuan) {
-            return response()->json([
+            return $this->handleWriteResponse($request, [
                 'success' => false,
-                'message' => 'Anda sudah memiliki pengajuan pertukaran yang aktif.',
-            ], 409);
+                'message' => 'Anda sudah memiliki pengajuan pertukaran yang sedang diproses atau telah disetujui.',
+            ], 422);
         }
 
         $validated = $request->validate([

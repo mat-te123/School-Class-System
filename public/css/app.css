@@ -127,3 +127,83 @@ body {
         background: #f3f4f6;
     }
 }
+
+.accent-soft-button {
+    background-color: #eff6ff; /* Soft Blue */
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    transition: background-color 0.15s ease-in-out;
+
+    &:hover {
+        background-color: #dbeafe;
+    }
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+}
+
+.data-table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.data-table thead tr {
+    background: #f3f4f6;
+    color: #4b5563;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
+
+.data-table tbody tr {
+    border-top: 1px solid #e5e7eb;
+    background: #ffffff;
+}
+
+.data-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.status-badge {
+    width: fit-content;
+    border-radius: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+}
+
+.status-badge-info {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.status-badge-success {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.status-badge-danger {
+    background: #fef2f2;
+    color: #b91c1c;
+}
