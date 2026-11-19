@@ -59,6 +59,7 @@ class PeriodePenjurusanController extends Controller
 
     public function show(Request $request, string $id)
     {
+        $this->ensureAdmin();
         $periode = PeriodePendaftaran::findOrFail($id);
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -68,7 +69,7 @@ class PeriodePenjurusanController extends Controller
             ]);
         }
 
-        return view('periode-penjurusan.show', compact('periode'));
+        return view('auth.period.detail', compact('periode'));
     }
 
     public function store(Request $request)
