@@ -15,7 +15,7 @@
         </div>
 
         <div class="flex flex-1 flex-col gap-4 px-8 py-6">
-            <a href={{ route('admin-periode-penjurusan.index') }} class="primary-button w-fit">
+            <a href={{ route('periode-penjurusan.show', ['id' => request('periode_id')]) }} class="primary-button w-fit">
                 kembali
 
 
@@ -160,11 +160,10 @@
                 @endif
 
             </form>
-            <div class="flex flex-col rounded-xl overflow-hidden border border-gray-300 w-full">
-                <table class="min-w-full border-separate border-spacing-0">
+            <div class="table-container">
+                <table class="data-table">
                     <thead>
-                        <tr
-                            class="bg-gray-300 text-xs font-semibold uppercase text-gray-600 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left first:[&_th]:w-0">
+                        <tr>
                             <th>#</th>
                             <th>Nama Lengkap</th>
                             @if ($status == 'sudah')
@@ -189,8 +188,8 @@
                                 </tr>
                             @else
                                 @foreach ($siswaSudahMemilih as $index => $item)
-                                    <tr class="bg-gray-50 hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
-                                        <th class="border-r border-t border-gray-200 p-2">
+                                    <tr class="group">
+                                        <th>
                                             {{ $index + 1 }}
                                         </th>
                                         <td>
@@ -218,16 +217,16 @@
                                 <tr>
                                     <td colspan="6"
                                         class="h-full border border-gray-200 bg-white py-4 text-center align-middle">
-                                        Semua ssiswa telah memilih kelas.
+                                        Semua siswa telah memilih kelas.
                                     </td>
                                 </tr>
                             @endif
                             @foreach ($siswaBelumMemilih as $index => $item)
-                                <tr class="hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
-                                    <th class="border-r border-t border-gray-200 p-2">
+                                <tr>
+                                    <th>
                                         {{ $index + 1 }}
                                     </th>
-                                    <td class="px-3 lowercase">
+                                    <td>
                                         {{ $item->nama_lengkap }}
                                     </td>
                                     <td>
@@ -238,13 +237,13 @@
                                     </td>
                                     @if ($item->is_active == false)
                                         <td>
-                                            <span class="negative-status">
+                                            <span class="status-badge status-badge-danger">
                                                 Tidak Aktif
                                             </span>
                                         </td>
                                     @else
                                         <td>
-                                            <span class="positive-status">
+                                            <span class="status-badge status-badge-success">
                                                 Aktif
                                             </span>
                                         </td>
@@ -257,8 +256,8 @@
                 @php $data = $status == 'sudah' ? $siswaSudahMemilih : $siswaBelumMemilih; @endphp
 
                 @if ($data->hasPages())
-                    <div class="flex flex-row py-3 px-4 bg-gray-300 w-full justify-between items-center">
-                        <p class="text-black text-sm leading-5">
+                    <div class="flex flex-row py-3 px-4 bg-[#f3f4f6] w-full justify-between items-center text-sm">
+                        <p class="text-gray-500 text-sm leading-5">
                             {{ $data->firstItem() }} sampai {{ $data->lastItem() }} dari {{ $data->total() }} hasil
                         </p>
                         <div class="flex flex-row w-fit gap-3 items-center">

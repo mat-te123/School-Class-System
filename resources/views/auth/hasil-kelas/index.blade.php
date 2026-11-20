@@ -84,7 +84,7 @@
         </div>
 
         <div class="flex min-h-0 flex-1 flex-col gap-4 px-8 py-6">
-            <a href="{{ route('admin-periode-penjurusan.index') }}" class="back-button">
+            <a href="{{ route('periode-penjurusan.show', ['id' => request('periode_id')]) }}" class="back-button">
                 Kembali
             </a>
             @if ($summary['detail_kelas']->isEmpty())
@@ -233,12 +233,11 @@
                     @endforeach
                 </select>
             </form>
-            <div class="flex flex-col rounded-xl overflow-hidden border border-gray-300 w-full">
-                <table class="min-w-full border-separate border-spacing-0">
+            <div class="table-container">
+                <table class="data-table">
                     <thead>
-                        <tr
-                            class=" bg-gray-300 text-xs font-semibold uppercase text-gray-600 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left first:[&_th]:w-0 last:[&_th]:rounded-tr-xl">
-                            <th class="rounded-tl-xl">#</th>
+                        <tr>
+                            <th>#</th>
                             <th>Nama Siswa</th>
                             <th>NISN</th>
                             <th>NIS</th>
@@ -259,12 +258,13 @@
                             </tr>
                         @else
                             @foreach ($results as $index => $item)
-                                <tr class="bg-gray-50 hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
-                                    <th class="border-r border-t border-gray-200 p-2">
+                                <tr class="group ">
+                                    <th>
                                         {{ $index + 1 }}
                                     </th>
                                     <td>
-                                        <div class="flex flex-row items-center gap-2 lowercase justify-between">
+                                        <div
+                                            class="flex flex-row items-center gap-2 lowercase justify-between text-md">
 
                                             {{ $item->siswa->nama_lengkap }}
                                             <a href="{{ route('siswa.show', $item->siswa->id) }}"
@@ -304,8 +304,8 @@
                     </tbody>
                 </table>
                 @if ($results->hasPages())
-                    <div class="flex flex-row py-3 px-8 bg-gray-300 w-full justify-between items-center">
-                        <p class="text-black text-sm leading-5">
+                    <div class="flex flex-row py-3 px-4 bg-[#f3f4f6] w-full justify-between items-center text-sm">
+                        <p class="text-gray-500 text-sm leading-5">
                             {{ $results->firstItem() ?? 0 }} sampai {{ $results->lastItem() ?? 0 }} dari
                             {{ $results->total() }} hasil
                         </p>

@@ -135,6 +135,8 @@ Route::middleware(['auth:web'])->group(function () {
 
         return app(PeriodePenjurusanController::class)->index($request);
     })->withoutMiddleware(['auth:web'])->name('admin-periode-penjurusan.index');
+    Route::get('admin/periode-penjurusan/{id}', [PeriodePenjurusanController::class, 'show'])->name('periode-penjurusan.show');
+
     Route::post('/periode-penjurusan', [PeriodePenjurusanController::class, 'store'])->name('periode-penjurusan.store');
     Route::put('/periode-penjurusan/{id}', [PeriodePenjurusanController::class, 'update'])->name('periode-penjurusan.update');
     Route::delete('/periode-penjurusan/{id}', [PeriodePenjurusanController::class, 'destroy'])->name('periode-penjurusan.destroy');
