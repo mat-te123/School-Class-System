@@ -19,8 +19,18 @@ class AdminLaporanController extends Controller
     {
         $this->ensureAdmin();
 
+        $periodeList = PeriodePendaftaran::orderByDesc('tanggal_tutup')->get(['id', 'nama_periode']);
+
+        $periodeId = $request->filled('periode_id')
+        ? $request->input('periode_id')
+        : $periodeList->first()?->id;
+
+        $request->merge(['periode_id' => $periodeId]);
+
+        $periodePaketList = PaketMenuPilihan::getKelasNameByPeriod($request->input('periode_id', $periodeList->first()?->id ?? null));
+
         $validated = $request->validate([
-            'periode_id' => 'required|uuid|exists:periode_pendaftaran,id',
+            'periode_id' => 'nullable|uuid|exists:periode_pendaftaran,id',
             'paket_id' => 'nullable|uuid|exists:paket_menu_pilihan,id',
             'kelas_asal_id' => 'nullable|uuid|exists:kelas_asal,id',
             'mekanisme' => 'nullable|string|max:50',
@@ -29,11 +39,15 @@ class AdminLaporanController extends Controller
         ]);
 
         $query = HasilSeleksi::with(['siswa.kelasAsalRelation', 'paketMenuPilihan', 'pengubah'])
-            ->whereHas('siswa', function ($q) use ($validated) {
-                $q->whereHas('pendaftaranPilihan', function ($pq) use ($validated) {
-                    $pq->where('periode_pendaftaran_id', $validated['periode_id']);
-                });
+            ->whereHas('siswa', function ($q) {
+                $q->whereHas('pendaftaranPilihan');
             });
+
+        if (! empty($validated['periode_id'])) {
+            $query->whereHas('siswa.pendaftaranPilihan', function ($q) use ($validated) {
+                $q->where('periode_pendaftaran_id', $validated['periode_id']);
+            });
+        }
 
         if (! empty($validated['paket_id'])) {
             $query->where('paket_menu_pilihan_id', $validated['paket_id']);
@@ -52,7 +66,7 @@ class AdminLaporanController extends Controller
         if (! empty($validated['search'])) {
             $search = trim($validated['search']);
             $query->whereHas('siswa', function ($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
+                $q->whereRaw('LOWER(nama_lengkap) LIKE ?', ["%{$search}%"])
                     ->orWhere('nisn', 'like', "%{$search}%");
             });
         }
@@ -67,7 +81,7 @@ class AdminLaporanController extends Controller
             ]);
         }
 
-        return view('auth.laporan.hasil-penjurusan.index', compact('results'));
+        return view('auth.laporan.hasil-penjurusan.index', compact('results', 'periodeList', 'periodePaketList'));
     }
 
     /**
@@ -186,6 +200,12 @@ class AdminLaporanController extends Controller
     {
         $this->ensureAdmin();
 
+        $periodeId = $request->filled('periode_id')
+        ? $request->input('periode_id')
+        : PeriodePendaftaran::latest('tanggal_tutup')->value('id');
+
+        $request->merge(['periode_id' => $periodeId]);
+
         $validated = $request->validate([
             'periode_id' => 'required|uuid|exists:periode_pendaftaran,id',
             'paket_id' => 'nullable|uuid|exists:paket_menu_pilihan,id',
@@ -251,6 +271,12 @@ class AdminLaporanController extends Controller
     public function exportMinatSiswa(Request $request)
     {
         $this->ensureAdmin();
+
+        $periodeId = $request->filled('periode_id')
+        ? $request->input('periode_id')
+        : PeriodePendaftaran::latest('tanggal_tutup')->value('id');
+
+        $request->merge(['periode_id' => $periodeId]);
 
         $validated = $request->validate([
             'periode_id' => 'required|uuid|exists:periode_pendaftaran,id',

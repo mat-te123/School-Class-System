@@ -72,6 +72,14 @@ class PaketMenuPilihan extends Model
     }
 
     /**
+     * Mendapatkan nama kelas berdasarkan periode.
+     */
+    public static function getKelasNameByPeriod(string $periodeId)
+    {
+        return self::where('periode_id', $periodeId)->select('id', 'nama_menu')->get();
+    }
+
+    /**
      * Relasi ke periode pendaftaran.
      */
     public function periode(): BelongsTo

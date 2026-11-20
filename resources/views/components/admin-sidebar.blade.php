@@ -20,11 +20,14 @@
                     'text' => 'Penukaran Kelas',
                 ],
                 'Hasil Penjurusan' => [
-                    'route' => route('admin.laporan.hasil-penjurusan', [
-                        'periode_id' => '92902ed2-bb90-4481-9905-c3aa3a26d3b0',
-                    ]),
+                    'route' => route('admin.laporan.hasil-penjurusan'),
                     'icon' => asset('Icon/placeholder.svg'),
-                    'text' => 'Laporan',
+                    'text' => 'Hasil Penjurusan',
+                ],
+                'Persebaran Kelas' => [
+                    'route' => route('admin.laporan.minat-siswa'),
+                    'icon' => asset('Icon/placeholder.svg'),
+                    'text' => 'Persebaran Kelas',
                 ],
             ];
             $items = [
