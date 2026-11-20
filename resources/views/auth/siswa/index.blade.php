@@ -29,19 +29,19 @@
 
         <div class="flex flex-col py-6 px-8 gap-4">
             <div class="flex flex-col">
-                <h2 class="mainTitle text-2xl">
+                <h2 class="mainTitle text-lg">
                     Data Siswa
                 </h2>
-                <span class="subTitle">
-                    Tampilkan Data siswa berdasarkan Tahun ajaran
+                <span class="subTitle text-sm">
+                    Kelola data siswa yang terdaftar di sistem
+
                 </span>
             </div>
 
             <form method="GET" action="{{ route('admin-siswa.index') }}"
                 class="flex flex-row bg-gray-100 p-3 w-full border border-gray-400 rounded-lg gap-3 items-center">
                 <input type="text" name="search" value="{{ request('search') }}"
-                    placeholder="Cari nama, NISN, atau NIS..."
-                    oninput="this.value = this.value.toLowerCase()"
+                    placeholder="Cari nama, NISN, atau NIS..." oninput="this.value = this.value.toLowerCase()"
                     class="w-full py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg text-sm">
                 <select name="kelas_id" onchange="this.form.submit()" class="select-primary text-sm">
                     <option value="">Semua Kelas</option>
@@ -76,12 +76,11 @@
                 </button>
             </form>
 
-            <div class="rounded-xl border-gray-200 border overflow-hidden">
-                <table class="w-full">
-                    <thead
-                        class="bg-gray-300 text-xs font-semibold uppercase text-gray-600 border-gray-200 first:[&_th]:px-0 [&_th]:px-4 [&_th]:py-3 [&_th]:border-r [&_th]:border-gray-200 [&_th]:text-left last:[&_th]:border-r-0">
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
                         <tr>
-                            <th class="flex justify-center">#</th>
+                            <th>#</th>
                             <th>Nama Lengkap</th>
                             <th>NISN</th>
                             <th>NIS</th>
@@ -91,11 +90,10 @@
                             <th>AKSI</th>
                         </tr>
                     </thead>
-                    <tbody
-                        class="[&_td]:p-3 border-gray-200 [&_td]:border-t [&_td]:text-base [&_td]:leading-6 [&_td]:font-normal [&_td]:text-left">
+                    <tbody>
                         @forelse ($siswa as $index=> $item)
-                            <tr class="bg-gray-50 hover:bg-gray-200 group">
-                                <th class="w-12 border-r border-t border-gray-200 text-center tabular-nums">
+                            <tr class="group hover:bg-gray-100">
+                                <th>
                                     {{ $index + 1 }}
                                 </th>
                                 <td>
@@ -148,8 +146,8 @@
                         @endforelse
                     </tbody>
                 </table>
-                <div class="flex flex-row py-3 px-8 bg-gray-300 w-full justify-between items-center">
-                    <p class="text-black text-sm leading-5">
+                <div class="flex flex-row py-3 px-4 bg-[#f3f4f6] w-full justify-between items-center text-sm">
+                    <p class="text-gray-500 text-sm leading-5">
                         {{ $siswa->firstItem() ?? 0 }} sampai {{ $siswa->lastItem() ?? 0 }} dari
                         {{ $siswa->total() }} hasil
                     </p>

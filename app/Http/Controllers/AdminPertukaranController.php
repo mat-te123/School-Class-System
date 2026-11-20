@@ -39,11 +39,12 @@ class AdminPertukaranController extends Controller
         }
 
         if (! empty($validated['search'])) {
-            $search = trim($validated['search']);
+            $search = mb_strtolower(trim($validated['search']));
             $query->where(function ($q) use ($search) {
                 $q->whereHas('siswa', function ($s) use ($search) {
-                    $s->where('nama_lengkap', 'like', "%{$search}%")
-                        ->orWhere('nisn', 'like', "%{$search}%");
+                    $s->whereRaw('LOWER(nama_lengkap) like ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(nisn) like ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(nis) like ?', ["%{$search}%"]);
                 });
             });
         }
@@ -57,7 +58,7 @@ class AdminPertukaranController extends Controller
             ]);
         }
 
-        return view('admin-pertukaran.index', compact('pengajuan'));
+        return view('auth.laporan.pergantian-kelas.index', compact('pengajuan'));
     }
 
     /**

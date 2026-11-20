@@ -146,9 +146,9 @@ class SiswaPertukaranController extends Controller
         }
 
         if ($pengajuan->status !== 'menunggu') {
-            return response()->json([
+            return $this->handleWriteResponse($request, [
                 'success' => false,
-                'message' => 'Pengajuan pertukaran yang sudah diproses admin tidak dapat dibatalkan.',
+                'message' => 'Pengajuan pertukaran tidak dapat dibatalkan karena sudah diproses.',
             ], 422);
         }
 

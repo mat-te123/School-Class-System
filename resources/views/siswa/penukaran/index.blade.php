@@ -1,4 +1,4 @@
-<x-app-layout title="Pengajuan Penukaran Kelas">
+<x-app-layout title="Pengajuan Penukaran Kelas" type="siswa">
     <div x-data="{ showaddmodal: false, paket_list: '', showDeleteModal: false, deleteUrl: '', confirmationData: 'pengajuan' }">
         <div class="flex flex-col border-b border-black px-4 py-6 sm:px-8">
             <h1 class="mainTitle">
@@ -23,17 +23,20 @@
 
                 @if ($pengajuan != null)
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <button type="button"
-                            class="negative-primary-button bg-red-500 text-white hover:bg-red-600 h-fit w-full whitespace-nowrap sm:w-fit"
-                            @click="showDeleteModal= true;
+                        @if ($pengajuan->status == 'menunggu')
+                            <button type="button"
+                                class="negative-primary-button bg-red-500 text-white hover:bg-red-600 h-fit w-full whitespace-nowrap sm:w-fit"
+                                @click="showDeleteModal= true;
                     deleteUrl = '{{ route('siswa.pertukaran.cancel', $pengajuan->id) }}';
                     ">
-                            Hapus pengajuan
-                        </button>
+                                Hapus pengajuan
+                            </button>
+                        @endif
                         <button type="button" disable
                             class="primary-button opacity-50 cursor-not-allowed h-fit w-full whitespace-nowrap sm:w-fit">
                             Ajukan penukaran kelas
                         </button>
+
 
 
                     </div>
@@ -68,7 +71,11 @@
                                     <th>Kelas Asal</th>
                                     <th>Kelas Tujuan</th>
                                     <th>Alasan</th>
+                                    <th>Dokumen Pendukung</th>
                                     <th>Status</th>
+                                    @if ($pengajuan->status == 'ditolak')
+                                        <th>Alasan Penolakan</th>
+                                    @endif
                                     <th>Tanggal Pengajuan</th>
                                 </tr>
                             </thead>
@@ -77,6 +84,16 @@
                                     <td>{{ $pengajuan->paketAsal->nama_menu }}</td>
                                     <td>{{ $pengajuan->paketTujuan->nama_menu }}</td>
                                     <td>{{ $pengajuan->alasan }}</td>
+                                    <td>
+                                        @if ($pengajuan->dokumen_persetujuan_path)
+                                            <a href="{{ asset('storage/' . $pengajuan->dokumen_persetujuan_path) }}"
+                                                target="_blank" class="text-blue-600 hover:underline">
+                                                Lihat Dokumen
+                                            </a>
+                                        @else
+                                            <span class="text-gray-500">Tidak ada dokumen</span>
+                                        @endif
+                                    </td>
                                     @if ($pengajuan->status == 'menunggu')
                                         <td>
                                             <p class="status-badge status-badge-info">
@@ -96,6 +113,9 @@
                                             </p>
                                         </td>
                                     @endif
+                                    @if ($pengajuan->status == 'ditolak')
+                                        <td>{{ $pengajuan->catatan_admin }}</td>
+                                    @endif
                                     <td>{{ $pengajuan->created_at->format('d M Y') }}</td>
                                 </tr>
 
@@ -104,15 +124,27 @@
                     </div>
                 @endif
                 @if ($pengajuan != null)
-                    <span class="text-xs text-red-500">
-                        Catatan: Siswa hanya dapat mengajukan penukaran kelas satu kali. jika ingin mengajukan kembali,
-                        silahkan hapus pengajuan yang sedang diproses atau telah disetujui *.
-                    </span>
+                    @if ($pengajuan == 'menunggu')
+                        <span class="text-xs text-red-500">
+                            Catatan: Siswa hanya dapat mengajukan penukaran kelas satu kali. jika ingin mengajukan
+                            kembali,
+                            silahkan hapus pengajuan yang sedang diproses atau telah disetujui *.
+                        </span>
+                    @else
+                        <span class="text-xs text-red-500">
+                            Catatan: Siswa tidak dapat mengajukan penukaran kelas lagi, setelah pengajuan diproses guru
+                            *.
+                        </span>
+                    @endif
                 @endif
+
             </div>
 
         </div>
         <x-add-modal-pengajuan-penukaran />
         <x-delete-modal />
+        <pre>
+            {{ json_encode($pengajuan, JSON_PRETTY_PRINT) }}
+        </pre>
     </div>
 </x-app-layout>

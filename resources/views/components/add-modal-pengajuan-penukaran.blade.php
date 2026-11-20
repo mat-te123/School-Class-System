@@ -22,7 +22,7 @@
             <label for="file_pendukung" class="text-sm font-semibold text-gray-800">
                 File pendukung <span class="font-normal text-gray-500">(opsional)</span>
             </label>
-            <input type="file" name="file_pendukung" id="file_pendukung" accept=".pdf,.jpg,.jpeg,.png"
+            <input type="file" name="dokumen_persetujuan" id="dokumen_persetujuan" accept=".pdf,.jpg,.jpeg,.png"
                 class="block w-full rounded-lg border border-gray-300 text-sm text-gray-600 file:mr-4 file:border-0 file:bg-gray-100 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-gray-700 hover:file:bg-gray-200">
             <p class="text-xs leading-4 text-gray-500">PDF, JPG, atau PNG. Maksimal 2mb.</p>
         </div>
