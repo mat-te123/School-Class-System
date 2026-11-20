@@ -13,6 +13,13 @@
                 :class="{ 'opacity-0': !isSidebarOpen }">StudIQ</span>
         </div>
         @php
+            $laporan = [
+                'Pengajuan Penukaran Kelas' => [
+                    'route' => route('admin.pertukaran.index'),
+                    'icon' => asset('Icon/placeholder.svg'),
+                    'text' => 'Penukaran Kelas',
+                ],
+            ];
             $items = [
                 'Siswa' => [
                     'route' => route('admin-siswa.index'),
@@ -56,6 +63,16 @@
                     :class="{ 'bg-slate-800': window.location.href === '{{ $value['route'] }}' }">
                     <img src="{{ $value['icon'] }}" alt="{{ $key }}_icon" class="w-6 h-6" />
                     <span class="text-sm" :class="{ 'hidden': !isSidebarOpen }">{{ $value['text'] }}</span>
+                </a>
+            @endforeach
+            <p class="text-sm font-medium leading-6"> laporan </p>
+            @foreach ($laporan as $key => $value)
+                <a href="{{ $value['route'] }}"
+                    class="flex flex-row items-center gap-2 p-2 rounded hover:bg-slate-800 opacity-100 transition-all duration-300 ease-in-out text-md leading-4 font-normal"
+                    :class="{ 'bg-slate-800': window.location.href === '{{ $value['route'] }}' }">
+                    <img src="{{ $value['icon'] }}" alt="{{ $key }}_icon" class="w-6 h-6" />
+                    <span class="text-sm whitespace-nowrap"
+                        :class="{ 'hidden': !isSidebarOpen }">{{ $value['text'] }}</span>
                 </a>
             @endforeach
         @else
