@@ -16,24 +16,24 @@
             $laporan = [
                 'Pengajuan Penukaran Kelas' => [
                     'route' => route('admin.pertukaran.index'),
-                    'icon' => asset('Icon/placeholder.svg'),
+                    'icon' => asset('Icon/PenukaranKelas.svg'),
                     'text' => 'Penukaran Kelas',
                 ],
                 'Hasil Penjurusan' => [
                     'route' => route('admin.laporan.hasil-penjurusan'),
-                    'icon' => asset('Icon/placeholder.svg'),
+                    'icon' => asset('Icon/HasilPenjurusan.svg'),
                     'text' => 'Hasil Penjurusan',
                 ],
                 'Persebaran Kelas' => [
                     'route' => route('admin.laporan.minat-siswa'),
-                    'icon' => asset('Icon/placeholder.svg'),
+                    'icon' => asset('Icon/PersebaranKelas.svg'),
                     'text' => 'Persebaran Kelas',
                 ],
             ];
             $items = [
                 'Siswa' => [
                     'route' => route('admin-siswa.index'),
-                    'icon' => asset('Icon/siswa_page_icon.svg'),
+                    'icon' => asset('Icon/siswa.svg'),
                     'text' => 'Siswa',
                 ],
                 'Periode' => [
@@ -49,10 +49,10 @@
             ];
 
             $itemsSiswa = [
-                'Siswa' => [
-                    'route' => route('admin-siswa.index'),
-                    'icon' => asset('Icon/placeholder.svg'),
-                    'text' => 'Siswa',
+                'Home' => [
+                    'route' => route('siswa.dashboard'),
+                    'icon' => asset('Icon/Home.svg'),
+                    'text' => 'Home',
                 ],
             ];
         @endphp
@@ -62,8 +62,8 @@
         @if ($isAdmin)
             @foreach ($items as $key => $value)
                 <a href="{{ $value['route'] }}"
-                    class="flex flex-row items-center gap-2 p-2 rounded hover:bg-slate-800 opacity-100 transition-all duration-300 ease-in-out text-md leading-4 font-normal"
-                    :class="{ 'bg-slate-800': window.location.href === '{{ $value['route'] }}' }">
+                    class="flex flex-row items-center gap-2 p-2 pl-3 rounded hover:bg-slate-800 opacity-100 transition-all duration-300 ease-in-out text-md leading-4 font-normal"
+                    :class="{ 'bg-slate-800': window.location.href === '{{ $value['route'] }}', 'gap-0': !isSidebarOpen }">
                     <img src="{{ $value['icon'] }}" alt="{{ $key }}_icon" class="w-6 h-6" />
                     <span class="text-sm" :class="{ 'hidden': !isSidebarOpen }">{{ $value['text'] }}</span>
                 </a>
@@ -71,8 +71,8 @@
             <p class="text-sm font-medium leading-6"> laporan </p>
             @foreach ($laporan as $key => $value)
                 <a href="{{ $value['route'] }}"
-                    class="flex flex-row items-center gap-2 p-2 rounded hover:bg-slate-800 opacity-100 transition-all duration-300 ease-in-out text-md leading-4 font-normal"
-                    :class="{ 'bg-slate-800': window.location.href === '{{ $value['route'] }}' }">
+                    class="flex flex-row items-center gap-2 p-2 pl-3 rounded hover:bg-slate-800 opacity-100 transition-all duration-300 ease-in-out text-md leading-4 font-normal"
+                    :class="{ 'bg-slate-800': window.location.href === '{{ $value['route'] }}', 'gap-0': !isSidebarOpen }">
                     <img src="{{ $value['icon'] }}" alt="{{ $key }}_icon" class="w-6 h-6" />
                     <span class="text-sm whitespace-nowrap"
                         :class="{ 'hidden': !isSidebarOpen }">{{ $value['text'] }}</span>
@@ -81,8 +81,8 @@
         @else
             @foreach ($itemsSiswa as $key => $value)
                 <a href="{{ $value['route'] }}"
-                    class="flex flex-row items-center gap-2 p-2 rounded hover:bg-slate-800 opacity-100 transition-all duration-300 ease-in-out text-md leading-4 font-normal"
-                    :class="{ 'bg-slate-800': window.location.href === '{{ $value['route'] }}' }">
+                    class="flex flex-row items-center gap-2 p-2 pl-3 rounded hover:bg-slate-800 opacity-100 transition-all duration-300 ease-in-out text-md leading-4 font-normal"
+                    :class="{ 'bg-slate-800': window.location.href === '{{ $value['route'] }}', 'gap-0': !isSidebarOpen }">
                     <img src="{{ $value['icon'] }}" alt="{{ $key }}_icon" class="w-6 h-6" />
                     <span class="text-sm" :class="{ 'hidden': !isSidebarOpen }">{{ $value['text'] }}</span>
                 </a>
@@ -94,7 +94,8 @@
         <form action="{{ route('logout') }}" method="POST">
             @csrf
             <button type="submit"
-                class="flex flex-row items-center gap-2 p-2 rounded opacity-100 transition-all duration-300 ease-in-out hover:bg-red-700 text-white w-full">
+                class="flex flex-row items-center gap-2 p-2 rounded opacity-100 transition-all duration-300 ease-in-out hover:bg-red-700 text-white w-full"
+                :class="{ 'gap-0': !isSidebarOpen }">
                 <img src="{{ asset('Icon/Sign_out.svg') }}" alt="logout_icon" class="w-6 h-6" />
                 <span type="submit"
                     class="text-sm font-bold leading-6 opacity-100 transition-all duration-300 ease-in-out"
