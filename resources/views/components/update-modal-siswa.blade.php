@@ -66,7 +66,7 @@
                 Batal
             </button>
             <button class="bg-blue-500 text-white text-xs rounded-lg py-2 px-4" type="submit">
-                Update
+                Perbarui
             </button>
         </div>
     </form>

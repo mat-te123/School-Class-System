@@ -61,7 +61,7 @@
         <div class="flex flex-col gap-1">
             <label for="fangkatan" class="text-sm leading-4 font-semibold">Tahun Ajaran</label>
             <select name="angkatan" id="fangkatan" class="border border-black rounded-lg py-1 px-4 text-base" required>
-                @for ($year = $currentyear; $year >= $currentyear - 2; $year--)
+                @for ($year = $currentyear; $year <= $currentyear + 2; $year++)
                     <option @selected($year === $currentyear) value="{{ $year }}">
                         {{ $year }}/{{ $year + 1 }}
                     </option>
@@ -103,7 +103,7 @@
                 <label for="fangkatan" class="text-sm leading-4 font-semibold">Tahun Ajaran</label>
                 <select name="angkatan" id="fangkatan" class="border border-black rounded-lg py-1 px-4 text-base"
                     required>
-                    @for ($year = $currentyear; $year >= $currentyear - 2; $year--)
+                    @for ($year = $currentyear; $year <= $currentyear + 2; $year++)
                         <option @selected($year === $currentyear) value="{{ $year }}">
                             {{ $year }}/{{ $year + 1 }}
                         </option>
@@ -126,7 +126,7 @@
             <label @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
                 @drop.prevent="isDragging = false; handleFileSelect($event)"
                 :class="isDragging ? 'border-blue-500 bg-blue-100' : 'border-[#BFDBFE] bg-[#EFF6FF]'"
-                class="flex flex-col items-center justify-center w-full aspect-square border-2 border-dashed rounded-lg cursor-pointer transition-all duration-300 ease-in-out p-4 text-center hover:bg-blue-100 hover:scale-105">
+                class="flex flex-col items-center justify-center h-48 aspect-16/9 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-300 ease-in-out p-4 text-center hover:bg-blue-100">
 
                 <img src="{{ asset('Icon/Upload_fill.svg') }}" class="w-10 h-10 mb-2">
 
