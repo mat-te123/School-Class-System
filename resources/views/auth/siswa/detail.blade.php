@@ -13,12 +13,12 @@
         menuItem: ['Nilai Siswa', 'Pilihan Siswa']
     }" class="flex min-h-0 flex-1 flex-col">
         <div class="flex flex-col py-6 px-8 border border-b-black">
-            <h1 class="text-4xl leading-9 font-semibold">
+            <h1 class="mainTitle">
                 Siswa > <span class="text-2xl text-gray-500 lowercase">
                     {{ $siswa->nama_lengkap }}
                 </span>
             </h1>
-            <span class="text-md leading-5 font-medium">
+            <span class="subTitle">
                 Kelola data pribadi siswa
             </span>
         </div>
@@ -94,7 +94,8 @@
         </div>
         <div class="flex-1">
             <x-nilai-siswa-profile x-show="currentMenu === 'Nilai Siswa'" x-cloak :siswa-id="$siswa->id" />
-            <x-pilihan-siswa-profile x-show="currentMenu === 'Pilihan Siswa'" x-cloak :siswa-id="$siswa->id" />
+            <x-pilihan-siswa-profile x-show="currentMenu === 'Pilihan Siswa'" x-cloak :siswa-id="$siswa->id"
+                :isSiswaLoggedIn="true" />
 
         </div>
 

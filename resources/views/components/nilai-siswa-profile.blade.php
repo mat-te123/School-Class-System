@@ -20,33 +20,32 @@
 
             </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm border-collapse">
+        <div class="table-container">
+            <table class="data-table">
                 <thead>
-                    <tr
-                        class="bg-[#D1D5DB] text-slate-700 font-semibold border-b border-slate-200 first:[&_th]:rounded-l-xl first:[&_th]:w-0 last:[&_th]:rounded-r-xl">
-                        <th class="p-3">no</th>
-                        <th class="p-3">Mata Pelajaran</th>
-                        <th class="p-3">Nilai</th>
+                    <tr>
+                        <th>no</th>
+                        <th>Mata Pelajaran</th>
+                        <th>Nilai</th>
                         @if (!$isSiswaLoggedIn)
-                            <th class="p-3">Aksi</th>
+                            <th>Aksi</th>
                         @endif
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody>
                     @foreach ($nilaiData as $index => $item)
                         <tr class="hover:bg-slate-50">
-                            <td class="p-3 font-medium text-slate-800">
+                            <td>
                                 {{ $index + 1 }}
                             </td>
-                            <td class="p-3 text-slate-600">
+                            <td>
                                 {{ $item->mataPelajaran?->nama_mapel ?? '-' }}
                             </td>
-                            <td class="p-3 font-semibold text-slate-900">
+                            <td>
                                 {{ $item->nilai_angka ?? '-' }}
                             </td>
                             @if (!$isSiswaLoggedIn)
-                                <td class="p-3 font-semibold text-slate-900">
+                                <td>
                                     <button type="button"
                                         @click="
                                                 showNilaiUpdateModal = true;

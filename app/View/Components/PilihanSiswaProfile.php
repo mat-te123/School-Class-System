@@ -3,6 +3,7 @@
 namespace App\View\Components;
 
 use App\Models\DetailPendaftaranPilihan;
+use App\Models\HasilSeleksi;
 use App\Models\PendaftaranPilihan;
 use Closure;
 use Illuminate\Contracts\View\View;
@@ -10,7 +11,9 @@ use Illuminate\View\Component;
 
 class PilihanSiswaProfile extends Component
 {
-    public $PilihanSiswa;
+    public $PilihanSiswa = [];
+
+    public $HasilPilihanSiswa = [];
 
     /**
      * Create a new component instance.
@@ -22,6 +25,10 @@ class PilihanSiswaProfile extends Component
 
         $this->PilihanSiswa = DetailPendaftaranPilihan::whereIn('pendaftaran_pilihan_id', $pendaftaranPilihanIdBySiswaId)
             ->has('paketMenuPilihan')
+            ->with('paketMenuPilihan:id,nama_menu,rumpun')
+            ->get();
+
+        $this->HasilPilihanSiswa = HasilSeleksi::where('siswa_id', $this->siswaId)
             ->with('paketMenuPilihan:id,nama_menu,rumpun')
             ->get();
     }
