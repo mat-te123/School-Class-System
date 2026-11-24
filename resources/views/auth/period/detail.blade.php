@@ -24,7 +24,8 @@
                 Kembali
             </a>
             <div class="flex flex-col gap-4 lg:flex-row">
-                <section class="flex w-full flex-col gap-4 rounded-lg border border-[#D1D5DB] bg-[#F9FAFB] p-4 lg:w-2/3">
+                <section
+                    class="flex w-full flex-col gap-4 rounded-lg border border-[#D1D5DB] bg-[#F9FAFB] p-4 lg:w-2/3">
                     <div class="flex flex-col gap-2 border-b border-gray-300 pb-2">
                         <h2 class="text-2xl font-semibold leading-6">{{ $periode->nama_periode }}</h2>
                         <span class="text-sm text-gray-500">
@@ -55,20 +56,22 @@
                         </div>
                     </div>
                 </section>
-                <section class="flex w-full flex-col justify-between gap-3 rounded-lg border border-[#D1D5DB] bg-white p-4 lg:w-1/3">
+                <section
+                    class="flex w-full flex-col justify-between gap-3 rounded-lg border border-[#D1D5DB] bg-white p-4 lg:w-1/3">
                     <div>
                         <h2 class="text-lg font-semibold">Akses data periode</h2>
                         <p class="text-sm text-gray-500">Buka data tanpa mengubah status publikasi periode.</p>
                     </div>
                     <div class="flex flex-col gap-2 sm:flex-row">
-                        <a href="{{ route('admin.hasil-penjurusan.index', ['periode_id' => $periode->id]) }}"
-                            class="primary-button w-full whitespace-nowrap sm:w-fit">
-                            Cek hasil seleksi
-                        </a>
                         <a href="{{ route('admin.pemantauan-minat.index', ['periode_id' => $periode->id]) }}"
                             class="negative-primary-button w-full whitespace-nowrap sm:w-fit">
                             Cek persebaran kelas
                         </a>
+                        <a href="{{ route('admin.hasil-penjurusan.index', ['periode_id' => $periode->id]) }}"
+                            class="primary-button w-full whitespace-nowrap sm:w-fit">
+                            Cek hasil seleksi
+                        </a>
+
                     </div>
                 </section>
 

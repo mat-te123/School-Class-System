@@ -64,13 +64,9 @@
                     </button>
                 </template>
             </div>
-            {{-- <pre>
-                {{ json_encode($siswa, JSON_PRETTY_PRINT) }}
-            </pre> --}}
         </div>
         <div class="flex-1">
-            <x-nilai-siswa-profile x-show="currentMenu === 'Nilai Siswa'" x-cloak :siswa-id="$siswa->id"
-                :isSiswaLoggedIn="$isSiswaLoggedIn" />
+            <x-nilai-siswa-profile x-show="currentMenu === 'Nilai Siswa'" x-cloak :siswa-id="$siswa->id" :isSiswaLoggedIn="$isSiswaLoggedIn" />
             <x-pilihan-siswa-profile x-show="currentMenu === 'Pilihan Siswa'" x-cloak :siswa-id="$siswa->id" />
 
         </div>

@@ -52,13 +52,13 @@
             <div class="flex flex-col gap-1 w-full">
                 <label for="ftanggal_buka_edit" class="text-sm leading-4 font-semibold">Tanggal Buka</label>
                 <input name="tanggal_buka" id="ftanggal_buka_edit" type="date"
-                    class="border border-black rounded-lg py-1 px-4 text-base w-fit" x-model="Data.tanggal_buka">
+                    class="border border-black rounded-lg py-1 px-4 text-base w-full" x-model="Data.tanggal_buka">
             </div>
 
-            <div class="flex flex-col gap-1 w-12.5">
+            <div class="flex flex-col gap-1 w-full">
                 <label for="ftanggal_tutup_edit" class="text-sm leading-4 font-semibold">Tanggal Tutup</label>
                 <input name="tanggal_tutup" id="ftanggal_tutup_edit" type="date"
-                    class="border border-black rounded-lg py-1 px-4 text-base w-12.5" x-model="Data.tanggal_tutup">
+                    class="border border-black rounded-lg py-1 px-4 text-base w-full" x-model="Data.tanggal_tutup">
             </div>
         </div>
 

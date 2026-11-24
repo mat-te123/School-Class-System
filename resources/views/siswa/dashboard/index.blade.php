@@ -55,7 +55,7 @@
 
 
         {{-- Student Card --}}
-        <div class="col-span-3 flex flex-col bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4">
+        <div class="col-span-4 flex flex-col bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4">
             <div class="flex flex-row justify-between items-center border-b border-gray-300 pb-2">
                 <div class="flex flex-col gap-2">
                     <h1 class="text-2xl font-semibold leading-6">
@@ -96,7 +96,7 @@
 
         </div>
         {{-- Reprt Card --}}
-        <div class="col-span-1 flex flex-col bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4 justify-between">
+        {{-- <div class="col-span-1 flex flex-col bg-[#F9FAFB] p-4 border border-[#D1D5DB] rounded-lg gap-4 justify-between">
             <div>
                 <h1 class="text-2xl font-semibold leading-6">
                     Mengalami Kendala ?
@@ -108,7 +108,7 @@
             <a href="#" class="primary-button">
                 Hubungi Admin
             </a>
-        </div>
+        </div> --}}
         {{-- periode Hardcoded --}}
         <x-siswa-periode-data tahun_ajaran="{{ $angkatan }}" />
 

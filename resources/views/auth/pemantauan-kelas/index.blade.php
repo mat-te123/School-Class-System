@@ -1,4 +1,4 @@
-<x-app-layout title="Pendaftaran Pilihan">
+<x-app-layout title="Daftar Pilihan Siswa">
     <div class="flex flex-1 flex-col" x-data="{
         showConfirmModal: false,
         showDownloadModal: false,
@@ -6,10 +6,10 @@
     }" @keydown.escape.window="showDownloadModal = false">
 
         <div class="flex flex-col py-6 px-8 border border-b-black">
-            <h1 class="text-3xl leading-9 font-semibold">
+            <h1 class="mainTitle">
                 Daftar Pilihan Siswa
             </h1>
-            <span class="text-sm leading-5 font-medium">
+            <span class="subTitle">
                 Kelola daftar pilihan siswa yang telah mengisi formulir pendaftaran
             </span>
         </div>
@@ -133,6 +133,8 @@
 
             <form method="GET" action="{{ route('admin.pemantauan-minat.index') }}"
                 class="flex flex-row  p-3 justify-between bg-gray-200 border border-gray-300 rounded-lg w-full gap-2">
+                <input type="hidden" name="periode_id" value="{{ request()->input('periode_id') }}">
+
                 <button type="submit" id="status-default" name="status" value="{{ $status }}" class="hidden"
                     tabindex="-1" aria-hidden="true"></button>
 
@@ -222,12 +224,19 @@
                                 </tr>
                             @endif
                             @foreach ($siswaBelumMemilih as $index => $item)
-                                <tr>
+                                <tr class="group">
                                     <th>
                                         {{ $index + 1 }}
                                     </th>
                                     <td>
-                                        {{ $item->nama_lengkap }}
+                                        <div class="flex flex-row items-center gap-2 lowercase justify-between">
+                                            {{ $item->nama_lengkap }}
+                                            <a href="{{ route('siswa.show', $item->id) }}"
+                                                class="opacity-0 group-hover:opacity-100 bg-white hover:bg-gray-300 rounded-lg p-1 transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
+                                                <img src="{{ asset('Icon/Arrow_down.svg') }}" alt="Arrow icon"
+                                                    class="w-4 h-4">
+                                            </a>
+                                        </div>
                                     </td>
                                     <td>
                                         {{ $item->nisn }}
