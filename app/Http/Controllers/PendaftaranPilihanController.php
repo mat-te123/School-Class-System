@@ -50,8 +50,9 @@ class PendaftaranPilihanController extends Controller
 
             $pendaftaran = null;
             $kelasTersedia = collect();
+            $siswaMaxChoose = 0;
 
-            return view('siswa.pilih-kelas.index', compact('pendaftaran', 'kelasTersedia'))->with('message', 'Tidak ada periode pendaftaran yang sedang berjalan saat ini.');
+            return view('siswa.pilih-kelas.index', compact('pendaftaran', 'kelasTersedia', 'siswaMaxChoose'))->with('message', 'Tidak ada periode pendaftaran yang sedang berjalan saat ini.');
         }
 
         $pendaftaran = PendaftaranPilihan::with([
@@ -212,11 +213,8 @@ class PendaftaranPilihanController extends Controller
         // Dispatch job untuk kalkulasi ulang klasemen secara background
         RunPlacementJob::dispatch($pendaftaran->periode_pendaftaran_id);
 
-        return $this->handleWriteResponse($request, [
-            'success' => true,
-            'message' => 'Berhasil menyimpan 3 paket menu pilihan prioritas Anda.',
-            'data' => $pendaftaran,
-        ], 201);
+        return redirect()->route('siswa.paket-menu-aktif.show', $pendaftaran->periode_pendaftaran_id)
+            ->with('success', 'Pilihan paket prioritas Anda berhasil disubmit. Silakan tunggu hasil penempatan.');
     }
 
     /**

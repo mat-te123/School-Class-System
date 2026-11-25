@@ -123,16 +123,16 @@
                         </table>
                     </div>
                 @endif
+                <span class="text-xs text-red-500">
+                    Catatan: Siswa hanya dapat mengajukan penukaran kelas satu kali. jika ingin mengajukan
+                    kembali,
+                    silahkan hapus pengajuan yang sedang diproses*.
+                </span>
                 @if ($pengajuan != null)
-                    @if ($pengajuan == 'menunggu')
+                    @if ($pengajuan != 'menunggu')
                         <span class="text-xs text-red-500">
-                            Catatan: Siswa hanya dapat mengajukan penukaran kelas satu kali. jika ingin mengajukan
-                            kembali,
-                            silahkan hapus pengajuan yang sedang diproses atau telah disetujui *.
-                        </span>
-                    @else
-                        <span class="text-xs text-red-500">
-                            Catatan: Siswa tidak dapat mengajukan penukaran kelas lagi, setelah pengajuan diproses guru
+                            Catatan: Siswa tidak dapat mengajukan penukaran kelas lagi, setelah pengajuan disetujui oleh
+                            guru
                             *.
                         </span>
                     @endif
@@ -143,8 +143,5 @@
         </div>
         <x-add-modal-pengajuan-penukaran />
         <x-delete-modal />
-        <pre>
-            {{ json_encode($pengajuan, JSON_PRETTY_PRINT) }}
-        </pre>
     </div>
 </x-app-layout>

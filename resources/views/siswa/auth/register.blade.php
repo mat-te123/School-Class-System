@@ -14,14 +14,6 @@
 
 <body
     class="relative flex flex-col bg-[linear-gradient(136deg,#E5E7EB_24.53%,#9CA3AF_95.42%)] h-screen w-screen items-center justify-center">
-    {{-- Pesan Error Validasi --}}
-    @if ($errors->any())
-        <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)"
-            class=" bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-sm absolute top-4 left-3/5 transform translate-y-1 w-fit">
-            {{ $errors->first() }}
-        </div>
-    @endif
-
     @if (session('step') === 2)
         <div x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)"
             class="absolute top-4 left-3/5 transform translate-y-1 w-fit bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-lg text-sm">
@@ -68,6 +60,8 @@
             <div class="flex flex-col gap-1">
                 <label for="fnisn" class="text-sm leading-4 font-semibold">
                     NISN
+                    <span class="text-red-500"> * </span>
+
                 </label>
                 <input name="nisn" id="fnisn" type="text" placeholder="Masukkan NISN" required
                     value="{{ old('nisn', $siswa->nisn ?? '') }}" {{ $step === 2 ? 'readonly' : '' }}
@@ -89,6 +83,7 @@
                     <div class="flex flex-col gap-1 w-full">
                         <label for="fjenis_kelamin" class="text-sm leading-4 font-semibold">
                             Jenis Kelamin
+                            <span class="text-red-500"> * </span>
                         </label>
                         <select name="jenis_kelamin" id="fjenis_kelamin" required
                             class="border border-black rounded-lg py-1 px-4">
@@ -105,6 +100,8 @@
                     <div class="flex flex-col gap-1 w-full">
                         <label for="ftanggal_lahir" class="text-sm leading-4 font-semibold">
                             Tanggal Lahir
+                            <span class="text-red-500"> * </span>
+
                         </label>
                         <input name="tanggal_lahir" id="ftanggal_lahir" type="date" required
                             value="{{ old('tanggal_lahir') }}" class="border border-black rounded-lg py-1 px-4">
@@ -115,6 +112,8 @@
                 <div class="flex flex-col gap-1">
                     <label for="fangkatan" class="text-sm leading-4 font-semibold">
                         Angkatan
+                        <span class="text-red-500"> * </span>
+
                     </label>
                     <select name="angkatan" id="fangkatan" required class="border border-black rounded-lg py-1 px-4">
                         @for ($i = $year - 2; $i <= $year; $i++)
@@ -128,9 +127,11 @@
                 <div class="flex flex-col gap-1">
                     <label for="fpassword" class="text-sm leading-4 font-semibold">
                         Password
+                        <span class="text-red-500"> * </span>
+
                     </label>
                     <div class="relative w-full">
-                        <input name="password" id="fpassword" :type="showPassword ? 'text' : 'password'"
+                        <input name="password" id="fpassword" :type="showPassword ? 'text' : 'password'" minlength="8"
                             placeholder="******" required class="w-full border border-black rounded-lg py-1 px-4 pr-10">
                         <img :src="showPassword ? '{{ asset('Icon/Eye_fill.svg') }}' :
                             '{{ asset('Icon/Eye_close.svg') }}'"
@@ -143,9 +144,11 @@
                 <div class="flex flex-col gap-1">
                     <label for="fpassword_confirmation" class="text-sm leading-4 font-semibold">
                         Konfirmasi Password
+                        <span class="text-red-500"> * </span>
+
                     </label>
                     <div class="relative w-full">
-                        <input name="password_confirmation" id="fpassword_confirmation"
+                        <input name="password_confirmation" id="fpassword_confirmation" minlength="8"
                             :type="showConfirmPassword ? 'text' : 'password'" placeholder="******" required
                             class="w-full border border-black rounded-lg py-1 px-4">
                         <img :src="showConfirmPassword ? '{{ asset('Icon/Eye_fill.svg') }}' :
@@ -168,6 +171,9 @@
             </div>
         </form>
     </div>
+    <x-flash-message />
+
+
 </body>
 
 </html>

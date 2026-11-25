@@ -70,7 +70,7 @@ class SiswaPertukaranController extends Controller
 
         $hasilSeleksi = HasilSeleksi::where('siswa_id', $siswa->id)->first();
         if (! $hasilSeleksi || ! $hasilSeleksi->paket_menu_pilihan_id) {
-            return response()->json([
+            return $this->handleWriteResponse($request, [
                 'success' => false,
                 'message' => 'Anda belum terdaftar dalam paket kelas penempatan.',
             ], 422);

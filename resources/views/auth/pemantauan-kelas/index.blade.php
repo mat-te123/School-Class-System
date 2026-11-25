@@ -89,10 +89,10 @@
                         class="negative-primary-button w-fit whitespace-nowrap">
                         Download data
                     </button>
-                    <button type="button" @click="showConfirmModal = true"
+                    {{-- <button type="button" @click="showConfirmModal = true"
                         class="primary-button w-fit whitespace-nowrap">
                         Proses Data
-                    </button>
+                    </button> --}}
                 </div>
             </div>
 
@@ -301,7 +301,7 @@
 
 
         </div>
-        <div x-show="showConfirmModal"
+        {{-- <div x-show="showConfirmModal"
             class="flex flex-col fixed top-0 left-0 w-full h-full bg-black/50 z-50 justify-center items-center"
             style="display: none;">
             <div class="flex flex-col bg-white rounded-lg p-6 gap-4 w-[36rem]" @click.away="showConfirmModal = false">
@@ -331,7 +331,7 @@
             </div>
 
 
-        </div>
+        </div> --}}
     </div>
 
 </x-app-layout>
