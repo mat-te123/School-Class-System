@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ProgramStudi;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ProgramStudiController extends Controller
 {
@@ -82,7 +81,7 @@ class ProgramStudiController extends Controller
      */
     public function store(Request $request)
     {
-        $this->ensureAdmin();
+        $this->ensureAdmin('data program studi');
 
         $validated = $request->validate([
             'proyeksi_universitas_id' => 'required|uuid|exists:proyeksi_universitas,id',
@@ -113,7 +112,7 @@ class ProgramStudiController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $this->ensureAdmin();
+        $this->ensureAdmin('data program studi');
 
         $prodi = ProgramStudi::find($id);
 
@@ -149,7 +148,7 @@ class ProgramStudiController extends Controller
      */
     public function destroy(Request $request, string $id)
     {
-        $this->ensureAdmin();
+        $this->ensureAdmin('data program studi');
 
         $prodi = ProgramStudi::find($id);
 
@@ -165,18 +164,5 @@ class ProgramStudiController extends Controller
         return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Data program studi berhasil dihapus.',
-        ]);
-    }
-
-    private function ensureAdmin(): void
-    {
-        $user = Auth::guard('web')->user();
-
-        if (! $user || $user->role !== 'admin') {
-            abort(response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Hanya Admin yang dapat mengelola data program studi.',
-            ], 403));
-        }
-    }
+        ]);    }
 }

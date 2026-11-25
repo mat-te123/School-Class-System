@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     protected $fillable = [
         'id',
         'siswa_id',
+        'periode_pendaftaran_id',
         'paket_menu_pilihan_id',
         'pilihan_ke_diterima',
         'rank_pada_pilihan',

@@ -101,6 +101,7 @@ class SiswaHasilPenempatanTest extends TestCase
         $this->periode->update([
             'tanggal_buka' => now()->subDay(),
             'tanggal_tutup' => now()->addDays(2),
+            'status_pengumuman' => 'NON-AKTIF',
         ]);
 
         $payload = [
@@ -112,7 +113,7 @@ class SiswaHasilPenempatanTest extends TestCase
         ];
 
         $response = $this->actingAs($this->siswa, 'siswa')
-            ->putJson('/siswa/pendaftaran-pilihan', $payload);
+            ->putJson(route('siswa.pilih-kelas.update'), $payload);
 
         $response->assertStatus(200)
             ->assertJson(['success' => true]);
@@ -124,11 +125,33 @@ class SiswaHasilPenempatanTest extends TestCase
         ]);
     }
 
+    public function test_published_choices_are_read_only_for_manual_and_scheduled_announcements(): void
+    {
+        $this->periode->update(['tanggal_buka' => now()->subDay(), 'tanggal_tutup' => now()->addDay()]);
+        $this->actingAs($this->siswa, 'siswa');
+        $payload = ['pilihan' => [$this->paket2->id, $this->paket1->id, $this->paket3->id]];
+
+        foreach ([['status_pengumuman' => 'AKTIF'], ['status_pengumuman' => 'NON-AKTIF', 'tanggal_pengumuman' => now()->subMinute()]] as $publication) {
+            $this->periode->update($publication);
+            $this->get(route('siswa.pendaftaran-pilihan.index'))->assertOk()
+                ->assertSee('Pilihan kelas tidak dapat diubah.')->assertDontSee('Perbarui pilihan');
+            $this->putJson(route('siswa.pilih-kelas.update'), $payload)->assertUnprocessable();
+            $this->putJson(route('siswa.periode.update', ['id' => $this->periode->id]), $payload)->assertUnprocessable();
+        }
+
+        $this->assertDatabaseMissing('detail_pendaftaran_pilihan', [
+            'pendaftaran_pilihan_id' => $this->pendaftaran->id,
+            'paket_menu_pilihan_id' => $this->paket2->id,
+            'urutan_pilihan' => 1,
+        ]);
+    }
+
     public function test_siswa_can_view_hasil_penempatan_when_pengumuman_aktif(): void
     {
         HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paket1->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 5,
@@ -159,6 +182,7 @@ class SiswaHasilPenempatanTest extends TestCase
         HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paket1->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 5,
@@ -188,6 +212,7 @@ class SiswaHasilPenempatanTest extends TestCase
         HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paket1->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 5,
@@ -220,6 +245,7 @@ class SiswaHasilPenempatanTest extends TestCase
         HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paket1->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 5,

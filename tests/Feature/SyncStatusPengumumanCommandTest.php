@@ -24,7 +24,7 @@ class SyncStatusPengumumanCommandTest extends TestCase
 
         $periodeFuture = PeriodePendaftaran::create([
             'nama_periode' => 'Periode Belum Waktunya',
-            'tahun_ajaran' => '2026/2027',
+            'tahun_ajaran' => '2027/2028',
             'tanggal_buka' => now()->subDays(5),
             'tanggal_tutup' => now()->subDays(2),
             'status_pengumuman' => 'NON-AKTIF',

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\HasilSeleksi;
 use App\Models\LaporanPesan;
+use App\Models\PaketMenuPilihan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -55,7 +56,7 @@ class LaporanPesanController extends Controller
     /**
      * Menampilkan daftar laporan milik siswa yang sedang login.
      */
-    public function indexSiswa(Request $request)
+    public function siswaIndex(Request $request)
     {
         $siswaId = Auth::guard('siswa')->id();
 
@@ -152,7 +153,7 @@ class LaporanPesanController extends Controller
     /**
      * Memperbarui status dan catatan penanganan laporan (Khusus Admin / Guru BK).
      */
-    public function updateStatus(Request $request, string $id)
+    public function update(Request $request, string $id)
     {
         $laporan = LaporanPesan::findOrFail($id);
 
@@ -168,7 +169,14 @@ class LaporanPesanController extends Controller
 
             // Logika Otomatisasi
             if ($validated['status'] === 'selesai' && $laporan->kategori === 'Pindah Paket' && ! empty($laporan->payload['target_paket_id'])) {
-                $hasilSeleksi = HasilSeleksi::where('siswa_id', $laporan->siswa_id)->first();
+                $paketTujuan = PaketMenuPilihan::find($laporan->payload['target_paket_id']);
+                if (! $paketTujuan?->periode_id) {
+                    return;
+                }
+
+                $hasilSeleksi = HasilSeleksi::where('siswa_id', $laporan->siswa_id)
+                    ->where('periode_pendaftaran_id', $paketTujuan->periode_id)
+                    ->first();
 
                 if ($hasilSeleksi) {
                     $riwayat = $hasilSeleksi->riwayat_proses ?? [];

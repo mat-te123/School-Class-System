@@ -66,7 +66,7 @@
 
 
 
-        <form action="{{ route('siswa.login.form') }}" method="POST" class="w-full flex flex-col gap-4">
+        <form action="{{ route('siswa.login') }}" method="POST" class="w-full flex flex-col gap-4">
             @csrf
             <div class="flex flex-col gap-4 ">
                 <div class="flex flex-col gap-1">

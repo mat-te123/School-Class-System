@@ -21,6 +21,10 @@ class SiswaAuthController extends Controller
             return redirect()->route('siswa.dashboard');
         }
 
+        if (Auth::guard('web')->check()) {
+            return redirect()->route('admin-siswa.index');
+        }
+
         return view('siswa.auth.login');
     }
 
@@ -126,49 +130,6 @@ class SiswaAuthController extends Controller
         $request->session()->forget('url.intended');
 
         return redirect()->route('siswa.dashboard')->with('success', 'Selamat datang, '.$siswa->nama_lengkap);
-    }
-
-    /**
-     * Mendapatkan profil Siswa yang sedang login.
-     *
-     * @return JsonResponse
-     */
-    public function profile(Request $request)
-    {
-        $siswa = Auth::guard('siswa')->user();
-        $isSiswaLoggedIn = $siswa !== null;
-
-        if (! $siswa) {
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthenticated / Akses ditolak.',
-                ], 401);
-            }
-            abort(401, 'Unauthenticated / Akses ditolak.');
-        }
-
-        // Muat profil dan seluruh nilai dalam satu request agar halaman siswa
-        // dapat menampilkan identitas serta nilainya tanpa request terpisah.
-        $siswa->load([
-            'kelasAsalRelation:id,nama_kelas',
-            'nilaiLegerSiswa' => fn ($query) => $query
-                ->with(['details.mataPelajaran:id,kode_mapel,nama_mapel'])
-                ->orderByDesc('tahun_ajaran')
-                ->orderByDesc('semester'),
-        ]);
-
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'siswa' => $siswa,
-                    'nilai' => $siswa->nilaiLegerSiswa,
-                ],
-            ]);
-        }
-
-        return view('siswa.siswa.index', compact('siswa', 'isSiswaLoggedIn'));
     }
 
     /**
@@ -336,7 +297,7 @@ class SiswaAuthController extends Controller
             ]);
         }
 
-        return redirect('/login/siswa')->with('success', 'Registrasi berhasil. Silakan login menggunakan NISN dan password Anda.');
+        return redirect()->route('siswa.login.form')->with('success', 'Registrasi berhasil. Silakan login menggunakan NISN dan password Anda.');
     }
 
     /**
@@ -358,6 +319,6 @@ class SiswaAuthController extends Controller
             ]);
         }
 
-        return redirect('/login')->with('success', 'Anda telah berhasil logout.');
+        return redirect()->route('siswa.login.form')->with('success', 'Anda telah berhasil logout.');
     }
 }

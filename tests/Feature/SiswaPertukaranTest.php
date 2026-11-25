@@ -51,6 +51,7 @@ class SiswaPertukaranTest extends TestCase
 
         $paketAsal = PaketMenuPilihan::create([
             'id' => (string) Str::uuid(),
+            'periode_id' => $periode->id,
             'nama_menu' => 'Paket A',
             'rumpun' => 'eksakta',
             'kuota_kapasitas' => 36,
@@ -60,6 +61,7 @@ class SiswaPertukaranTest extends TestCase
 
         $paketTujuan = PaketMenuPilihan::create([
             'id' => (string) Str::uuid(),
+            'periode_id' => $periode->id,
             'nama_menu' => 'Paket B',
             'rumpun' => 'sosial',
             'kuota_kapasitas' => 36,
@@ -70,6 +72,7 @@ class SiswaPertukaranTest extends TestCase
         HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $siswa->id,
+            'periode_pendaftaran_id' => $periode->id,
             'paket_menu_pilihan_id' => $paketAsal->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 5,

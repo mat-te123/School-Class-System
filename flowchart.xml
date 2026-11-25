@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flowchart application="School Class System" framework="Laravel">
+  <start label="Mulai / Akses aplikasi"/>
+  <decision label="Jenis pengguna?"/>
+  <student>
+    <step>Registrasi: verifikasi NISN dan lengkapi akun</step>
+    <step>Login NISN dan kata sandi</step>
+    <decision>Akun aktif dan kredensial valid?</decision>
+    <step>Dashboard: cek periode pendaftaran aktif</step>
+    <step>Lihat nilai dan paket kelas aktif beserta kuota dan kriteria</step>
+    <decision>Periode pendaftaran terbuka?</decision>
+    <step>Pilih prioritas kelas/paket</step>
+    <decision>Jumlah pilihan, UUID, keunikan, dan paket aktif valid?</decision>
+    <step>Simpan PendaftaranPilihan dan detail; perbarui kuota; jalankan penempatan</step>
+    <step>Lihat peringkat, hasil penempatan, atau ajukan pertukaran</step>
+  </student>
+  <admin>
+    <step>Login Admin/Guru BK</step>
+    <step>Kelola master siswa, kelas asal, mata pelajaran, nilai, periode, paket, dan bobot</step>
+    <step>Review dan setujui/tolak pendaftaran atau pertukaran</step>
+    <step>Jalankan penjurusan, tinjau kuota, override, kunci, dan publikasikan hasil</step>
+    <step>Pantau minat serta lihat atau ekspor laporan</step>
+  </admin> 
+  <shared>
+    <step>Kelola laporan pesan</step>
+    <step>Lihat proyeksi universitas dan program studi</step>
+  </shared>
+  <end label="Logout"/>
+</flowchart>

@@ -1,7 +1,10 @@
 <x-app-layout title="Pendaftaran Pilihan">
-    <div class="flexflex-1 flex-col" x-data="{
+    <div class="flex flex-1 flex-col" x-data="{
         showConfirmModal: false,
-    }">
+        showDownloadModal: false,
+        downloadFormat: 'pdf',
+    }" @keydown.escape.window="showDownloadModal = false">
+
         <div class="flex flex-col py-6 px-8 border border-b-black">
             <h1 class="text-3xl leading-9 font-semibold">
                 Daftar Pilihan Siswa
@@ -10,7 +13,13 @@
                 Kelola daftar pilihan siswa yang telah mengisi formulir pendaftaran
             </span>
         </div>
+
         <div class="flex flex-1 flex-col gap-4 px-8 py-6">
+            <a href="{{ route('periode-penjurusan.show', ['id' => $periodeId]) }}" class="primary-button w-fit">
+                kembali
+
+
+            </a>
             <div class="flex flex-row w-full justify-start gap-8">
                 @php
                     $items = [
@@ -29,7 +38,8 @@
                     ];
                 @endphp
                 @foreach ($items as $key => $value)
-                    <div class="flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
+                    <div
+                        class="bg-gray-50 shadow-2xl shadow-black/10 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
                         <div class="flex flex-col border-l border-green-600 px-4">
                             <span class="text-lg font-semibold">{{ $value['title'] }}</span>
                             <span class="text-base font-normal">{{ $value['count'] }} siswa</span>
@@ -55,7 +65,8 @@
                     @endphp
 
 
-                    <div class="flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
+                    <div
+                        class="shadow-2xl shadow-black/10 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
                         <div class="flex flex-col border-l border-green-600 px-4">
                             <span class="text-lg font-semibold">{{ $paket->nama_menu }}</span>
                             <span class="text-base font-normal">{{ $total }} siswa</span>
@@ -73,19 +84,61 @@
                         Daftar Kelas yang dipilih oleh siswa pada formulir pendaftaran
                     </span>
                 </div>
-                <button type="button" @click="showConfirmModal = true"
-                    class="bg-black text-sm text-white whitespace-nowrap h-fit px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-100 ease-in-out active:shadow-lg">
-                    Proses Data
-                </button>
+                <div class="flex gap-2">
+                    <button type="button" @click="showDownloadModal = true"
+                        class="negative-primary-button w-fit whitespace-nowrap">
+                        Download data
+                    </button>
+                    <button type="button" @click="showConfirmModal = true"
+                        class="primary-button w-fit whitespace-nowrap">
+                        Proses Data
+                    </button>
+                </div>
+            </div>
+
+            <div x-show="showDownloadModal" x-cloak x-transition.opacity
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+                @click.self="showDownloadModal = false">
+                <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl" @click.stop>
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-semibold">Download data minat siswa</h2>
+                            <p class="mt-1 text-sm text-gray-600">Pilih format file yang ingin diunduh.</p>
+                        </div>
+                        <button type="button" class="text-2xl leading-none text-gray-500" aria-label="Tutup modal"
+                            @click="showDownloadModal = false">&times;</button>
+                    </div>
+
+                    <label for="minat-download-format"
+                        class="mt-5 block text-sm font-medium text-gray-700">Format</label>
+                    <select id="minat-download-format" x-model="downloadFormat"
+                        class="select-primary mt-2 w-full text-sm">
+                        <option value="pdf">PDF</option>
+                        <option value="csv">CSV</option>
+                    </select>
+
+                    <div class="mt-6 flex justify-end gap-2">
+                        <button type="button"
+                            class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            @click="showDownloadModal = false">Batal</button>
+                        <a x-show="downloadFormat === 'pdf'"
+                            href="{{ route('admin.laporan.export.minat-siswa', ['periode_id' => $periodeId, 'paket_id' => request('kelas_pilihan'), 'format' => 'pdf']) }}"
+                            class="primary-button" @click="showDownloadModal = false">Download</a>
+                        <a x-show="downloadFormat === 'csv'"
+                            href="{{ route('admin.laporan.export.minat-siswa', ['periode_id' => $periodeId, 'paket_id' => request('kelas_pilihan'), 'format' => 'csv']) }}"
+                            class="primary-button" @click="showDownloadModal = false">Download</a>
+                    </div>
+                </div>
             </div>
 
             <form method="GET" action="{{ route('admin.pemantauan-minat.index') }}"
                 class="flex flex-row  p-3 justify-between bg-gray-200 border border-gray-300 rounded-lg w-full gap-2">
+                <input type="hidden" name="periode_id" value="{{ $periodeId }}">
                 <button type="submit" id="status-default" name="status" value="{{ $status }}" class="hidden"
                     tabindex="-1" aria-hidden="true"></button>
 
                 <input type="text" name="search" value="{{ request('search') }}"
-                    placeholder="Cari nama, NISN, atau NIS..."
+                    placeholder="Cari nama, NISN, atau NIS..." oninput="this.value = this.value.toLowerCase()"
                     class="px-4 rounded-lg border border-gray-400 w-full text-sm">
 
                 @foreach (['sudah' => 'Sudah Mengisi', 'belum' => 'Belum Mengisi'] as $value => $label)
@@ -108,17 +161,16 @@
                 @endif
 
             </form>
-            <div class="flex flex-col rounded-xl overflow-hidden border border-gray-300 w-full">
-                <table class="min-w-full border-separate border-spacing-0">
+            <div class="table-container">
+                <table class="data-table">
                     <thead>
-                        <tr
-                            class="bg-gray-300 text-xs font-semibold uppercase text-gray-600 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left first:[&_th]:w-0">
+                        <tr>
                             <th>#</th>
                             <th>Nama Lengkap</th>
                             @if ($status == 'sudah')
-                                <th>Pilihan Kelas 1</th>
-                                <th>Pilihan Kelas 2</th>
-                                <th>Pilihan Kelas 3</th>
+                                @for ($i = 1; $i <= $currentPeriodeSelectionValue; $i++)
+                                    <th> Pilihan {{ $i }} </th>
+                                @endfor
                             @else
                                 <th>NISN</th>
                                 <th>NIS</th>
@@ -137,9 +189,8 @@
                                 </tr>
                             @else
                                 @foreach ($siswaSudahMemilih as $index => $item)
-                                    <tr
-                                        class="hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
-                                        <th class="border-r border-t border-gray-200 p-2">
+                                    <tr class="group">
+                                        <th>
                                             {{ $index + 1 }}
                                         </th>
                                         <td>
@@ -152,15 +203,11 @@
                                                 </a>
                                             </div>
                                         </td>
-                                        <td>
-                                            {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 1)?->paketMenuPilihan?->nama_menu ?? '—' }}
-                                        </td>
-                                        <td>
-                                            {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 2)?->paketMenuPilihan?->nama_menu ?? '—' }}
-                                        </td>
-                                        <td>
-                                            {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', 3)?->paketMenuPilihan?->nama_menu ?? '—' }}
-                                        </td>
+                                        @for ($i = 1; $i <= $currentPeriodeSelectionValue; $i++)
+                                            <td>
+                                                {{ $item->pendaftaranPilihan->first()?->detailPendaftaran->firstWhere('urutan_pilihan', $i)?->paketMenuPilihan?->nama_menu ?? '—' }}
+                                            </td>
+                                        @endfor
                                     </tr>
                                 @endforeach
                             @endif
@@ -171,16 +218,16 @@
                                 <tr>
                                     <td colspan="6"
                                         class="h-full border border-gray-200 bg-white py-4 text-center align-middle">
-                                        Semua ssiswa telah memilih kelas.
+                                        Semua siswa telah memilih kelas.
                                     </td>
                                 </tr>
                             @endif
                             @foreach ($siswaBelumMemilih as $index => $item)
-                                <tr class="hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
-                                    <th class="border-r border-t border-gray-200 p-2">
+                                <tr>
+                                    <th>
                                         {{ $index + 1 }}
                                     </th>
-                                    <td class="px-3 lowercase">
+                                    <td>
                                         {{ $item->nama_lengkap }}
                                     </td>
                                     <td>
@@ -191,13 +238,13 @@
                                     </td>
                                     @if ($item->is_active == false)
                                         <td>
-                                            <span class="negative-status">
+                                            <span class="status-badge status-badge-danger">
                                                 Tidak Aktif
                                             </span>
                                         </td>
                                     @else
                                         <td>
-                                            <span class="positive-status">
+                                            <span class="status-badge status-badge-success">
                                                 Aktif
                                             </span>
                                         </td>
@@ -210,8 +257,8 @@
                 @php $data = $status == 'sudah' ? $siswaSudahMemilih : $siswaBelumMemilih; @endphp
 
                 @if ($data->hasPages())
-                    <div class="flex flex-row py-3 px-4 bg-gray-300 w-full justify-between items-center">
-                        <p class="text-black text-sm leading-5">
+                    <div class="flex flex-row py-3 px-4 bg-[#f3f4f6] w-full justify-between items-center text-sm">
+                        <p class="text-gray-500 text-sm leading-5">
                             {{ $data->firstItem() }} sampai {{ $data->lastItem() }} dari {{ $data->total() }} hasil
                         </p>
                         <div class="flex flex-row w-fit gap-3 items-center">
@@ -232,7 +279,8 @@
                             </div>
 
                             @if ($data->hasMorePages())
-                                <a href="{{ $data->nextPageUrl() }}" class="text-gray-800 hover:underline">selanjutnya
+                                <a href="{{ $data->nextPageUrl() }}"
+                                    class="text-gray-800 hover:underline">selanjutnya
                                     &gt;</a>
                             @else
                                 <span class="text-gray-500 cursor-not-allowed">selanjutnya &gt;</span>
@@ -248,13 +296,16 @@
         <div x-show="showConfirmModal"
             class="flex flex-col fixed top-0 left-0 w-full h-full bg-black/50 z-50 justify-center items-center"
             style="display: none;">
-            <div class="flex flex-col bg-white rounded-lg p-6 gap-4 w-100" @click.away="showConfirmModal = false">
-                <h2 class="text-lg font-semibold">
-                    Konfirmasi Proses Data
-                </h2>
-                <p class="text-sm text-gray-500">
-                    Apakah Anda yakin ingin memproses data pilihan siswa? Tindakan ini tidak dapat dibatalkan.
-                </p>
+            <div class="flex flex-col bg-white rounded-lg p-6 gap-4 w-[36rem]" @click.away="showConfirmModal = false">
+                <div class="flex flex-col gap-1">
+                    <h2 class="mainTitle">
+                        Konfirmasi Proses Data
+                    </h2>
+                    <p class="subTitle">
+                        Data pilihan siswa akan diproses menjadi hasil penempatan. Tindakan ini tidak dapat dibatalkan.
+                    </p>
+                </div>
+
                 <div class="flex flex-row justify-end gap-2">
                     <button type="button" @click="showConfirmModal = false"
                         class="text-sm px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600">
@@ -262,7 +313,7 @@
                     </button>
                     <form method="POST" action={{ route('admin.hasil-penjurusan.process') }}>
                         @csrf
-                        <input type="hidden" name="periode_id" value="{{ request('periode_id') }}">
+                        <input type="hidden" name="periode_id" value="{{ $periodeId }}">
                         <button type="submit"
                             class="text-sm px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">
                             Proses Data

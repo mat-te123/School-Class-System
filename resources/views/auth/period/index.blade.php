@@ -10,21 +10,30 @@
         Data: {},
     }">
         <div class="flex flex-col py-6 px-8 border border-b-black">
-            <h1 class="text-4xl leading-9 font-semibold">
+            <h1 class="mainTitle">
                 Periode
             </h1>
-            <span class="text-md leading-5 font-medium">
+            <span class="subTitle">
                 Kelola periode penjurusan
             </span>
         </div>
         <div class="flex flex-col ">
 
         </div>
-        <div class="grid grid-cols-3 grid-rows-2 py-6 px-8 gap-3">
-            <div class="col-span-3 row-span-2 flex flex-row justify-start w-full h-fit">
+        <div class="grid grid-cols-3 py-6 px-8 gap-7">
+            <div class="h-fit col-span-3 flex flex-row justify-between items-center">
+                <div class="flex flex-col">
+                    <h2 class="mainTitle text-lg">
+                        Daftar periode yang terdaftar pada sistem
+                    </h2>
+                    <span class="subTitle text-sm">
+                        Berikut adalah daftar periode yang telah terdaftar pada sistem. Anda dapat menambahkan,
+                        mengedit,
+                        atau menghapus periode sesuai kebutuhan.
+                    </span>
+                </div>
                 @if ($canAddPeriod)
-                    <button
-                        class="px-4 py-2 text-white rounded-md bg-[linear-gradient(180deg,#273344_11.77%,#000_166.84%)] whitespace-nowrap"
+                    <button class="primary-button whitespace-nowrap w-fit"
                         @click="
                     showaddmodal=true;
                     addUrl='{{ route('periode-penjurusan.store') }}';
@@ -34,13 +43,10 @@
                 @else
                     <button type="button" disabled
                         title="Periode tahun ajaran {{ $tahunAjaranSekarang }} sudah tersedia"
-                        class="px-4 py-2 text-gray-500 bg-gray-300 rounded-md
-               cursor-not-allowed whitespace-nowrap">
+                        class="primary-button disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap w-fit">
                         Tambah Periode
                     </button>
                 @endif
-
-
             </div>
             @foreach ($periode as $item)
                 @php
@@ -50,9 +56,10 @@
                         strlen($item->nama_periode) > 20
                             ? substr($item->nama_periode, 0, 20) . '...'
                             : $item->nama_periode;
+                    $isPublished = $item->isPengumumanDibuka();
                 @endphp
                 <x-period-card :nama_periode="$nama_periode" :tahun_ajaran="$item->tahun_ajaran" :tanggal_buka="$tanggal_buka->format('d F Y')" :tanggal_tutup="$tanggal_tutup->format('d F Y')" :is_active="$item->is_active"
-                    :item="$item" />
+                    :item="$item" :is_published="$isPublished" />
             @endforeach
 
         </div>
@@ -82,8 +89,10 @@
             </div>
         @endif
 
-        <x-delete-modal />  
-        <x-add-modal-periode :tahunAjaranSekarang="$tahunAjaranSekarang" />
+        <x-delete-modal />
+        @if ($canAddPeriod)
+            <x-add-modal-periode :tahunAjaranSekarang="$tahunAjaranSekarang" />
+        @endif
         <x-update-modal-periode />
-        
+
 </x-app-layout>

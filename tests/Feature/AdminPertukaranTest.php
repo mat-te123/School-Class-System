@@ -80,6 +80,7 @@ class AdminPertukaranTest extends TestCase
 
         $this->paketAsal = PaketMenuPilihan::create([
             'id' => (string) Str::uuid(),
+            'periode_id' => $this->periode->id,
             'nama_menu' => 'Paket IPA',
             'rumpun' => 'eksakta',
             'kuota_kapasitas' => 36,
@@ -89,6 +90,7 @@ class AdminPertukaranTest extends TestCase
 
         $this->paketTujuan = PaketMenuPilihan::create([
             'id' => (string) Str::uuid(),
+            'periode_id' => $this->periode->id,
             'nama_menu' => 'Paket IPS',
             'rumpun' => 'sosial',
             'kuota_kapasitas' => 36,
@@ -99,6 +101,7 @@ class AdminPertukaranTest extends TestCase
         HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paketAsal->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 5,
@@ -176,6 +179,7 @@ class AdminPertukaranTest extends TestCase
         // HasilSeleksi updated to target paket
         $this->assertDatabaseHas('hasil_seleksi', [
             'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paketTujuan->id,
             'is_manual_override' => true,
         ]);
@@ -199,6 +203,7 @@ class AdminPertukaranTest extends TestCase
         // HasilSeleksi unchanged
         $this->assertDatabaseHas('hasil_seleksi', [
             'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paketAsal->id,
             'is_manual_override' => false,
         ]);
@@ -220,6 +225,7 @@ class AdminPertukaranTest extends TestCase
         // HasilSeleksi unchanged
         $this->assertDatabaseHas('hasil_seleksi', [
             'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paketAsal->id,
             'is_manual_override' => false,
         ]);

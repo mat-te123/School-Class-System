@@ -203,15 +203,14 @@ class PenjurusanPlacementService
 
         // Save to database
         $now = now();
-        DB::transaction(function () use ($results, $now) {
-            // Clear existing results
-            $siswaIds = collect($results)->pluck('siswa_id')->unique();
-            HasilSeleksi::whereIn('siswa_id', $siswaIds)->delete();
+        DB::transaction(function () use ($results, $now, $periodeId) {
+            HasilSeleksi::where('periode_pendaftaran_id', $periodeId)->delete();
 
             // Insert new results
             foreach ($results as $result) {
                 HasilSeleksi::create([
                     'id' => (string) Str::uuid(),
+                    'periode_pendaftaran_id' => $periodeId,
                     ...$result,
                     'tanggal_diproses' => $now,
                     'is_manual_override' => false,

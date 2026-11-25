@@ -33,7 +33,7 @@ class UserAuthControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->postJson('/login', [
+        $response = $this->postJson('/login/admin', [
             'username' => 'admin_test',
             'password' => 'password123',
         ]);
@@ -69,7 +69,7 @@ class UserAuthControllerTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->postJson('/login', [
+        $response = $this->postJson('/login/admin', [
             'username' => 'admin_test',
             'password' => 'wrongpassword',
         ]);

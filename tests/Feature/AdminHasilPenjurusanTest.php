@@ -100,6 +100,7 @@ class AdminHasilPenjurusanTest extends TestCase
         $this->paket1 = PaketMenuPilihan::create([
             'id' => (string) Str::uuid(),
             'nama_menu' => 'Paket IPA',
+            'periode_id' => $this->periode->id,
             'rumpun' => 'eksakta',
             'kuota_kapasitas' => 2,
             'kuota_terisi' => 0,
@@ -109,6 +110,7 @@ class AdminHasilPenjurusanTest extends TestCase
         $this->paket2 = PaketMenuPilihan::create([
             'id' => (string) Str::uuid(),
             'nama_menu' => 'Paket IPS',
+            'periode_id' => $this->periode->id,
             'rumpun' => 'sosial',
             'kuota_kapasitas' => 2,
             'kuota_terisi' => 0,
@@ -211,11 +213,80 @@ class AdminHasilPenjurusanTest extends TestCase
         $response->assertStatus(403);
     }
 
+    public function test_admin_pages_handle_missing_period_without_broken_links(): void
+    {
+        $this->actingAs($this->admin, 'web')->get(route('admin.hasil-penjurusan.index'))
+            ->assertRedirect(route('periode-penjurusan.index'));
+
+        $detailUrl = route('periode-penjurusan.show', ['id' => $this->periode->id]);
+        $this->get(route('admin.pemantauan-minat.index'))
+            ->assertOk()->assertSee('href="'.$detailUrl.'"', false)
+            ->assertSee('name="periode_id" value="'.$this->periode->id.'"', false);
+    }
+
+    public function test_weight_settings_reject_packages_from_another_period(): void
+    {
+        $otherPeriod = $this->periode->replicate()->fill(['nama_periode' => 'Periode Lain', 'tahun_ajaran' => '2025/2026', 'is_active' => false]);
+        $otherPeriod->save();
+
+        $url = route('kriteria-bobot.index', ['periode' => $otherPeriod->id, 'paket_id' => $this->paket1->id]);
+        $this->actingAs($this->nonAdmin, 'web')->get($url)->assertForbidden();
+        $this->actingAs($this->admin, 'web')->get($url)->assertNotFound();
+    }
+
+    public function test_weight_form_saves_one_package_and_rejects_invalid_batches(): void
+    {
+        $url = route('kriteria-bobot.package.save', ['periode' => $this->periode->id, 'paket' => $this->paket1->id]);
+        $key = ['paket_menu_pilihan_id' => $this->paket1->id, 'master_mata_pelajaran_id' => $this->mapel->id];
+        $this->actingAs($this->admin, 'web')->putJson($url, ['bobot' => [$this->mapel->id => '75.25', (string) Str::uuid() => '10']])
+            ->assertUnprocessable()->assertJsonValidationErrors('bobot');
+        $this->assertDatabaseHas('kriteria_bobot_menu', [...$key, 'bobot_persen' => 100]);
+
+        $this->put($url, ['bobot' => [$this->mapel->id => '75.25']])->assertRedirect();
+        $this->assertDatabaseHas('kriteria_bobot_menu', [...$key, 'bobot_persen' => 75.25]);
+        $this->put($url, ['bobot' => [$this->mapel->id => null]])->assertRedirect();
+        $this->assertDatabaseMissing('kriteria_bobot_menu', $key);
+    }
+
+    public function test_processing_new_period_does_not_show_or_replace_old_results(): void
+    {
+        $periodeLama = $this->periode->replicate()->fill([
+            'nama_periode' => 'Periode Lama',
+            'tahun_ajaran' => '2023/2024',
+            'is_active' => false,
+        ]);
+        $periodeLama->save();
+        $hasilLama = HasilSeleksi::create([
+            'siswa_id' => $this->siswa1->id,
+            'periode_pendaftaran_id' => $periodeLama->id,
+            'skor_penempatan' => 80,
+            'rata_6_mapel' => 80,
+            'mekanisme' => 'Kuota Penuh',
+            'tanggal_diproses' => now()->subDay(),
+        ]);
+
+        $url = '/admin/hasil-penjurusan?periode_id=';
+        $this->actingAs($this->admin, 'web')->getJson($url.$this->periode->id)
+            ->assertOk()->assertJsonPath('summary.total_siswa', 0);
+
+        for ($i = 0; $i < 2; $i++) {
+            $this->postJson('/admin/hasil-penjurusan/process', ['periode_id' => $this->periode->id])
+                ->assertOk();
+        }
+
+        $this->getJson($url.$this->periode->id)
+            ->assertOk()->assertJsonPath('summary.total_siswa', 2);
+        $this->getJson($url.$periodeLama->id)
+            ->assertOk()->assertJsonPath('data.data.0.id', $hasilLama->id)
+            ->assertJsonPath('summary.total_siswa', 1);
+    }
+
     public function test_admin_can_view_hasil_penjurusan(): void
     {
         HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa1->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paket1->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 1,
@@ -246,6 +317,7 @@ class AdminHasilPenjurusanTest extends TestCase
         $hasil = HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa1->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paket1->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 1,
@@ -256,7 +328,7 @@ class AdminHasilPenjurusanTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->admin, 'web')
-            ->getJson('/admin/hasil-penjurusan/siswa/'.$this->siswa1->id);
+            ->getJson('/admin/hasil-penjurusan/siswa/'.$this->siswa1->id.'?periode_id='.$this->periode->id);
 
         $response->assertStatus(200)
             ->assertJson(['success' => true]);
@@ -264,9 +336,17 @@ class AdminHasilPenjurusanTest extends TestCase
 
     public function test_admin_can_override_hasil_with_reason(): void
     {
+        PendaftaranPilihan::where('siswa_id', $this->siswa1->id)
+            ->where('periode_pendaftaran_id', $this->periode->id)
+            ->firstOrFail()->detailPendaftaran()->create([
+                'paket_menu_pilihan_id' => $this->paket2->id,
+                'urutan_pilihan' => 2,
+            ]);
+
         $hasil = HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa1->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paket1->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 1,
@@ -298,6 +378,7 @@ class AdminHasilPenjurusanTest extends TestCase
         $hasil = HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa1->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paket1->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 1,
@@ -323,6 +404,7 @@ class AdminHasilPenjurusanTest extends TestCase
         $hasil = HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa1->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paket1->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 1,
@@ -334,7 +416,7 @@ class AdminHasilPenjurusanTest extends TestCase
 
         $response = $this->actingAs($this->admin, 'web')
             ->putJson('/admin/hasil-penjurusan/'.$hasil->id.'/override', [
-                'paket_menu_pilihan_id' => $this->paket2->id,
+                'paket_menu_pilihan_id' => $this->paket1->id,
                 'catatan_perubahan' => 'Test reason',
             ]);
 

@@ -5,10 +5,118 @@ namespace App\Http\Controllers;
 use App\Models\KelasAsal;
 use App\Models\PeriodePendaftaran;
 use App\Models\Siswa;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class SiswaController extends Controller
 {
+    /**
+     * Dashboard siswa: mengambil data profil dan periode aktif, kemudian merender view atau response JSON.
+     */
+    public function dashboard(Request $request): View|JsonResponse|RedirectResponse
+    {
+        $siswa = Auth::guard('siswa')->user();
+
+        if (! $siswa) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Akses ditolak.',
+                ], 401);
+            }
+
+            return redirect()->route('siswa.login.form');
+        }
+
+        $siswa->load('kelasAsalRelation');
+
+        $now = now();
+        $periodeAktif = PeriodePendaftaran::where('is_active', true)
+            ->where('tanggal_buka', '<=', $now)
+            ->where('tanggal_tutup', '>=', $now)
+            ->first();
+
+        $isperiodeAktif = $periodeAktif !== null;
+
+
+        $isPertukaranAvailable = $periodeAktif && $periodeAktif->tanggal_mulai_pertukaran != null && $periodeAktif->tanggal_selesai_pertukaran != null;
+        $isFinalAndPublished = $periodeAktif && $periodeAktif->status_pengumuman == 'AKTIF' && $periodeAktif->is_hasil_final;
+        $pertukaranDate = $isPertukaranAvailable && $isFinalAndPublished && $now->between($periodeAktif->tanggal_mulai_pertukaran, $periodeAktif->tanggal_selesai_pertukaran)
+            ? PeriodePendaftaran::whereKey($periodeAktif->getKey())->select('tanggal_mulai_pertukaran', 'tanggal_selesai_pertukaran')->first()
+            : null;
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'siswa' => $siswa,
+                    'Pertukaran_date' => $pertukaranDate,
+                    'periode_aktif' => $periodeAktif,
+                ],
+            ]);
+        }
+
+        return view('siswa.dashboard.index', compact('siswa', 'periodeAktif', 'isperiodeAktif', 'pertukaranDate'));
+    }
+
+    /**
+     * Mendapatkan profil Siswa yang sedang login beserta nilai leger.
+     */
+    public function profile(Request $request)
+    {
+        $siswa = Auth::guard('siswa')->user();
+        $isSiswaLoggedIn = $siswa !== null;
+
+        if (! $siswa) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated / Akses ditolak.',
+                ], 401);
+            }
+            abort(401, 'Unauthenticated / Akses ditolak.');
+        }
+
+        $siswa->load([
+            'kelasAsalRelation:id,nama_kelas',
+            'nilaiLegerSiswa' => fn ($query) => $query
+                ->with(['details.mataPelajaran:id,kode_mapel,nama_mapel'])
+                ->orderByDesc('tahun_ajaran')
+                ->orderByDesc('semester'),
+        ]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'siswa' => $siswa,
+                    'nilai' => $siswa->nilaiLegerSiswa,
+                ],
+            ]);
+        }
+
+        return view('siswa.siswa.index', compact('siswa', 'isSiswaLoggedIn'));
+    }
+    /**
+     * Halaman kelola siswa untuk admin, dengan redirect berbasis guard.
+     * Siswa diarahkan ke dashboard miliknya; guest ke form login.
+     */
+    public function adminIndex(Request $request)
+    {
+        if (Auth::guard('siswa')->check()) {
+            return redirect()->route('siswa.dashboard');
+        }
+
+        if (! Auth::guard('web')->check()) {
+            return redirect()->guest(route('login'));
+        }
+
+        return $this->index($request);
+    }
+
     public function index(Request $request)
     {
         $validated = $request->validate([

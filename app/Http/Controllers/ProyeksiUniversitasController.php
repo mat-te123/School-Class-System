@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ProyeksiUniversitas;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ProyeksiUniversitasController extends Controller
 {
@@ -68,7 +67,7 @@ class ProyeksiUniversitasController extends Controller
      */
     public function store(Request $request)
     {
-        $this->ensureAdmin();
+        $this->ensureAdmin('data proyeksi universitas');
 
         $validated = $request->validate([
             'nama_universitas' => 'required|string|max:200',
@@ -99,7 +98,7 @@ class ProyeksiUniversitasController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $this->ensureAdmin();
+        $this->ensureAdmin('data proyeksi universitas');
 
         $univ = ProyeksiUniversitas::find($id);
 
@@ -136,7 +135,7 @@ class ProyeksiUniversitasController extends Controller
      */
     public function destroy(Request $request, string $id)
     {
-        $this->ensureAdmin();
+        $this->ensureAdmin('data proyeksi universitas');
 
         $univ = ProyeksiUniversitas::find($id);
 
@@ -152,18 +151,5 @@ class ProyeksiUniversitasController extends Controller
         return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Data proyeksi universitas berhasil dihapus.',
-        ]);
-    }
-
-    private function ensureAdmin(): void
-    {
-        $user = Auth::guard('web')->user();
-
-        if (! $user || $user->role !== 'admin') {
-            abort(response()->json([
-                'success' => false,
-                'message' => 'Akses ditolak. Hanya Admin yang dapat mengelola data proyeksi universitas.',
-            ], 403));
-        }
-    }
+        ]);    }
 }

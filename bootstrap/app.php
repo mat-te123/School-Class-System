@@ -17,6 +17,16 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.any' => EnsureAnyAuthenticated::class,
         ]);
 
+        // Guest pada route siswa diarahkan ke form login siswa (/);
+        // route lain (admin/guru BK) ke form login admin (/login/admin).
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->routeIs('siswa.*') || $request->is('siswa', 'siswa/*')) {
+                return route('siswa.login.form');
+            }
+
+            return route('login');
+        });
+
         $middleware->validateCsrfTokens(except: [
             'login',
             'login/*',

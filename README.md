@@ -7,6 +7,28 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Hasil penjurusan
+
+Jalankan `php artisan migrate` saat deploy. Hasil seleksi disimpan per siswa dan periode. **Proses Data** mengganti hasil periode yang dipilih saja; pendaftar belum muncul di hasil sampai seleksi periode itu dijalankan.
+
+Buka hasil penjurusan dari **Detail Periode**. Tanpa ID periode, halaman hasil mengarahkan ke daftar periode; halaman pemantauan memakai periode aktif.
+
+Satu tahun ajaran hanya boleh punya satu periode yang belum dihapus, apa pun gelombang atau status publikasinya. Tombol **Tambah Periode** nonaktif jika tahun ajaran berjalan sudah punya periode. Migrasi menolak duplikat yang masih ada; data tidak dihapus atau dipindahkan otomatis.
+
+Jika periode terakhir dihapus, laporan hasil dan minat siswa tetap bisa dibuka. Keduanya menampilkan daftar kosong dan menonaktifkan unduhan sampai ada periode baru.
+
+Menghapus periode juga mengarsipkan paket kelasnya. Bobot tetap tersimpan bersama paket arsip, tetapi tidak tampil dan tidak disalin ke periode pengganti. Periode baru dimulai tanpa kelas dan bobot.
+
+Untuk mengisi paket kelas contoh P1–P5 pada periode aktif, jalankan `php artisan db:seed --class=PaketMenuPilihanSeeder`. Seeder ini tidak menimpa paket yang sudah ada atau mengisi bobot.
+
+Daftar paket aktif siswa hanya menampilkan paket dari periode yang dipilih lewat kartu **Periode pendaftaran**. Jika URL tidak menyertakan ID, daftar memakai periode aktif.
+
+Setelah hasil penjurusan dipublikasikan, termasuk melalui jadwal pengumuman, pilihan kelas yang sudah dikirim hanya bisa dilihat. Siswa tidak bisa mengirim atau memperbarui pilihan pada periode tersebut.
+
+Admin mengatur bobot per paket melalui **Kelas → Detail Kelas → Atur Bobot**. Halaman pengaturan terbuka dengan paket tersebut terpilih. Tombol **Kembali** membuka detail paket yang sedang dipilih. Aktifkan switch mata pelajaran yang dipakai, isi bobot, lalu klik **Simpan Bobot Paket**. Total hanya menjumlahkan mapel aktif (target 100%); menonaktifkan mapel menghapus bobotnya setelah dikonfirmasi dan disimpan. Jalankan **Proses Data** untuk memperbarui skor draf.
+
+Migrasi mengambil periode hasil lama dari paket penempatan. Jika paket tidak menunjukkan periode, migrasi memakai pendaftaran yang sudah dikirim saat seleksi hanya jika kandidatnya tepat satu; jika tidak, migrasi berhenti agar hasil tidak dipindahkan ke periode yang salah.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

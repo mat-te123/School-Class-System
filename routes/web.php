@@ -1,9 +1,8 @@
 <?php
 
-use App\Http\Controllers\AdminHasilPenjurusanController;
 use App\Http\Controllers\AdminLaporanController;
-use App\Http\Controllers\AdminPendaftaranReviewController;
-use App\Http\Controllers\AdminPertukaranController;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\HasilPenjurusanController;
 use App\Http\Controllers\KelasAsalController;
 use App\Http\Controllers\KriteriaBobotMenuController;
 use App\Http\Controllers\LaporanPesanController;
@@ -11,246 +10,279 @@ use App\Http\Controllers\LegerImportController;
 use App\Http\Controllers\MasterMataPelajaranController;
 use App\Http\Controllers\NilaiSiswaController;
 use App\Http\Controllers\PaketMenuPilihanController;
-use App\Http\Controllers\PemantauanMinatController;
 use App\Http\Controllers\PendaftaranPilihanController;
 use App\Http\Controllers\PeriodePenjurusanController;
+use App\Http\Controllers\PertukaranController;
 use App\Http\Controllers\ProgramStudiController;
 use App\Http\Controllers\ProyeksiUniversitasController;
-use App\Http\Controllers\ServerClockController;
 use App\Http\Controllers\SiswaAuthController;
 use App\Http\Controllers\SiswaController;
-use App\Http\Controllers\SiswaDashboardController;
-use App\Http\Controllers\SiswaPeriodeController;
-use App\Http\Controllers\SiswaPertukaranController;
 use App\Http\Controllers\UserAuthController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+/*
+|--------------------------------------------------------------------------
+| Public & Autentikasi
+|--------------------------------------------------------------------------
+*/
+
+// Public Server Clock / Time (Sinkronisasi Waktu Client)
+Route::get('/server-clock', fn () => Controller::serverClock())->name('server.clock');
+Route::get('/server-time', fn () => Controller::serverClock())->name('server.time');
+
+// Autentikasi User (Admin / Guru BK)
+Route::controller(UserAuthController::class)->group(function () {
+    Route::get('/login/admin', 'showLoginForm')->name('login');
+    Route::post('/login/admin', 'login');
+    Route::post('/logout', 'logout')->name('logout');
 });
 
-// Route Public Server Clock / Time (Sinkronisasi Waktu Client)
-Route::get('/server-clock', [ServerClockController::class, 'index'])->name('server.clock');
-Route::get('/server-time', [ServerClockController::class, 'index'])->name('server.time');
+// Autentikasi & Registrasi Siswa
+Route::controller(SiswaAuthController::class)->group(function () {
+    Route::get('/register/siswa', 'showRegisterForm')->name('siswa.register.form');
+    Route::post('/register/siswa/check', 'checkNisn')->name('siswa.register.check');
+    Route::post('/register/siswa', 'register')->name('siswa.register');
 
-// Route Autentikasi User (Admin / Guru BK)
-Route::get('/login', [UserAuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [UserAuthController::class, 'login']);
-Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
+    Route::get('/', 'showLoginForm')->name('siswa.login.form');
+    Route::post('/', 'login')->name('siswa.login');
+    Route::redirect('/login', '/');
+    Route::post('/login', 'login');
 
-Route::middleware(['auth:web'])->group(function () {
-    Route::get('/me', [UserAuthController::class, 'me'])->name('user.me');
+    Route::post('/logout/siswa', 'logout')->name('siswa.logout');
 });
 
-// Route Registrasi Siswa (2 Tahap: Check NISN & Melengkapi Data)
-Route::get('/register/siswa', [SiswaAuthController::class, 'showRegisterForm'])->name('siswa.register.form');
-Route::post('/register/siswa/check', [SiswaAuthController::class, 'checkNisn'])->name('siswa.register.check');
-Route::post('/register/siswa', [SiswaAuthController::class, 'register'])->name('siswa.register');
-
-// Route Login Siswa via NISN
-Route::get('/login/siswa', [SiswaAuthController::class, 'showLoginForm'])->name('siswa.login.form');
-Route::post('/login/siswa', [SiswaAuthController::class, 'login'])->name('siswa.login');
-Route::post('/logout/siswa', [SiswaAuthController::class, 'logout'])->name('siswa.logout');
-
-// Route Profil Siswa (butuh login)
-Route::middleware(['auth:siswa'])->group(function () {
-    Route::get('/siswa/profile', [SiswaAuthController::class, 'profile'])->name('siswa.profile');
-    Route::get('/siswa/nilai', [NilaiSiswaController::class, 'indexSiswa'])->name('siswa.nilai.index');
-    Route::get('/siswa/paket-menu-aktif', [PaketMenuPilihanController::class, 'indexSiswa'])->name('siswa.paket-menu-aktif.index');
-    Route::get('/siswa/paket-menu-aktif/{identifier}', [PaketMenuPilihanController::class, 'showSiswa'])->name('siswa.paket-menu-aktif.show');
-
-    // FR-52: Pendaftaran pilihan paket prioritas siswa (Pemilihan Kelas)
-    Route::get('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'indexSiswa'])->name('siswa.pendaftaran-pilihan.index');
-    Route::get('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'indexSiswa'])->name('siswa.pilih-kelas.index');
-    Route::post('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'storeSiswa'])->name('siswa.pilih-kelas.store');
-    Route::post('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'storeSiswa'])->name('siswa.pendaftaran-pilihan.store');
-    Route::put('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'updateSiswa'])->name('siswa.pendaftaran-pilihan.update');
-    Route::put('/siswa/pilih-kelas', [PendaftaranPilihanController::class, 'updateSiswa'])->name('siswa.pilih-kelas.update');
-    Route::put('/siswa/pendaftaran-pilihan/dokumen', [PendaftaranPilihanController::class, 'uploadDokumenSiswa'])->name('siswa.pendaftaran-pilihan.dokumen');
-    Route::delete('/siswa/pendaftaran-pilihan', [PendaftaranPilihanController::class, 'cancelSiswa'])->name('siswa.pendaftaran-pilihan.cancel');
-
-
-    // FR-54 s/d FR-56: Siswa melihat hasil penempatan & status pengumuman & hasil sementara
-    Route::get('/siswa/hasil-penempatan', [PendaftaranPilihanController::class, 'hasilPenempatanSiswa'])->name('siswa.hasil-penempatan');
-    Route::get('/siswa/live-ranking', [PendaftaranPilihanController::class, 'liveRankingSiswa'])->name('siswa.live-ranking');
-    Route::get('/siswa/hasil-sementara', [PendaftaranPilihanController::class, 'hasilSementaraSiswa'])->name('siswa.hasil-sementara');
-
-    // Dashboard siswa (render Blade view)
-    Route::get('/siswa/dashboard', [SiswaDashboardController::class, 'index'])->name('siswa.dashboard');
-
-    // Pertukaran kelas/paket siswa
-    Route::get('/siswa/pertukaran', [SiswaPertukaranController::class, 'index'])->name('siswa.pertukaran.index');
-    Route::post('/siswa/pertukaran', [SiswaPertukaranController::class, 'store'])->name('siswa.pertukaran.store');
-    Route::delete('/siswa/pertukaran/{id}', [SiswaPertukaranController::class, 'cancel'])->name('siswa.pertukaran.cancel');
-
-    // Periode Pendaftaran (Melihat Periode Aktif & Memilih Kelas dari Periode)
-    Route::get('/siswa/periode', [SiswaPeriodeController::class, 'index'])->name('siswa.periode.index');
-    Route::get('/siswa/periode/{id}', [SiswaPeriodeController::class, 'show'])->name('siswa.periode.show');
-    Route::post('/siswa/periode/{id}/pilih-kelas', [SiswaPeriodeController::class, 'store'])->name('siswa.periode.store');
-    Route::put('/siswa/periode/{id}/pilih-kelas', [SiswaPeriodeController::class, 'update'])->name('siswa.periode.update');
-});
-
-// Route yang wajib login (bisa dari Siswa maupun Admin / Guru BK)
-Route::middleware(['auth.any'])->group(function () {
-    // Route Paket Menu Pilihan
-    Route::get('/paket-menu-pilihan', [PaketMenuPilihanController::class, 'index'])->name('paket-menu.index');
-    Route::get('/paket-menu-pilihan/{identifier}', [PaketMenuPilihanController::class, 'show'])->name('paket-menu.show');
-
-    // Route Kelas Asal (khusus Kelas X)
-    Route::get('/kelas-asal', [KelasAsalController::class, 'index'])->name('kelas-asal.index');
-    Route::get('/kelas-asal/{identifier}', [KelasAsalController::class, 'show'])->name('kelas-asal.show');
-
-    // Route Siswa (Read Only untuk admin & mungkin siswa? Oh wait, Siswa is admin only for CRUD)
-    // We will place GET /siswa in auth:web below instead.
-
-    // Route Master Mata Pelajaran (Read Only untuk Siswa & Admin)
-    Route::get('/master-mata-pelajaran', [MasterMataPelajaranController::class, 'index'])->name('master-mapel.index');
-    Route::get('/master-mata-pelajaran/{id}', [MasterMataPelajaranController::class, 'show'])->name('master-mapel.show');
-
-    // Route Nilai Siswa (FR-14: lihat data nilai)
-    Route::get('/nilai-siswa', [NilaiSiswaController::class, 'index'])->name('nilai-siswa.index');
-
-    // Route Tracking Riwayat & Download File Leger
-    Route::get('/leger/history', [LegerImportController::class, 'history'])->name('leger.history');
-    Route::get('/leger/download/{filename}', [LegerImportController::class, 'download'])->name('leger.download');
-
-    Route::get('/periode-penjurusan', [PeriodePenjurusanController::class, 'index'])->name('periode-penjurusan.index');
-    Route::get('/periode-penjurusan/{id}', [PeriodePenjurusanController::class, 'show'])->name('periode-penjurusan.show');
-});
-
-Route::middleware(['auth:web'])->group(function () {
-    // Leger Import - hanya admin (dicek di controller)
-    Route::post('/leger/import', [LegerImportController::class, 'import'])->name('leger.import');
-
-    // Nilai Siswa - FR-13 impor nilai per mapel, FR-14 perbaiki nilai (admin only, dicek di controller)
-    Route::get('/nilai-siswa/{siswa_id}', [NilaiSiswaController::class, 'show'])->name('nilai-siswa.show');
-    Route::post('/nilai-siswa/import-mapel', [NilaiSiswaController::class, 'importMapel'])->name('nilai-siswa.import-mapel');
-    Route::put('/nilai-siswa/{id}', [NilaiSiswaController::class, 'update'])->name('nilai-siswa.update');
-
-    Route::get('admin/periode-penjurusan', function (Request $request) {
-        if (Auth::guard('siswa')->check()) {
-            return redirect()->route('siswa.periode.index');
-        }
-        if (! Auth::guard('web')->check()) {
-            return redirect()->guest(route('login'));
-        }
-
-        return app(PeriodePenjurusanController::class)->index($request);
-    })->withoutMiddleware(['auth:web'])->name('admin-periode-penjurusan.index');
-    Route::post('/periode-penjurusan', [PeriodePenjurusanController::class, 'store'])->name('periode-penjurusan.store');
-    Route::put('/periode-penjurusan/{id}', [PeriodePenjurusanController::class, 'update'])->name('periode-penjurusan.update');
-    Route::delete('/periode-penjurusan/{id}', [PeriodePenjurusanController::class, 'destroy'])->name('periode-penjurusan.destroy');
-
-    Route::post('/kelas-asal', [KelasAsalController::class, 'store'])->name('kelas-asal.store');
-    Route::put('/kelas-asal/{id}', [KelasAsalController::class, 'update'])->name('kelas-asal.update');
-    Route::delete('/kelas-asal/{id}', [KelasAsalController::class, 'destroy'])->name('kelas-asal.destroy');
-
-    Route::get('/paket-menu-pilihan', [PaketMenuPilihanController::class, 'index'])->name('admin-paket-menu.index');
-    Route::post('/paket-menu-pilihan', [PaketMenuPilihanController::class, 'store'])->name('paket-menu.store');
-    Route::put('/paket-menu-pilihan/{identifier}', [PaketMenuPilihanController::class, 'update'])->name('paket-menu.update');
-    Route::delete('/paket-menu-pilihan/{identifier}', [PaketMenuPilihanController::class, 'destroy'])->name('paket-menu.destroy');
-
-    Route::post('/kriteria-bobot-menu', [KriteriaBobotMenuController::class, 'store'])->name('kriteria-bobot.store');
-    Route::put('/kriteria-bobot-menu/{id}', [KriteriaBobotMenuController::class, 'update'])->name('kriteria-bobot.update');
-    Route::delete('/kriteria-bobot-menu/{id}', [KriteriaBobotMenuController::class, 'destroy'])->name('kriteria-bobot.destroy');
-
-    // Master Mata Pelajaran (Write Operations - khusus Admin/Guru BK)
-    Route::post('/master-mata-pelajaran', [MasterMataPelajaranController::class, 'store'])->name('master-mapel.store');
-    Route::put('/master-mata-pelajaran/{id}', [MasterMataPelajaranController::class, 'update'])->name('master-mapel.update');
-    Route::delete('/master-mata-pelajaran/{id}', [MasterMataPelajaranController::class, 'destroy'])->name('master-mapel.destroy');
-
-    // Siswa CRUD (Khusus Admin)
-    Route::get('admin/siswa', function (Request $request) {
-        if (Auth::guard('siswa')->check()) {
-            return redirect()->route('siswa.dashboard');
-        }
-        if (! Auth::guard('web')->check()) {
-            return redirect()->guest(route('login'));
-        }
-
-        return app(SiswaController::class)->index($request);
-    })->withoutMiddleware(['auth:web'])->name('admin-siswa.index');
-    Route::get('/siswa', [SiswaController::class, 'index'])->name('siswa.index');
-    Route::get('/siswa/{id}', [SiswaController::class, 'show'])->name('siswa.show');
-    Route::post('/siswa', [SiswaController::class, 'store'])->name('siswa.store');
-    Route::put('/siswa/{id}', [SiswaController::class, 'update'])->name('siswa.update');
-    Route::delete('/siswa/{id}', [SiswaController::class, 'destroy'])->name('siswa.destroy');
-
-    // Route Review Pengajuan Pilihan Siswa (FR-19, FR-40 s/d FR-44)
-    Route::get('/admin/pendaftaran-pilihan', [AdminPendaftaranReviewController::class, 'index'])->name('admin-pendaftaran.index');
-    Route::get('/admin/pendaftaran-pilihan/{id}', [AdminPendaftaranReviewController::class, 'show'])->name('admin-pendaftaran.show');
-    Route::get('/admin/pendaftaran-pilihan/{id}/dokumen', [AdminPendaftaranReviewController::class, 'downloadDokumen'])->name('admin-pendaftaran.dokumen');
-    Route::get('/admin/siswa/status-pilihan', [AdminPendaftaranReviewController::class, 'statusPilihan'])->name('admin.siswa.status-pilihan');
-    Route::get('/admin/siswa/{siswaId}/pilihan', [AdminPendaftaranReviewController::class, 'prioritasPilihanSiswa'])->name('admin.siswa.pilihan');
-
-    // ===== Route Manajemen Hasil Penjurusan (Admin) =====
-    Route::post('/admin/hasil-penjurusan/process', [AdminHasilPenjurusanController::class, 'runProcess'])->name('admin.hasil-penjurusan.process');
-    Route::get('/admin/hasil-penjurusan', [AdminHasilPenjurusanController::class, 'index'])->name('admin.hasil-penjurusan.index');
-    Route::get('/admin/hasil-penjurusan/rekap-kuota', [AdminHasilPenjurusanController::class, 'rekapKuota'])->name('admin.hasil-penjurusan.rekap-kuota');
-    Route::get('/admin/hasil-penjurusan/siswa/{siswaId}', [AdminHasilPenjurusanController::class, 'showSiswa'])->name('admin.hasil-penjurusan.show-siswa');
-    Route::put('/admin/hasil-penjurusan/{hasilId}/override', [AdminHasilPenjurusanController::class, 'overrideHasil'])->name('admin.hasil-penjurusan.override');
-    Route::post('/admin/hasil-penjurusan/lock', [AdminHasilPenjurusanController::class, 'lockFinal'])->name('admin.hasil-penjurusan.lock');
-    Route::post('/admin/hasil-penjurusan/unlock', [AdminHasilPenjurusanController::class, 'unlockFinal'])->name('admin.hasil-penjurusan.unlock');
-    Route::post('/admin/hasil-penjurusan/publish', [AdminHasilPenjurusanController::class, 'publishHasil'])->name('admin.hasil-penjurusan.publish');
-    Route::post('/admin/hasil-penjurusan/unpublish', [AdminHasilPenjurusanController::class, 'unpublishHasil'])->name('admin.hasil-penjurusan.unpublish');
-
-    // ===== Route Manajemen Pertukaran (Admin) =====
-    Route::get('/admin/pertukaran', [AdminPertukaranController::class, 'index'])->name('admin.pertukaran.index');
-    Route::get('/admin/pertukaran/{id}', [AdminPertukaranController::class, 'show'])->name('admin.pertukaran.show');
-    Route::get('/admin/pertukaran/{id}/dokumen', [AdminPertukaranController::class, 'downloadDokumen'])->name('admin.pertukaran.dokumen');
-    Route::put('/admin/pertukaran/{id}/approve', [AdminPertukaranController::class, 'approve'])->name('admin.pertukaran.approve');
-    Route::put('/admin/pertukaran/{id}/reject', [AdminPertukaranController::class, 'reject'])->name('admin.pertukaran.reject');
-
-    // ===== Route Laporan & Ekspor (Admin) =====
-    Route::get('/admin/pemantauan-minat', [PemantauanMinatController::class, 'index'])->name('admin.pemantauan-minat.index');
-    Route::get('/admin/laporan/hasil-penjurusan', [AdminLaporanController::class, 'hasilPenjurusan'])->name('admin.laporan.hasil-penjurusan');
-    Route::get('/admin/laporan/minat-siswa', [AdminLaporanController::class, 'minatSiswa'])->name('admin.laporan.minat-siswa');
-    Route::get('/admin/laporan/peminat-vs-kuota', [AdminLaporanController::class, 'peminatVsKuota'])->name('admin.laporan.peminat-vs-kuota');
-    Route::get('/admin/laporan/export/hasil-penjurusan', [AdminLaporanController::class, 'exportHasilPenjurusan'])->name('admin.laporan.export.hasil-penjurusan');
-    Route::get('/admin/laporan/export/minat-siswa', [AdminLaporanController::class, 'exportMinatSiswa'])->name('admin.laporan.export.minat-siswa');
-});
-
-// ===== Route Laporan Pesan (Report) =====
-// Publik / Guest: kirim laporan (bisa juga dipakai siswa & admin yang login)
+// Laporan Pesan (Publik / Guest / Siswa / Admin)
 Route::post('/laporan-pesan', [LaporanPesanController::class, 'store'])->name('laporan-pesan.store');
 
-// Siswa (login): lihat laporan milik sendiri
-Route::middleware(['auth:siswa'])->group(function () {
-    Route::get('/siswa/laporan-pesan', [LaporanPesanController::class, 'indexSiswa'])->name('laporan-pesan.siswa.index');
-    Route::get('/siswa/laporan-pesan/{id}', [LaporanPesanController::class, 'show'])->name('laporan-pesan.siswa.show');
+// Halaman Admin dengan Redirect Berbasis Guard (siswa -> portal siswa, guest -> login)
+Route::get('/admin/periode-penjurusan', [PeriodePenjurusanController::class, 'adminIndex'])->name('admin-periode-penjurusan.index');
+Route::get('/admin/siswa', [SiswaController::class, 'adminIndex'])->name('admin-siswa.index');
+
+/*
+|--------------------------------------------------------------------------
+| Portal Siswa (auth:siswa)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:siswa'])->prefix('siswa')->group(function () {
+    // Dashboard & Profil Siswa
+    Route::controller(SiswaController::class)->group(function () {
+        Route::get('/dashboard', 'dashboard')->name('siswa.dashboard');
+        Route::get('/profile', 'profile')->name('siswa.profile');
+    });
+
+    // Nilai Siswa
+    Route::get('/nilai', [NilaiSiswaController::class, 'siswaIndex'])->name('siswa.nilai.index');
+
+    // Paket Menu Aktif & Periode Pendaftaran
+    Route::controller(PaketMenuPilihanController::class)->group(function () {
+        Route::get('/paket-menu-aktif', 'siswaIndex')->name('siswa.paket-menu-aktif.index');
+        Route::get('/paket-menu-aktif/{identifier}', 'siswaShow')->name('siswa.paket-menu-aktif.show');
+    });
+    Route::get('/periode', [PeriodePenjurusanController::class, 'siswaIndex'])->name('siswa.periode.index');
+
+    // Pendaftaran Pilihan Kelas Siswa (FR-52, FR-53, FR-58, FR-59)
+    Route::controller(PendaftaranPilihanController::class)->group(function () {
+        Route::get('/pendaftaran-pilihan', 'siswaIndex')->name('siswa.pendaftaran-pilihan.index');
+        Route::get('/pilih-kelas', 'siswaIndex')->name('siswa.pilih-kelas.index');
+        Route::post('/pilih-kelas', 'store')->name('siswa.pilih-kelas.store');
+        Route::put('/pilih-kelas', 'update')->name('siswa.pilih-kelas.update');
+        Route::delete('/pilih-kelas', 'destroy')->name('siswa.pilih-kelas.cancel');
+        Route::put('/pendaftaran-pilihan/dokumen', 'uploadDokumen')->name('siswa.pendaftaran-pilihan.dokumen');
+
+        Route::get('/periode/{id}', 'siswaShow')->name('siswa.periode.show');
+        Route::post('/periode/{id}/pilih-kelas', 'store')->name('siswa.periode.store');
+        Route::put('/periode/{id}/pilih-kelas', 'update')->name('siswa.periode.update');
+    });
+
+    // Hasil Penempatan & Live Ranking (FR-54 s/d FR-56)
+    Route::controller(HasilPenjurusanController::class)->group(function () {
+        Route::get('/hasil-penempatan', 'siswaIndex')->name('siswa.hasil-penempatan');
+        Route::get('/live-ranking', 'liveRanking')->name('siswa.live-ranking');
+        Route::get('/hasil-sementara', 'hasilSementara')->name('siswa.hasil-sementara');
+    });
+
+    // Pertukaran Kelas Siswa
+    Route::controller(PertukaranController::class)->group(function () {
+        Route::get('/pertukaran', 'siswaIndex')->name('siswa.pertukaran.index');
+        Route::post('/pertukaran', 'store')->name('siswa.pertukaran.store');
+        Route::delete('/pertukaran/{id}', 'destroy')->name('siswa.pertukaran.cancel');
+    });
+
+    // Laporan Pesan Siswa
+    Route::controller(LaporanPesanController::class)->group(function () {
+        Route::get('/laporan-pesan', 'siswaIndex')->name('laporan-pesan.siswa.index');
+        Route::get('/laporan-pesan/{id}', 'show')->name('laporan-pesan.siswa.show');
+    });
 });
 
-// Admin / Guru BK (login): kelola seluruh laporan
-Route::middleware(['auth:web'])->group(function () {
-    Route::get('/laporan-pesan', [LaporanPesanController::class, 'index'])->name('laporan-pesan.index');
-    Route::get('/laporan-pesan/{id}', [LaporanPesanController::class, 'show'])->name('laporan-pesan.show');
-    Route::put('/laporan-pesan/{id}/status', [LaporanPesanController::class, 'updateStatus'])->name('laporan-pesan.update-status');
-    Route::delete('/laporan-pesan/{id}', [LaporanPesanController::class, 'destroy'])->name('laporan-pesan.destroy');
-});
-
-// ===== Route Proyeksi Universitas (FR-39, FR-57) =====
-// Read: siswa & admin/guru BK
+/*
+|--------------------------------------------------------------------------
+| Read-Only Bersama: Siswa & Admin / Guru BK (auth.any)
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth.any'])->group(function () {
-    Route::get('/proyeksi-universitas', [ProyeksiUniversitasController::class, 'index'])->name('proyeksi-universitas.index');
-    Route::get('/proyeksi-universitas/{id}', [ProyeksiUniversitasController::class, 'show'])->name('proyeksi-universitas.show');
+    Route::controller(PaketMenuPilihanController::class)->group(function () {
+        Route::get('/paket-menu-pilihan', 'index')->name('paket-menu.index');
+        Route::get('/paket-menu-pilihan/{identifier}', 'show')->name('paket-menu.show');
+    });
+
+    Route::controller(KelasAsalController::class)->group(function () {
+        Route::get('/kelas-asal', 'index')->name('kelas-asal.index');
+        Route::get('/kelas-asal/{identifier}', 'show')->name('kelas-asal.show');
+    });
+
+    Route::controller(MasterMataPelajaranController::class)->group(function () {
+        Route::get('/master-mata-pelajaran', 'index')->name('master-mapel.index');
+        Route::get('/master-mata-pelajaran/{id}', 'show')->name('master-mapel.show');
+    });
+
+    Route::get('/nilai-siswa', [NilaiSiswaController::class, 'index'])->name('nilai-siswa.index');
+
+    Route::controller(LegerImportController::class)->group(function () {
+        Route::get('/leger/history', 'index')->name('leger.history');
+        Route::get('/leger/download/{filename}', 'download')->name('leger.download');
+    });
+
+    Route::controller(PeriodePenjurusanController::class)->group(function () {
+        Route::get('/periode-penjurusan', 'index')->name('periode-penjurusan.index');
+        Route::get('/periode-penjurusan/{id}', 'show')->name('periode-penjurusan.show');
+    });
+
+    Route::controller(ProyeksiUniversitasController::class)->group(function () {
+        Route::get('/proyeksi-universitas', 'index')->name('proyeksi-universitas.index');
+        Route::get('/proyeksi-universitas/{id}', 'show')->name('proyeksi-universitas.show');
+    });
+
+    Route::controller(ProgramStudiController::class)->group(function () {
+        Route::get('/program-studi', 'index')->name('program-studi.index');
+        Route::get('/program-studi/{id}', 'show')->name('program-studi.show');
+    });
 });
 
-// Write: admin only (dicek di controller)
+/*
+|--------------------------------------------------------------------------
+| Admin & Guru BK (auth:web)
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth:web'])->group(function () {
-    Route::post('/proyeksi-universitas', [ProyeksiUniversitasController::class, 'store'])->name('proyeksi-universitas.store');
-    Route::put('/proyeksi-universitas/{id}', [ProyeksiUniversitasController::class, 'update'])->name('proyeksi-universitas.update');
-    Route::delete('/proyeksi-universitas/{id}', [ProyeksiUniversitasController::class, 'destroy'])->name('proyeksi-universitas.destroy');
-});
+    Route::get('/me', [UserAuthController::class, 'me'])->name('user.me');
 
-// ===== Route Program Studi (FR-57) =====
-Route::middleware(['auth.any'])->group(function () {
-    Route::get('/program-studi', [ProgramStudiController::class, 'index'])->name('program-studi.index');
-    Route::get('/program-studi/{id}', [ProgramStudiController::class, 'show'])->name('program-studi.show');
-});
+    // Leger & Nilai Siswa (FR-13, FR-14)
+    Route::post('/leger/import', [LegerImportController::class, 'store'])->name('leger.import');
+    Route::controller(NilaiSiswaController::class)->group(function () {
+        Route::get('/nilai-siswa/{siswa_id}', 'show')->name('nilai-siswa.show');
+        Route::post('/nilai-siswa/import-mapel', 'import')->name('nilai-siswa.import-mapel');
+        Route::put('/nilai-siswa/{id}', 'update')->name('nilai-siswa.update');
+    });
 
-Route::middleware(['auth:web'])->group(function () {
-    Route::post('/program-studi', [ProgramStudiController::class, 'store'])->name('program-studi.store');
-    Route::put('/program-studi/{id}', [ProgramStudiController::class, 'update'])->name('program-studi.update');
-    Route::delete('/program-studi/{id}', [ProgramStudiController::class, 'destroy'])->name('program-studi.destroy');
+    // Periode Penjurusan (Write)
+    Route::controller(PeriodePenjurusanController::class)->group(function () {
+        Route::get('/admin/periode-penjurusan/{id}', 'show');
+        Route::post('/periode-penjurusan', 'store')->name('periode-penjurusan.store');
+        Route::put('/periode-penjurusan/{id}', 'update')->name('periode-penjurusan.update');
+        Route::delete('/periode-penjurusan/{id}', 'destroy')->name('periode-penjurusan.destroy');
+    });
+
+    // Kelas Asal (Write)
+    Route::controller(KelasAsalController::class)->group(function () {
+        Route::post('/kelas-asal', 'store')->name('kelas-asal.store');
+        Route::put('/kelas-asal/{id}', 'update')->name('kelas-asal.update');
+        Route::delete('/kelas-asal/{id}', 'destroy')->name('kelas-asal.destroy');
+    });
+
+    // Paket Menu Pilihan (Admin Index & Write)
+    Route::controller(PaketMenuPilihanController::class)->group(function () {
+        Route::get('/admin/paket-menu-pilihan', 'index')->name('admin-paket-menu.index');
+        Route::post('/paket-menu-pilihan', 'store')->name('paket-menu.store');
+        Route::put('/paket-menu-pilihan/{identifier}', 'update')->name('paket-menu.update');
+        Route::delete('/paket-menu-pilihan/{identifier}', 'destroy')->name('paket-menu.destroy');
+    });
+
+    // Kriteria Bobot Menu
+    Route::controller(KriteriaBobotMenuController::class)->group(function () {
+        Route::get('/admin/periode-penjurusan/{periode}/bobot-mata-pelajaran', 'index')->name('kriteria-bobot.index');
+        Route::put('/admin/periode-penjurusan/{periode}/bobot-mata-pelajaran/{paket}', 'savePackage')->whereUuid('paket')->name('kriteria-bobot.package.save');
+        Route::post('/kriteria-bobot-menu', 'store')->name('kriteria-bobot.store');
+        Route::put('/kriteria-bobot-menu/{id}', 'update')->name('kriteria-bobot.update');
+        Route::delete('/kriteria-bobot-menu/{id}', 'destroy')->name('kriteria-bobot.destroy');
+    });
+
+    // Master Mata Pelajaran (Write)
+    Route::controller(MasterMataPelajaranController::class)->group(function () {
+        Route::post('/master-mata-pelajaran', 'store')->name('master-mapel.store');
+        Route::put('/master-mata-pelajaran/{id}', 'update')->name('master-mapel.update');
+        Route::delete('/master-mata-pelajaran/{id}', 'destroy')->name('master-mapel.destroy');
+    });
+
+    // Siswa CRUD
+    Route::controller(SiswaController::class)->group(function () {
+        Route::get('/siswa', 'index')->name('siswa.index');
+        Route::get('/siswa/{id}', 'show')->name('siswa.show');
+        Route::post('/siswa', 'store')->name('siswa.store');
+        Route::put('/siswa/{id}', 'update')->name('siswa.update');
+        Route::delete('/siswa/{id}', 'destroy')->name('siswa.destroy');
+    });
+
+    // Review Pengajuan Pilihan Siswa (FR-19, FR-40 s/d FR-44)
+    Route::controller(PendaftaranPilihanController::class)->prefix('admin')->group(function () {
+        Route::get('/pendaftaran-pilihan', 'index')->name('admin-pendaftaran.index');
+        Route::get('/pendaftaran-pilihan/{id}', 'show')->name('admin-pendaftaran.show');
+        Route::get('/pendaftaran-pilihan/{id}/dokumen', 'downloadDokumen')->name('admin-pendaftaran.dokumen');
+        Route::get('/siswa/status-pilihan', 'statusPilihan')->name('admin.siswa.status-pilihan');
+        Route::get('/siswa/{siswaId}/pilihan', 'prioritasSiswa')->name('admin.siswa.pilihan');
+    });
+
+    // Manajemen Hasil Penjurusan
+    Route::controller(HasilPenjurusanController::class)->prefix('admin/hasil-penjurusan')->group(function () {
+        Route::post('/process', 'process')->name('admin.hasil-penjurusan.process');
+        Route::get('/', 'index')->name('admin.hasil-penjurusan.index');
+        Route::get('/rekap-kuota', 'rekapKuota')->name('admin.hasil-penjurusan.rekap-kuota');
+        Route::get('/siswa/{siswaId}', 'show')->name('admin.hasil-penjurusan.show-siswa');
+        Route::put('/{hasilId}/override', 'update')->name('admin.hasil-penjurusan.override');
+        Route::post('/lock', 'lock')->name('admin.hasil-penjurusan.lock');
+        Route::post('/unlock', 'unlock')->name('admin.hasil-penjurusan.unlock');
+        Route::post('/publish', 'publish')->name('admin.hasil-penjurusan.publish');
+        Route::post('/unpublish', 'unpublish')->name('admin.hasil-penjurusan.unpublish');
+    });
+
+    // Manajemen Pertukaran
+    Route::controller(PertukaranController::class)->prefix('admin/pertukaran')->group(function () {
+        Route::get('/', 'index')->name('admin.pertukaran.index');
+        Route::get('/{id}', 'show')->name('admin.pertukaran.show');
+        Route::get('/{id}/dokumen', 'downloadDokumen')->name('admin.pertukaran.dokumen');
+        Route::put('/{id}/approve', 'approve')->name('admin.pertukaran.approve');
+        Route::put('/{id}/reject', 'reject')->name('admin.pertukaran.reject');
+    });
+
+    // Laporan & Ekspor
+    Route::controller(AdminLaporanController::class)->prefix('admin')->group(function () {
+        Route::get('/pemantauan-minat', 'pemantauanMinat')->name('admin.pemantauan-minat.index');
+        Route::get('/laporan/hasil-penjurusan', 'hasilPenjurusan')->name('admin.laporan.hasil-penjurusan');
+        Route::get('/laporan/minat-siswa', 'minatSiswa')->name('admin.laporan.minat-siswa');
+        Route::get('/laporan/peminat-vs-kuota', 'peminatVsKuota')->name('admin.laporan.peminat-vs-kuota');
+        Route::get('/laporan/export/hasil-penjurusan', 'exportHasilPenjurusan')->name('admin.laporan.export.hasil-penjurusan');
+        Route::get('/laporan/export/minat-siswa', 'exportMinatSiswa')->name('admin.laporan.export.minat-siswa');
+    });
+
+    // Laporan Pesan (Admin)
+    Route::controller(LaporanPesanController::class)->prefix('laporan-pesan')->group(function () {
+        Route::get('/', 'index')->name('laporan-pesan.index');
+        Route::get('/{id}', 'show')->name('laporan-pesan.show');
+        Route::put('/{id}/status', 'update')->name('laporan-pesan.update-status');
+        Route::delete('/{id}', 'destroy')->name('laporan-pesan.destroy');
+    });
+
+    // Proyeksi Universitas (Write)
+    Route::controller(ProyeksiUniversitasController::class)->group(function () {
+        Route::post('/proyeksi-universitas', 'store')->name('proyeksi-universitas.store');
+        Route::put('/proyeksi-universitas/{id}', 'update')->name('proyeksi-universitas.update');
+        Route::delete('/proyeksi-universitas/{id}', 'destroy')->name('proyeksi-universitas.destroy');
+    });
+
+    // Program Studi (Write)
+    Route::controller(ProgramStudiController::class)->group(function () {
+        Route::post('/program-studi', 'store')->name('program-studi.store');
+        Route::put('/program-studi/{id}', 'update')->name('program-studi.update');
+        Route::delete('/program-studi/{id}', 'destroy')->name('program-studi.destroy');
+    });
 });

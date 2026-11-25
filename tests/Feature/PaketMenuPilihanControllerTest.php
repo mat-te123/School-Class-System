@@ -376,7 +376,7 @@ class PaketMenuPilihanControllerTest extends TestCase
         ]);
 
         // Buat periode aktif
-        PeriodePendaftaran::create([
+        $periode = PeriodePendaftaran::create([
             'nama_periode' => 'Periode Aktif Test',
             'tahun_ajaran' => '2024/2025',
             'tanggal_buka' => now()->subDay(),
@@ -389,6 +389,7 @@ class PaketMenuPilihanControllerTest extends TestCase
         $paket1 = PaketMenuPilihan::create([
             'id' => (string) Str::uuid(),
             'nama_menu' => 'Paket Aktif 1',
+            'periode_id' => $periode->id,
             'rumpun' => 'eksakta',
             'kuota_kapasitas' => 36,
             'is_active' => true,
@@ -414,12 +415,20 @@ class PaketMenuPilihanControllerTest extends TestCase
         PaketMenuPilihan::create([
             'id' => (string) Str::uuid(),
             'nama_menu' => 'Paket Tanpa Kriteria',
+            'periode_id' => $periode->id,
             'rumpun' => 'sosial',
             'kuota_kapasitas' => 36,
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($siswa, 'siswa')->getJson('/siswa/paket-menu-aktif');
+        $periodeLama = $periode->replicate()->fill(['nama_periode' => 'Periode Lama', 'tahun_ajaran' => '2023/2024', 'is_active' => false]);
+        $periodeLama->save();
+        $paketLama = $paket1->replicate()->fill(['periode_id' => $periodeLama->id]);
+        $paketLama->save();
+        $paketLama->kriteriaBobots()->create(['master_mata_pelajaran_id' => $mapel->id, 'bobot_persen' => 100]);
+
+        $url = '/siswa/paket-menu-aktif';
+        $response = $this->actingAs($siswa, 'siswa')->getJson($url.'?id='.$periode->id);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -428,8 +437,13 @@ class PaketMenuPilihanControllerTest extends TestCase
                     'total_paket' => 1,
                 ],
             ])
+            ->assertJsonPath('meta.active_periods.0.id', $periode->id)
+            ->assertJsonPath('data.0.id', $paket1->id)
             ->assertJsonPath('data.0.nama_menu', 'Paket Aktif 1')
             ->assertJsonPath('data.0.kriteria_bobot.0.nama_mapel', 'Mapel Test');
+
+        $this->getJson($url)->assertOk()->assertJsonPath('data.0.id', $paket1->id)->assertJsonCount(1, 'data');
+        $this->getJson($url.'?id='.$periodeLama->id)->assertNotFound();
     }
 
     public function test_unauthenticated_cannot_access_siswa_paket_menu(): void

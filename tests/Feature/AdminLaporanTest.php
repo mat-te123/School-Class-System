@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\DetailPendaftaranPilihan;
+use App\Models\KriteriaBobotMenu;
 use App\Models\HasilSeleksi;
 use App\Models\KelasAsal;
+use App\Models\MasterMataPelajaran;
 use App\Models\PaketMenuPilihan;
 use App\Models\PendaftaranPilihan;
 use App\Models\PeriodePendaftaran;
@@ -83,6 +85,7 @@ class AdminLaporanTest extends TestCase
         $this->paket1 = PaketMenuPilihan::create([
             'id' => (string) Str::uuid(),
             'nama_menu' => 'Paket IPA',
+            'periode_id' => $this->periode->id,
             'rumpun' => 'eksakta',
             'kuota_kapasitas' => 36,
             'kuota_terisi' => 0,
@@ -124,6 +127,7 @@ class AdminLaporanTest extends TestCase
         HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periode->id,
             'paket_menu_pilihan_id' => $this->paket1->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 1,
@@ -143,6 +147,74 @@ class AdminLaporanTest extends TestCase
             ->assertJsonPath('data.total', 1);
         // Float cast issue in SQLite: use assertEquals
         $this->assertEquals(90.0, (float) $resp->json('data.data.0.skor_penempatan'));
+    }
+
+    public function test_reports_are_empty_after_the_last_period_is_deleted(): void
+    {
+        $mapel = MasterMataPelajaran::create(['kode_mapel' => 'IPA', 'nama_mapel' => 'IPA']);
+        $bobot = $this->paket1->kriteriaBobots()->create(['master_mata_pelajaran_id' => $mapel->id, 'bobot_persen' => 100]);
+        $this->actingAs($this->admin, 'web');
+        $this->deleteJson(route('periode-penjurusan.destroy', ['id' => $this->periode->id]))->assertOk();
+        $this->assertSoftDeleted($this->paket1);
+        $this->assertModelExists($bobot);
+        $this->getJson(route('paket-menu.show', ['identifier' => $this->paket1->id]))->assertNotFound();
+
+        foreach (['hasil-penjurusan', 'minat-siswa'] as $report) {
+            $url = route('admin.laporan.'.$report);
+            $this->get($url)->assertOk()->assertSee('Belum ada periode penjurusan.');
+            $this->getJson($url)->assertOk()->assertJsonPath('data.total', 0);
+            $this->getJson($url.'?periode_id='.$this->periode->id)->assertUnprocessable()->assertJsonValidationErrors('periode_id');
+        }
+
+        $pengganti = $this->periode->replicate();
+        $pengganti->save();
+        $this->getJson(route('admin-paket-menu.index', ['periode_id' => $pengganti->id]))
+            ->assertOk()->assertJsonPath('data.total', 0);
+    }
+
+    public function test_hasil_penjurusan_reports_only_results_from_selected_period(): void
+    {
+        $periodeLain = $this->periode->replicate()->fill([
+            'nama_periode' => 'Periode Lain',
+            'tahun_ajaran' => '2025/2026',
+            'is_active' => false,
+        ]);
+        $periodeLain->save();
+
+        PendaftaranPilihan::create([
+            'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $periodeLain->id,
+            'tanggal_submit' => now(),
+        ]);
+
+        $hasil = HasilSeleksi::create([
+            'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $periodeLain->id,
+            'skor_penempatan' => 85,
+            'rata_6_mapel' => 87,
+            'mekanisme' => 'Kuota Penuh',
+            'tanggal_diproses' => now(),
+        ]);
+
+        $this->actingAs($this->admin, 'web');
+        $filter = '?periode_id='.$periodeLain->id;
+
+        $this->getJson('/admin/laporan/hasil-penjurusan'.$filter)
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.data.0.id', $hasil->id);
+
+        $this->get('/admin/laporan/hasil-penjurusan'.$filter)
+            ->assertOk()
+            ->assertSee('<td>Periode Lain</td>', false);
+
+        $rekap = $this->getJson('/admin/laporan/peminat-vs-kuota'.$filter)->assertOk();
+        $this->assertSame(0, collect($rekap->json('data'))->firstWhere('id', $this->paket1->id)['terisi']);
+
+        $export = $this->get('/admin/laporan/export/hasil-penjurusan'.$filter.'&format=csv')->assertOk();
+        $content = $export->streamedContent();
+        $this->assertStringContainsString('Kuota Penuh', $content);
+        $this->assertStringNotContainsString('Paket IPA', $content);
     }
 
     public function test_admin_can_filter_hasil_penjurusan_by_paket(): void

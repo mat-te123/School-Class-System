@@ -143,7 +143,7 @@ class AdminPendaftaranReviewTest extends TestCase
         $periode = PeriodePendaftaran::create([
             'id' => (string) Str::uuid(),
             'nama_periode' => 'Periode Status',
-            'tahun_ajaran' => '2024/2025',
+            'tahun_ajaran' => '2025/2026',
             'gelombang' => 'Utama',
             'max_pilihan_siswa' => 3,
             'tanggal_buka' => now()->subDays(5),

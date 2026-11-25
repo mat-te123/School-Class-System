@@ -46,12 +46,12 @@ class PengajuanPertukaran extends Model
 
     public function paketAsal(): BelongsTo
     {
-        return $this->belongsTo(PaketMenuPilihan::class, 'paket_asal_id');
+        return $this->belongsTo(PaketMenuPilihan::class, 'paket_asal_id')->withTrashed();
     }
 
     public function paketTujuan(): BelongsTo
     {
-        return $this->belongsTo(PaketMenuPilihan::class, 'paket_tujuan_id');
+        return $this->belongsTo(PaketMenuPilihan::class, 'paket_tujuan_id')->withTrashed();
     }
 
     public function peninjau(): BelongsTo

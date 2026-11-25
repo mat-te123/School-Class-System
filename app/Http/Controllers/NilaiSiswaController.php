@@ -73,7 +73,7 @@ class NilaiSiswaController extends Controller
     /**
      * FR-49: Siswa dapat melihat nilai mata pelajaran mereka sendiri.
      */
-    public function indexSiswa(Request $request)
+    public function siswaIndex(Request $request)
     {
         // Pastikan siswa login via auth:siswa guard
         $siswa = Auth::guard('siswa')->user();
@@ -180,7 +180,7 @@ class NilaiSiswaController extends Controller
      *
      * Payload: mapel_id, tahun_ajaran, semester, rows: [{nisn, nilai}, ...]
      */
-    public function importMapel(Request $request)
+    public function import(Request $request)
     {
         if ($denied = $this->denyIfNotAdmin()) {
             return $denied;

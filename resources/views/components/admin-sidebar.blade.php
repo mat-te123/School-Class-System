@@ -37,6 +37,11 @@
                     'icon' => asset('Icon/placeholder.svg'),
                     'text' => 'Siswa',
                 ],
+                'Siswa' => [
+                    'route' => route('siswa.profile'),
+                    'icon' => asset('Icon/siswa.svg'),
+                    'text' => 'Siswa',
+                ],
             ];
         @endphp
         <p class="text-sm font-medium leading-6">

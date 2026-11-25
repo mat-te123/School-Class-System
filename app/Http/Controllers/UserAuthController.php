@@ -191,9 +191,9 @@ class UserAuthController extends Controller
         }
 
         if ($isSiswa) {
-            return redirect('/login/siswa')->with('success', 'Anda telah berhasil logout.');
+            return redirect()->route('siswa.login.form')->with('success', 'Anda telah berhasil logout.');
         }
 
-        return redirect('/login')->with('success', 'Anda telah berhasil logout.');
+        return redirect()->route('login')->with('success', 'Anda telah berhasil logout.');
     }
 }

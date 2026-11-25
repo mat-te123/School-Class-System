@@ -1,117 +1,172 @@
 <x-app-layout title="Hasil Seleksi">
     <div x-data="{
         showConfirmModal: false,
+        showDownloadModal: false,
+        downloadFormat: 'pdf',
         ModalUrl: '',
         mainTitle: '',
         subTitle: '',
-    }" class="flex min-h-0 flex-1 flex-col">
+    }" @keydown.escape.window="showDownloadModal = false" class="flex flex-1 flex-col">
 
-        <div class="flex flex-col py-6 px-8 border border-b-black">
-            <div class="flex flex-row items-center gap-2">
-                <h1 class="text-4xl leading-9 font-semibold">
-                    Hasil Seleksi
-                </h1>
-                @if (!$isFinal)
-                    <span
-                        class="text-sm leading-5 font-medium bg-amber-50 text-amber-600 px-2 py-1 rounded-lg border border-amber-600">
-                        draft / semetara
-                    </span>
-                @else
-                    <span
-                        class="text-sm leading-5 font-medium bg-green-50 text-green-600 px-4 py-1 rounded-lg border border-green-600">
-                        final
-                    </span>
-                @endif
+        <div class="flex flex-row justify-between items-end py-6 px-8 border border-b-black">
+            <div class="flex flex-col">
+                <div class="flex flex-row items-center gap-2">
+                    <h1 class="mainTitle">
+                        Hasil Seleksi
+                    </h1>
+                    @if (!$isFinal)
+                        <span class="text-sm leading-5 font-medium bg-amber-50 text-amber-600 px-2 py-1 rounded-lg">
+                            draft / semetara
+                        </span>
+                    @else
+                        <span class="text-sm leading-5 font-medium bg-purple-50 text-purple-600 px-4 py-1 rounded-lg ">
+                            final
+                        </span>
+                    @endif
+                    @if ($isFinal)
+                        @if (!$isPublished)
+                            <span class="text-sm leading-5 font-medium bg-blue-50 text-blue-600 px-2 py-1 rounded-lg ">
+                                belum dipublish
+                            </span>
+                        @else
+                            <span class="text-sm leading-5 font-medium bg-green-50 text-green-600 px-2 py-1 rounded-lg">
+                                sudah dipublish
+                            </span>
+                        @endif
 
+                    @endif
+
+
+                </div>
+
+                <span class="subTitle">
+                    Kelola dan tinjau hasil seleksi siswa sebelum difinalisasi
+                </span>
             </div>
+            @if ($isFinal && $isPublished)
+                <button class="negative-primary-button w-fit whitespace-nowrap h-fit"
+                    @click="showDownloadModal = true;">
+                    Download data hasil
+                </button>
+            @endif
+            <div x-show="showDownloadModal" x-cloak x-transition.opacity
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+                @click.self="showDownloadModal = false">
+                <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl" @click.stop>
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-semibold">Download data hasil</h2>
+                            <p class="mt-1 text-sm text-gray-600">Pilih format file yang ingin diunduh.</p>
+                        </div>
+                        <button type="button" class="text-2xl leading-none text-gray-500" aria-label="Tutup modal"
+                            @click="showDownloadModal = false">&times;</button>
+                    </div>
 
-            <span class="text-md leading-5 font-medium">
-                Kelola dan tinjau hasil seleksi siswa sebelum difinalisasi
-            </span>
+                    <label for="download-format" class="mt-5 block text-sm font-medium text-gray-700">Format</label>
+                    <select id="download-format" x-model="downloadFormat" class="select-primary mt-2 w-full text-sm">
+                        <option value="pdf">PDF</option>
+                        <option value="csv">CSV</option>
+                    </select>
+
+                    <div class="mt-6 flex justify-end gap-2">
+                        <button type="button"
+                            class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            @click="showDownloadModal = false">Batal</button>
+                        <a x-show="downloadFormat === 'pdf'"
+                            href="{{ route('admin.laporan.export.hasil-penjurusan', ['periode_id' => request('periode_id'), 'format' => 'pdf']) }}"
+                            class="primary-button" @click="showDownloadModal = false">Download</a>
+                        <a x-show="downloadFormat === 'csv'"
+                            href="{{ route('admin.laporan.export.hasil-penjurusan', ['periode_id' => request('periode_id'), 'format' => 'csv']) }}"
+                            class="primary-button" @click="showDownloadModal = false">Download</a>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="flex min-h-0 flex-1 flex-col gap-4 px-8 py-6">
-            <a href="{{ url()->previous() }}" class="back-button">
+            <a href="{{ route('periode-penjurusan.show', ['id' => request('periode_id')]) }}" class="back-button">
                 Kembali
             </a>
-            <h2 class="text-base font-semibold leading-6">
-                Ringkasan Data Umum
-            </h2>
-            <div class="flex flex-row w-full justify-start gap-8">
-                @php
-                    $items = [
-                        'Siswa' => [
-                            'title' => 'Total Siswa',
-                            'count' => $results->count(),
-                        ],
-                        'is_filled' => [
-                            'title' => 'Sudah Mengisi',
-                            'count' => $results->where('is_filled', true)->count(),
-                        ],
-                        'not_filled' => [
-                            'title' => 'Belum Mengisi',
-                            'count' => $results->where('is_filled', false)->count(),
-                        ],
-                    ];
-                @endphp
-                @foreach ($items as $key => $value)
-                    <div class="flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
-                        <div class="flex flex-col border-l border-green-600 px-4">
-                            <span class="text-lg font-semibold">{{ $value['title'] }}</span>
-                            <span class="text-base font-normal">{{ $value['count'] }} siswa</span>
-                        </div>
+            @if ($summary['detail_kelas']->isEmpty())
+                <h2 class="text-base font-semibold leading-6">
+                    Ringkasan Data Umum
+                </h2>
+                <div
+                    class="bg-gray-50 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit shadow-lg shadow-black/5">
+                    <div class="flex flex-col border-l border-red-600 px-4">
+                        <span class="text-lg font-semibold">Data tidak ditemukan</span>
+                        <span class="text-base font-normal">Tidak ada siswa yang ditempatkan pada kelas ini
+                        </span>
                     </div>
-                @endforeach
-            </div>
-            <h2 class="text-base font-semibold leading-6">
-                Ringkasan Data Perkelas
-            </h2>
-            <div class="flex flex-row w-full justify-start gap-8">
-                @php
-                    $class = [
-                        'Kelas A' => [
-                            'title' => 'Kelas A',
-                            // ini place holder
-                            'count' => 32,
-                            'rumpun' => 'eksakta',
-                        ],
-                        'Kelas B' => [
-                            'title' => 'Kelas B',
-                            // ini place holder
-                            'count' => 28,
-                            'rumpun' => 'eksakta',
-                        ],
-                        'Kelas C' => [
-                            'title' => 'Kelas C',
-                            // ini place holder
-                            'count' => 30,
-                            'rumpun' => 'sosial',
-                        ],
-                        'Kelas D' => [
-                            'title' => 'Kelas D',
-                            // ini place holder
-                            'count' => 25,
-                            'rumpun' => 'sosial',
-                        ],
-                    ];
-                @endphp
-                @foreach ($class as $key => $value)
-                    <div class="flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
-                        <div class="flex flex-col border-l border-green-600 px-4">
-                            <span class="text-lg font-semibold">{{ $value['title'] }} - {{ $value['rumpun'] }}</span>
-                            <span class="text-base font-normal">{{ $value['count'] }} siswa • Pilihan 1</span>
+                </div>
+            @else
+                <h2 class="text-base font-semibold leading-6">
+                    Ringkasan Data Umum
+                </h2>
+                <div class="flex flex-row w-full justify-start gap-8">
+                    @php
+                        $items = [
+                            'Siswa' => [
+                                'title' => 'Total Siswa',
+                                'count' => $summary['total_siswa'],
+                            ],
+                            'Total kelas' => [
+                                'title' => 'Total Kelas',
+                                'count' => $summary['total_kelas'],
+                            ],
+                        ];
+                    @endphp
+                    @if ($items['Total kelas']['count'] < 2)
+                        <div
+                            class="bg-gray-50 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit shadow-lg shadow-black/5">
+                            <div class="flex flex-col border-l border-green-600 px-4">
+                                <span class="text-lg font-semibold">{{ $items['Siswa']['title'] }}</span>
+                                <span class="text-base font-normal">{{ $items['Siswa']['count'] }} siswa</span>
+                            </div>
                         </div>
-                    </div>
-                @endforeach
+                    @else
+                        @foreach ($items as $key => $value)
+                            <div
+                                class="bg-gray-50 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit shadow-lg shadow-black/5">
+                                <div class="flex flex-col border-l border-green-600 px-4">
+                                    <span class="text-lg font-semibold">{{ $value['title'] }}</span>
+                                    <span class="text-base font-normal">{{ $value['count'] }} @if ($value['title'] === 'Total Siswa')
+                                            siswa
+                                        @else
+                                            kelas
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
 
-            </div>
+                </div>
+
+                <h2 class="text-base font-semibold leading-6">
+                    Ringkasan Data Perkelas
+                </h2>
+                <div class="flex flex-row w-full justify-start gap-8">
+                    @foreach ($summary['detail_kelas'] as $key => $value)
+                        <div
+                            class="flex flex-col p-4 border {{ $value['total'] > 32 ? 'bg-red-100' : 'bg-white' }} border-gray-300 rounded-lg gap-2 w-fit shadow-lg shadow-black/5">
+                            <div
+                                class="flex flex-col border-l {{ $value['total'] > 32 ? 'border-red-600' : 'border-green-600' }} px-4">
+                                <span class="text-lg font-semibold">{{ $value['nama_menu'] }}</span>
+                                <span class="text-base font-normal">{{ $value['total'] }} siswa</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
             <div class="flex flex-row w-full justify-between items-end">
                 <div class="flex flex-col w-full ">
-                    <h2 class="text-xl font-semibold leading-6">
-                        Daftar Pilihan Kelas Siswa
+                    <h2 class="mainTitle text-xl">
+                        Daftar Hasil Seleksi Siswa
                     </h2>
-                    <span class="text-sm leading-5 text-gray-500">
-                        Daftar Kelas yang dipilih oleh siswa pada formulir results
+                    <span class="subTitle">
+                        Hasil seleksi siswa
                     </span>
 
                 </div>
@@ -122,52 +177,66 @@
                         ModalUrl='{{ route('admin.hasil-penjurusan.lock') }}';
                         mainTitle='Finalisasi Hasil Seleksi Siswa' ;
                         subTitle='Apakah anda yakin ingin memfinalisasi hasil seleksi siswa untuk periode ini? Setelah difinalisasi, data tidak dapat diubah lagi.' "
-                        class="bg-black text-sm text-white whitespace-nowrap h-fit px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-100 ease-in-out active:shadow-lg">
+                        class="primary-button w-fit whitespace-nowrap">
                         Finalisasi Hasil Seleksi
                     </button>
                 @else
                     <div class="flex flex-row gap-2">
-                        <button type="button"
-                            @click="
+                        @if (!$isPublished)
+                            <button type="button"
+                                @click="
                             showConfirmModal = true; 
                             ModalUrl='{{ route('admin.hasil-penjurusan.unlock') }}'
                         ; mainTitle='Buka Finalisasi Hasil Seleksi Siswa';
                         subTitle='Apakah anda yakin ingin membuka finalisasi hasil seleksi siswa untuk periode ini? Setelah dibuka, data dapat diubah kembali.'"
-                            class="bg-black
-                            text-sm text-white whitespace-nowrap h-fit px-4 py-2 rounded-lg hover:bg-gray-800
-                            transition-all duration-100 ease-in-out active:shadow-lg">
-                            Buka Finalisasi
-                        </button>
-                        <button type="button"
-                            @click="showConfirmModal = true; ModalUrl='{{ route('admin.hasil-penjurusan.publish') }}';
+                                class="negative-primary-button whitespace-nowrap w-fit">
+                                Buka Finalisasi
+                            </button>
+                        @endif
+                        @if ($isPublished)
+                            <button type="button"
+                                @click="showConfirmModal = true; ModalUrl='{{ route('admin.hasil-penjurusan.unpublish') }}';
+                        mainTitle='Batalkan Publikasi Hasil Seleksi';
+                        subTitle='Apakah anda yakin ingin membatalkan publikasi hasil seleksi siswa untuk periode ini? Setelah dibatalkan, data tidak dapat diakses oleh siswa.'"
+                                class="primary-button whitespace-nowrap w-fit">
+                                Batalkan Publikasi Hasil Seleksi
+                            </button>
+                        @else
+                            <button type="button"
+                                @click="showConfirmModal = true; ModalUrl='{{ route('admin.hasil-penjurusan.publish') }}';
                         mainTitle='Publikasikan Hasil Seleksi Siswa';
                         subTitle='Apakah anda yakin ingin mempublikasikan hasil seleksi siswa untuk periode ini? Setelah dipublikasikan, data dapat diakses oleh siswa.'"
-                            class="bg-black text-sm text-white whitespace-nowrap h-fit px-4 py-2 rounded-lg hover:bg-gray-800 transition-all duration-100 ease-in-out active:shadow-lg">
-                            Publikasikan Hasil Seleksi
-                        </button>
+                                class="primary-button whitespace-nowrap w-fit">
+                                Publikasikan Hasil Seleksi
+                            </button>
+                        @endif
+
                     </div>
                 @endif
-
             </div>
 
             <form method="GET" action="{{ route('admin.hasil-penjurusan.index') }}"
                 class="flex flex-row  p-3 justify-between bg-gray-200 border border-gray-300 rounded-lg w-full gap-2">
-                <input type="text" placeholder="Cari nama, NISN, atau NIS..."
+                <input type="hidden" name="periode_id" value="{{ request()->input('periode_id') }}">
+                <input type="text" placeholder="Cari nama, NISN, atau NIS..." name="search"
+                    value="{{ request()->input('search') }}" oninput="this.value = this.value.toLowerCase()"
                     class="text-sm px-4 py-2 rounded-lg border border-gray-400 w-full">
 
                 <select name="paket_menu_pilihan_id" onchange="this.form.submit()" class="select-primary text-sm">
                     <option value="">Pilihan Kelas : semua</option>
-                    @foreach ($summary['detail_kelas'] as $value)
-                        <option value="{{ $value['id'] }}">Pilihan Kelas :
-                            {{ $value['nama_menu'] }}</option>
+                    @foreach ($AllKelas as $value)
+                        <option value="{{ $value->id }}"
+                            {{ request()->input('paket_menu_pilihan_id') === $value->id ? 'selected' : '' }}>
+                            Pilihan
+                            Kelas :
+                            {{ $value->nama_menu }}</option>
                     @endforeach
                 </select>
             </form>
-            <div class="flex flex-col rounded-xl overflow-hidden border border-gray-300 w-full">
-                <table class="min-w-full border-separate border-spacing-0">
+            <div class="table-container">
+                <table class="data-table">
                     <thead>
-                        <tr
-                            class="bg-gray-300 text-xs font-semibold uppercase text-gray-600 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left first:[&_th]:w-0">
+                        <tr>
                             <th>#</th>
                             <th>Nama Siswa</th>
                             <th>NISN</th>
@@ -182,19 +251,20 @@
                     <tbody>
                         @if ($results->isEmpty())
                             <tr class="h-full">
-                                <td colspan="6"
-                                    class="h-full border border-gray-200 bg-white py-4 text-center align-middle">
-                                    Tidak ada data results siswa.
+                                <td colspan="7"
+                                    class="h-full border border-gray-200 bg-white py-4 text-center align-middle last:rounded-bl-xl last:rounded-br-xl">
+                                    Data tidak ditemukan
                                 </td>
                             </tr>
                         @else
                             @foreach ($results as $index => $item)
-                                <tr class="hover:cursor-pointer hover:bg-gray-200 group h-fit [&_td]:px-4 [&_td]:py-3">
-                                    <th class="border-r border-t border-gray-200 p-2">
+                                <tr class="group ">
+                                    <th>
                                         {{ $index + 1 }}
                                     </th>
                                     <td>
-                                        <div class="flex flex-row items-center gap-2 lowercase justify-between">
+                                        <div
+                                            class="flex flex-row items-center gap-2 lowercase justify-between text-md">
 
                                             {{ $item->siswa->nama_lengkap }}
                                             <a href="{{ route('siswa.show', $item->siswa->id) }}"
@@ -219,11 +289,7 @@
                                     @if (!$isFinal)
                                         <td>
                                             <button type="button"
-                                                @click="
-                                                showupdateModal = true;
-                                                studentData = {{ json_encode($item) }};
-                                                editUrl = '{{ route('siswa.update', $item->id) }}';
-                                        "
+                                                @click="window.location.href='{{ route('admin.hasil-penjurusan.show-siswa', ['siswaId' => $item->siswa_id, 'periode_id' => $item->periode_pendaftaran_id]) }}'"
                                                 class="p-1 bg-blue-50 hover:bg-blue-300 rounded-lg transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
                                                 <img src="{{ asset('Icon/Edit.svg') }}" alt="edit icon">
                                             </button>
@@ -232,17 +298,50 @@
 
                                 </tr>
                             @endforeach
+
+
                         @endif
                     </tbody>
                 </table>
+                @if ($results->hasPages())
+                    <div class="flex flex-row py-3 px-4 bg-[#f3f4f6] w-full justify-between items-center text-sm">
+                        <p class="text-gray-500 text-sm leading-5">
+                            {{ $results->firstItem() ?? 0 }} sampai {{ $results->lastItem() ?? 0 }} dari
+                            {{ $results->total() }} hasil
+                        </p>
+                        <div class="flex flex-row w-fit gap-3 items-center">
+                            @if ($results->onFirstPage())
+                                <span class="text-gray-400 cursor-not-allowed">&lt; sebelum</span>
+                            @else
+                                <a href="{{ $results->previousPageUrl() }}"
+                                    class="text-gray-800  hover:underline">&lt;
+                                    sebelum</a>
+                            @endif
+                            <div class="flex flex-row gap-2 ">
+                                @for ($halaman = 1; $halaman <= $results->lastPage(); $halaman++)
+                                    <a href="{{ $results->url($halaman) }}"
+                                        class="rounded {{ $halaman == $results->currentPage() ? ' text-gray-800 font-bold' : 'text-gray-500 hover:text-gray-800 font-bold' }}">
+                                        {{ $halaman }}
+                                    </a>
+                                @endfor
+                            </div>
+                            @if ($results->hasMorePages())
+                                <a href="{{ $results->nextPageUrl() }}"
+                                    class="text-gray-800 hover:underline">selanjutnya
+                                    &gt;</a>
+                            @else
+                                <span class="text-gray-500 cursor-not-allowed">selanjutnya &gt;</span>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
             </div>
 
         </div>
-        <pre>
-            {{ json_encode($isFinal, JSON_PRETTY_PRINT) }}
-        </pre>
         <x-hasil-seleksi-confirm-modal />
 
     </div>
+
 
 </x-app-layout>

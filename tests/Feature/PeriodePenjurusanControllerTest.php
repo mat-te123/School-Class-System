@@ -31,6 +31,33 @@ class PeriodePenjurusanControllerTest extends TestCase
         ]);
     }
 
+    public function test_academic_year_is_unique_even_after_publication_and_across_waves(): void
+    {
+        $this->travelTo(now()->setDate(2026, 8, 10));
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $payload = [
+            'nama_periode' => 'Periode Utama',
+            'gelombang' => 'Utama',
+            'tanggal_buka' => '2026-08-11',
+            'tanggal_tutup' => '2026-08-21',
+            'status_pengumuman' => 'AKTIF',
+        ];
+
+        $firstId = $this->postJson('/periode-penjurusan', $payload)->assertCreated()->json('data.id');
+        $this->get('/periode-penjurusan')->assertOk()->assertSee('Periode tahun ajaran 2026/2027 sudah tersedia');
+        $this->postJson('/periode-penjurusan', [...$payload, 'gelombang' => 'Susulan'])
+            ->assertUnprocessable()->assertJsonValidationErrors('tahun_ajaran');
+
+        $this->travelTo(now()->addYear());
+        $secondId = $this->postJson('/periode-penjurusan', $payload)->assertCreated()
+            ->assertJsonPath('data.tahun_ajaran', '2027/2028')->json('data.id');
+        $this->putJson('/periode-penjurusan/'.$secondId, ['tahun_ajaran' => '2026/2027'])
+            ->assertUnprocessable()->assertJsonValidationErrors('tahun_ajaran');
+        $this->assertDatabaseHas('periode_pendaftaran', ['id' => $firstId, 'tahun_ajaran' => '2026/2027']);
+        $this->expectException(QueryException::class);
+        PeriodePendaftaran::findOrFail($secondId)->update(['tahun_ajaran' => '2026/2027']);
+    }
+
     public function test_admin_cannot_create_a_period_with_an_invalid_schedule(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
@@ -219,7 +246,7 @@ class PeriodePenjurusanControllerTest extends TestCase
         for ($i = 1; $i <= 8; $i++) {
             PeriodePendaftaran::create([
                 'nama_periode' => "Periode Tes Ke-{$i}",
-                'tahun_ajaran' => '2026/2027',
+                'tahun_ajaran' => (2020 + $i).'/'.(2021 + $i),
                 'tanggal_buka' => '2026-08-01 08:00:00',
                 'tanggal_tutup' => '2026-08-31 23:59:59',
             ]);

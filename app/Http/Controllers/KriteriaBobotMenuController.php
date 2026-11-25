@@ -3,13 +3,64 @@
 namespace App\Http\Controllers;
 
 use App\Models\KriteriaBobotMenu;
+use App\Models\MasterMataPelajaran;
 use App\Models\PaketMenuPilihan;
+use App\Models\PeriodePendaftaran;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class KriteriaBobotMenuController extends Controller
 {
+    public function index(Request $request, PeriodePendaftaran $periode)
+    {
+        $this->ensureAdmin('bobot mata pelajaran');
+
+        $validated = $request->validate(['paket_id' => 'nullable|uuid']);
+        $pakets = $periode->paketMenuPilihans()->withSum('kriteriaBobots', 'bobot_persen')->orderBy('nama_menu')->get();
+        $paket = isset($validated['paket_id']) ? $pakets->findOrFail($validated['paket_id']) : $pakets->first();
+        $bobot = $paket?->kriteriaBobots()->pluck('bobot_persen', 'master_mata_pelajaran_id');
+        $mapel = $paket ? MasterMataPelajaran::where('is_active', true)
+            ->orWhereIn('id', $bobot->keys())->orderBy('nama_mapel')->get() : collect();
+
+        return view('auth.period.bobot-mata-pelajaran', compact('periode', 'pakets', 'paket', 'bobot', 'mapel'));
+    }
+
+    public function savePackage(Request $request, PeriodePendaftaran $periode, string $paket)
+    {
+        $this->ensureAdmin('bobot mata pelajaran');
+
+        DB::transaction(function () use ($request, $periode, $paket) {
+            $package = $periode->paketMenuPilihans()->lockForUpdate()->findOrFail($paket);
+            $existing = $package->kriteriaBobots()->pluck('bobot_persen', 'master_mata_pelajaran_id');
+            $allowed = MasterMataPelajaran::where('is_active', true)->orWhereIn('id', $existing->keys())->pluck('id');
+            $validated = $request->validate([
+                'bobot' => ['required', 'array'],
+                'bobot.*' => ['nullable', 'numeric', 'decimal:0,2', 'between:0,100'],
+            ], ['bobot.*' => 'Isi bobot antara 0 dan 100, maksimal dua angka desimal.']);
+
+            if (array_diff(array_keys($validated['bobot']), $allowed->all())) {
+                throw ValidationException::withMessages(['bobot' => 'Ada mata pelajaran yang tidak tersedia untuk paket ini.']);
+            }
+
+            foreach ($validated['bobot'] as $id => $percent) {
+                if ($percent === null) {
+                    if ($existing->has($id)) {
+                        $package->kriteriaBobots()->where('master_mata_pelajaran_id', $id)->delete();
+                    }
+                } elseif (! $existing->has($id) || (float) $percent !== (float) $existing[$id]) {
+                    $package->kriteriaBobots()->updateOrCreate(['master_mata_pelajaran_id' => $id], ['bobot_persen' => $percent]);
+                }
+            }
+        });
+
+        return redirect()->route('kriteria-bobot.index', ['periode' => $periode->id, 'paket_id' => $paket])
+            ->with('success', 'Bobot paket berhasil disimpan.');
+    }
+
     /**
      * Menentukan/menyimpan bobot mata pelajaran pada paket menu pilihan (Khusus Role Admin).
      * Mendukung simpan single item atau bulk array 'kriteria'.
@@ -43,7 +94,7 @@ class KriteriaBobotMenuController extends Controller
         // Jika request memiliki array 'kriteria'
         if ($request->has('kriteria') && is_array($request->kriteria)) {
             $validated = $request->validate([
-                'paket_menu_pilihan_id' => ['required', 'uuid', 'exists:paket_menu_pilihan,id'],
+                'paket_menu_pilihan_id' => ['required', 'uuid', Rule::exists('paket_menu_pilihan', 'id')->withoutTrashed()],
                 'kriteria' => ['required', 'array', 'min:1'],
                 'kriteria.*.master_mata_pelajaran_id' => ['required', 'uuid', 'exists:master_mata_pelajaran,id'],
                 'kriteria.*.bobot_persen' => ['required', 'numeric', 'min:0', 'max:100'],
@@ -80,7 +131,7 @@ class KriteriaBobotMenuController extends Controller
 
         // Jika single item request
         $validated = $request->validate([
-            'paket_menu_pilihan_id' => ['required', 'uuid', 'exists:paket_menu_pilihan,id'],
+            'paket_menu_pilihan_id' => ['required', 'uuid', Rule::exists('paket_menu_pilihan', 'id')->withoutTrashed()],
             'master_mata_pelajaran_id' => ['required', 'uuid', 'exists:master_mata_pelajaran,id'],
             'bobot_persen' => ['required', 'numeric', 'min:0', 'max:100'],
         ], [
@@ -201,7 +252,7 @@ class KriteriaBobotMenuController extends Controller
         }
 
         // Jika single item request berdasarkan ID KriteriaBobotMenu
-        $bobot = KriteriaBobotMenu::find($identifier);
+        $bobot = KriteriaBobotMenu::whereHas('paketMenuPilihan')->find($identifier);
 
         if (! $bobot) {
             if ($request->wantsJson() || $request->ajax()) {
@@ -262,7 +313,7 @@ class KriteriaBobotMenuController extends Controller
             abort(403, 'Akses ditolak. Hanya Admin yang dapat menghapus kriteria bobot menu.');
         }
 
-        $bobot = KriteriaBobotMenu::find($id);
+        $bobot = KriteriaBobotMenu::whereHas('paketMenuPilihan')->find($id);
 
         if (! $bobot) {
             if ($request->wantsJson() || $request->ajax()) {

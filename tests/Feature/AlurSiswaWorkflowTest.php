@@ -96,27 +96,27 @@ class AlurSiswaWorkflowTest extends TestCase
     public function test_tahap_1_autentikasi_invalid_credentials_returns_error(): void
     {
         // Password salah
-        $response = $this->from('/login/siswa')->post('/login/siswa', [
+        $response = $this->from('/login')->post('/login', [
             'nisn' => '1234567890',
             'password' => 'wrongpassword',
         ]);
 
-        $response->assertRedirect('/login/siswa');
+        $response->assertRedirect('/login');
         $response->assertSessionHasErrors('password');
 
         // NISN tidak terdaftar
-        $responseNisn = $this->from('/login/siswa')->post('/login/siswa', [
+        $responseNisn = $this->from('/login')->post('/login', [
             'nisn' => '0000000000',
             'password' => 'password123',
         ]);
 
-        $responseNisn->assertRedirect('/login/siswa');
+        $responseNisn->assertRedirect('/login');
         $responseNisn->assertSessionHasErrors('nisn');
     }
 
     public function test_tahap_1_autentikasi_valid_credentials_redirects_to_dashboard(): void
     {
-        $response = $this->post('/login/siswa', [
+        $response = $this->post('/login', [
             'nisn' => '1234567890',
             'password' => 'password123',
         ]);
@@ -127,9 +127,9 @@ class AlurSiswaWorkflowTest extends TestCase
 
     public function test_tahap_1_autentikasi_redirects_to_dashboard_even_if_intended_url_points_to_admin_login(): void
     {
-        // Simulasikan session memiliki intended URL ke /login admin
+        // Simulasikan session memiliki intended URL ke halaman login
         $response = $this->withSession(['url.intended' => 'http://localhost/login'])
-            ->post('/login/siswa', [
+            ->post('/login', [
                 'nisn' => '1234567890',
                 'password' => 'password123',
             ]);
@@ -276,6 +276,7 @@ class AlurSiswaWorkflowTest extends TestCase
         HasilSeleksi::create([
             'id' => (string) Str::uuid(),
             'siswa_id' => $this->siswa->id,
+            'periode_pendaftaran_id' => $this->periodeAktif->id,
             'paket_menu_pilihan_id' => $this->paketA->id,
             'pilihan_ke_diterima' => 1,
             'rank_pada_pilihan' => 3,

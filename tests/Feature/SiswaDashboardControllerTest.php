@@ -41,7 +41,7 @@ class SiswaDashboardControllerTest extends TestCase
     {
         $response = $this->get('/siswa/dashboard');
 
-        $response->assertRedirect('/login');
+        $response->assertRedirect(route('siswa.login.form'));
     }
 
     public function test_unauthenticated_json_request_receives_unauthorized(): void

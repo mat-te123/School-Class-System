@@ -75,7 +75,7 @@ class PaketMenuPilihanController extends Controller
             ];
         });
 
-        $periodes = PeriodePendaftaran::select('id', 'tahun_ajaran')
+        $periodes = PeriodePendaftaran::select('id', 'tahun_ajaran', 'is_active')
             ->orderBy('tahun_ajaran', 'desc')
             ->get();
 
@@ -93,7 +93,7 @@ class PaketMenuPilihanController extends Controller
     /**
      * FR-50: Siswa melihat daftar paket menu aktif periode berjalan.
      */
-    public function indexSiswa(Request $request)
+    public function siswaIndex(Request $request)
     {
         // 1. Verifikasi siswa login
         $siswa = Auth::guard('siswa')->user();
@@ -123,6 +123,13 @@ class PaketMenuPilihanController extends Controller
                 ->get(['id', 'nama_periode', 'tahun_ajaran', 'gelombang', 'tanggal_buka', 'tanggal_tutup', 'status_pengumuman']);
         }
 
+        $validated = $request->validate(['id' => 'nullable|uuid']);
+        if (isset($validated['id'])) {
+            $activePeriods = $activePeriods->where('id', $validated['id'])->values();
+            abort_if($activePeriods->isEmpty(), 404, 'Periode pendaftaran tidak tersedia.');
+        }
+        $periodeId = $activePeriods->first()?->id;
+
         if ($activePeriods->isEmpty()) {
             $activePeriods = collect([[
                 'id' => null,
@@ -136,7 +143,8 @@ class PaketMenuPilihanController extends Controller
         }
 
         // 3. Cari paket menu aktif yang minimal punya 1 kriteria bobot
-        $paketMenus = PaketMenuPilihan::with(['kriteriaBobots.mataPelajaran:id,kode_mapel,nama_mapel'])
+        $paketMenus = $periodeId === null ? collect() : PaketMenuPilihan::with(['kriteriaBobots.mataPelajaran:id,kode_mapel,nama_mapel'])
+            ->where('periode_id', $periodeId)
             ->where('is_active', true)
             ->has('kriteriaBobots')
             ->orderBy('rumpun')
@@ -172,8 +180,8 @@ class PaketMenuPilihanController extends Controller
             return $item;
         });
 
-        $isAlreadyAppyClasses = PendaftaranPilihan::where('siswa_id', $siswa->id)
-            ->whereIn('periode_pendaftaran_id', $activePeriods->pluck('id'))
+        $isAlreadyAppyClasses = $periodeId !== null && PendaftaranPilihan::where('siswa_id', $siswa->id)
+            ->where('periode_pendaftaran_id', $periodeId)
             ->exists();
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -181,7 +189,7 @@ class PaketMenuPilihanController extends Controller
                 'success' => true,
                 'message' => 'Berhasil mengambil daftar paket menu aktif.',
                 'meta' => [
-                    'active_periods' => $activePeriods->map(fn ($p) => [
+                    'active_periods' => $periodeId === null ? [] : $activePeriods->map(fn ($p) => [
                         'id' => $p->id,
                         'nama_periode' => $p->nama_periode,
                         'tahun_ajaran' => $p->tahun_ajaran,
@@ -203,7 +211,7 @@ class PaketMenuPilihanController extends Controller
     /**
      * FR-51: Siswa melihat detail paket menu lengkap (termasuk kriteria bobot & informasi periode).
      */
-    public function showSiswa(Request $request, string $identifier)
+    public function siswaShow(Request $request, string $identifier)
     {
         // 1. Verifikasi siswa login
         $siswa = Auth::guard('siswa')->user();
@@ -291,6 +299,8 @@ class PaketMenuPilihanController extends Controller
      */
     public function show(Request $request, string $identifier)
     {
+        $isAdmin = Auth::guard('web')->user()?->role === 'admin';
+
         $paketMenu = PaketMenuPilihan::where('id', $identifier)
             ->orWhere('nama_menu', $identifier)
             ->first();
@@ -325,7 +335,7 @@ class PaketMenuPilihanController extends Controller
             ]);
         }
 
-        return view('any.kelas.kelas-detail', compact('paketMenu', 'kriteriaBobotMenu'));
+        return view('any.kelas.kelas-detail', compact('paketMenu', 'kriteriaBobotMenu', 'isAdmin'));
     }
 
     /**

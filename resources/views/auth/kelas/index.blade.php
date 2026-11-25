@@ -54,9 +54,11 @@
                     </div>
                 </div>
 
-                @foreach ($paginator as $item)
+                @forelse ($paginator as $item)
                     <x-kelas-card :item="$item" />
-                @endforeach
+                @empty
+                    <p class="text-sm text-slate-600">Belum ada kelas untuk periode ini.</p>
+                @endforelse
 
             </div>
 

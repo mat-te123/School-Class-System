@@ -1,34 +1,12 @@
 <x-app-layout title="Periode" type="siswa">
     <div class="flex flex-row py-6 px-8 justify-between items-center  border-b border-black">
         <div class="flex flex-col">
-            <h1 class="text-3xl leading-9 font-semibold">
+            <h1 class="mainTitle">
                 Periode
             </h1>
-            <span class="text-sm leading-5 font-medium">
+            <span class="subTitle">
                 Informasi detail terkait periode yang berjalan
             </span>
-        </div>
-
-        <div class="flex flex-row items-center gap-4">
-            <div
-                class="p-2 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-200 transition-all duration-300 ease-in-out cursor-pointer">
-                <img src="{{ asset('Icon/Bell_light.svg') }}" alt="notification icon" class="w-6 h-6" />
-            </div>
-            {{-- Dummy Data --}}
-            @php
-                $dummyName = 'Antonio Angelo';
-                $initials = collect(explode(' ', $dummyName))
-                    ->map(fn($word) => strtoupper(substr($word, 0, 1)))
-                    ->join('');
-            @endphp
-            <div
-                class="flex flex-row items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-200 transition-all duration-300 ease-in-out cursor-pointer">
-                <div
-                    class="p-1 w-7 h-7 rounded-full bg-black text-white flex items-center justify-center font-bold text-sm leading-4">
-                    {{ $initials }}
-                </div>
-                <span class="text-xs leading-4 font-semibold">{{ $dummyName }}</span>
-            </div>
         </div>
     </div>
     <div class="grid grid-cols-4 p-8 gap-4">
@@ -80,31 +58,41 @@
         {{-- Daftar Kelas --}}
         <div class="flex flex-row justify-between items-end col-span-4">
             <div class="flex flex-col ">
-                <h2 class="text-xl font-semibold">
+                <h2 class="mainTitle">
                     Daftar Kelas
                 </h2>
-                <p>
+                <p class="subTitle">
                     Data kelas yang dapat dipilih oleh siswa
                 </p>
             </div>
             @if ($isAlreadyAppyClasses)
-                <a href="{{ route('siswa.profile') }}"
-                    class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
-                    Cek Pilihan Anda
-                </a>
+                <div class="flex flex-row gap-4">
+                    <a href="{{ route('siswa.profile') }}" class="negative-primary-button w-fit">
+                        Cek Pilihan Anda
+                    </a>
+                    <a href="{{ route('siswa.pendaftaran-pilihan.index') }}"
+                        class="primary-button w-fit whitespace-nowrap">
+                        Lihat Pilihan Kelas
+                    </a>
+
+                </div>
             @else
-                <a href="{{ route('siswa.pendaftaran-pilihan.index') }}"
-                    class="text-sm bg-blue-700 w-fit py-1 px-3 text-white rounded-md hover:bg-gray-800">
-                    Pilih Kelas
-                </a>
+                @if ($data['Status Pengumuman'] == 'Sudah diumumkan')
+                    <button type="button" disable class="primary-button w-fit cursor-not-allowed">
+                        Pilih Kelas
+                    </button>
+                @else
+                    <a href="{{ route('siswa.pendaftaran-pilihan.index') }}" class="primary-button w-fit">
+                        Pilih Kelas
+                    </a>
+                @endif
+
             @endif
 
         </div>
         @foreach ($formattedMenus as $index => $menu)
-            <x-kelas-card :item="$menu" />
+            <x-kelas-card :item="$menu" :isSiswa="true" />
         @endforeach
-
-
     </div>
 
 </x-app-layout>

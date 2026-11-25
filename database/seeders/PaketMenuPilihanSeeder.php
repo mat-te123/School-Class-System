@@ -14,11 +14,12 @@ class PaketMenuPilihanSeeder extends Seeder
     public function run(): void
     {
         $periodeId = DB::table('periode_pendaftaran')
-            ->where('nama_periode', 'Pemilihan Mapel Fase F 2026/2027')
+            ->where('is_active', true)
+            ->whereNull('deleted_at')
             ->value('id');
 
         if (! $periodeId) {
-            throw new \RuntimeException('Periode pendaftaran untuk paket menu belum tersedia.');
+            throw new \RuntimeException('Buat atau aktifkan periode sebelum menjalankan seeder kelas.');
         }
 
         $menus = [
@@ -29,21 +30,15 @@ class PaketMenuPilihanSeeder extends Seeder
             ['nama_menu' => 'Menu 5 (P5)', 'rumpun' => 'sosial', 'kuota_kapasitas' => 36],
         ];
 
-        foreach ($menus as $m) {
-            DB::table('paket_menu_pilihan')->updateOrInsert(
-                [
-                    'nama_menu' => $m['nama_menu'],
-                    'periode_id' => $periodeId,
-                ],
-                [
-                    'id' => (string) Str::uuid(),
-                    'rumpun' => $m['rumpun'],
-                    'kuota_kapasitas' => $m['kuota_kapasitas'],
-                    'kuota_terisi' => 0,
-                    'is_active' => true,
-                    'updated_at' => now(),
-                ]
-            );
-        }
+        $now = now();
+        DB::table('paket_menu_pilihan')->insertOrIgnore(array_map(fn (array $menu) => [
+            ...$menu,
+            'id' => (string) Str::uuid(),
+            'periode_id' => $periodeId,
+            'kuota_terisi' => 0,
+            'is_active' => true,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $menus));
     }
 }

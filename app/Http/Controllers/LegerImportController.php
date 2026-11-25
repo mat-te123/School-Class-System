@@ -28,7 +28,7 @@ class LegerImportController extends Controller
      *
      * @return JsonResponse
      */
-    public function import(Request $request)
+    public function store(Request $request)
     {
         // Hanya admin yang boleh upload file Leger Excel
         $user = Auth::guard('web')->user();
@@ -231,7 +231,7 @@ class LegerImportController extends Controller
      *
      * @return JsonResponse|View
      */
-    public function history(Request $request)
+    public function index(Request $request)
     {
         $user = Auth::guard('web')->user() ?? Auth::user();
 

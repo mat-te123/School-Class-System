@@ -1,4 +1,4 @@
-@props(['tahunAjaranSekarang' => ''])
+@props(['tahunAjaranSekarang'])
 
 <x-add-modal subtext="Menambahkan periode baru" tahunAjaranSekarang="{{ $tahunAjaranSekarang }}">
     @php
@@ -46,9 +46,8 @@
                 <label for="fgelombang" class="text-sm leading-4 font-semibold">Gelombang</label>
                 <select name="gelombang" id="fgelombang" required
                     class="border border-black rounded-lg py-1 px-4 text-base w-full">
-                    <option value="" disabled selected>Pilih gelombang</option>
-                    <option value="Utama">Utama</option>
-                    <option value="Susulan">Susulan</option>
+                    <option value="Utama" @selected(old('gelombang', 'Utama') === 'Utama')>Utama</option>
+                    <option value="Susulan" @selected(old('gelombang') === 'Susulan')>Susulan</option>
                 </select>
             </div>
 

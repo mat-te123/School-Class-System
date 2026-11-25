@@ -32,7 +32,7 @@ class SiswaAuthControllerTest extends TestCase
         ]);
 
         // 2. Act: Kirim request login JSON dengan NISN dan Password
-        $response = $this->postJson('/login/siswa', [
+        $response = $this->postJson('/login', [
             'nisn' => '1234567890',
             'password' => 'password123',
         ]);
@@ -69,7 +69,7 @@ class SiswaAuthControllerTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $response = $this->postJson('/login/siswa', [
+        $response = $this->postJson('/login', [
             'nisn' => '1234567890',
             'password' => 'wrongpassword',
         ]);
@@ -88,7 +88,7 @@ class SiswaAuthControllerTest extends TestCase
      */
     public function test_siswa_cannot_login_with_invalid_nisn(): void
     {
-        $response = $this->postJson('/login/siswa', [
+        $response = $this->postJson('/login', [
             'nisn' => '9999999999',
             'password' => 'password123',
         ]);
@@ -118,7 +118,7 @@ class SiswaAuthControllerTest extends TestCase
             'password' => null, // Belum registrasi password
         ]);
 
-        $response = $this->postJson('/login/siswa', [
+        $response = $this->postJson('/login', [
             'nisn' => '1234567890',
             'password' => 'anypassword',
         ]);
@@ -148,7 +148,7 @@ class SiswaAuthControllerTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $response = $this->postJson('/login/siswa', [
+        $response = $this->postJson('/login', [
             'nisn' => '1234567890',
             'password' => 'password123',
         ]);

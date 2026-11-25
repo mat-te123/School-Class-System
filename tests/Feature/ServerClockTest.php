@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 
-class ServerClockControllerTest extends TestCase
+class ServerClockTest extends TestCase
 {
     public function test_can_get_server_clock_time(): void
     {
