@@ -38,3 +38,7 @@ Leger_*.xlsx
 
 # Documentation
 /docs/
+
+# skill
+.claude
+.github
