@@ -329,6 +329,70 @@ class KriteriaBobotMenuControllerTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_enable_and_disable_package_subjects_from_detail_form(): void
+    {
+        $admin = User::create([
+            'id' => (string) Str::uuid(),
+            'username' => 'admin_bobot_toggle',
+            'password' => 'password123',
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+        $paket = PaketMenuPilihan::create([
+            'nama_menu' => 'Menu Toggle',
+            'rumpun' => 'eksakta',
+        ]);
+        $existing = MasterMataPelajaran::create([
+            'kode_mapel' => 'TOGGLE_1',
+            'nama_mapel' => 'Mapel Existing',
+            'is_active' => true,
+        ]);
+        $disabled = MasterMataPelajaran::create([
+            'kode_mapel' => 'TOGGLE_2',
+            'nama_mapel' => 'Mapel Disabled',
+            'is_active' => true,
+        ]);
+        $enabled = MasterMataPelajaran::create([
+            'kode_mapel' => 'TOGGLE_3',
+            'nama_mapel' => 'Mapel Enabled',
+            'is_active' => true,
+        ]);
+        KriteriaBobotMenu::create([
+            'paket_menu_pilihan_id' => $paket->id,
+            'master_mata_pelajaran_id' => $existing->id,
+            'bobot_persen' => 20,
+        ]);
+        KriteriaBobotMenu::create([
+            'paket_menu_pilihan_id' => $paket->id,
+            'master_mata_pelajaran_id' => $disabled->id,
+            'bobot_persen' => 30,
+        ]);
+
+        $response = $this->actingAs($admin, 'web')->put(route('kriteria-bobot.package.save', $paket->id), [
+            'bobot' => [
+                $existing->id => '55',
+                $disabled->id => '',
+                $enabled->id => '45',
+            ],
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('kriteria_bobot_menu', [
+            'paket_menu_pilihan_id' => $paket->id,
+            'master_mata_pelajaran_id' => $existing->id,
+            'bobot_persen' => 55,
+        ]);
+        $this->assertDatabaseMissing('kriteria_bobot_menu', [
+            'paket_menu_pilihan_id' => $paket->id,
+            'master_mata_pelajaran_id' => $disabled->id,
+        ]);
+        $this->assertDatabaseHas('kriteria_bobot_menu', [
+            'paket_menu_pilihan_id' => $paket->id,
+            'master_mata_pelajaran_id' => $enabled->id,
+            'bobot_persen' => 45,
+        ]);
+    }
+
     /** Request browser non-JSON redirect setelah store */
     public function test_browser_store_redirects_back_with_success_flash(): void
     {

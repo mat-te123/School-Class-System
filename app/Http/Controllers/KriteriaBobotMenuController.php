@@ -3,13 +3,69 @@
 namespace App\Http\Controllers;
 
 use App\Models\KriteriaBobotMenu;
+use App\Models\MasterMataPelajaran;
 use App\Models\PaketMenuPilihan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class KriteriaBobotMenuController extends Controller
 {
+    public function savePackage(Request $request, string $paket)
+    {
+        $user = Auth::guard('web')->user();
+
+        if (! $user || $user->role !== 'admin') {
+            abort($user ? 403 : 401);
+        }
+
+        $validated = $request->validate([
+            'bobot' => ['required', 'array'],
+            'bobot.*' => ['nullable', 'numeric', 'min:0', 'max:100'],
+        ]);
+        $mapelIds = array_keys($validated['bobot']);
+        $validMapelIds = MasterMataPelajaran::where('is_active', true)
+            ->whereIn('id', $mapelIds)
+            ->pluck('id')
+            ->all();
+
+        if (count($validMapelIds) !== count($mapelIds)) {
+            throw ValidationException::withMessages([
+                'bobot' => 'Daftar mata pelajaran tidak valid. Muat ulang halaman lalu coba lagi.',
+            ]);
+        }
+
+        $paketMenu = PaketMenuPilihan::findOrFail($paket);
+        $selected = collect($validated['bobot'])
+            ->filter(fn ($value) => $value !== null && $value !== '')
+            ->all();
+
+        DB::transaction(function () use ($paketMenu, $selected) {
+            $query = KriteriaBobotMenu::where('paket_menu_pilihan_id', $paketMenu->id);
+            if ($selected === []) {
+                $query->delete();
+
+                return;
+            }
+
+            $query->whereNotIn('master_mata_pelajaran_id', array_keys($selected))->delete();
+
+            foreach ($selected as $mapelId => $bobotPersen) {
+                KriteriaBobotMenu::updateOrCreate(
+                    [
+                        'paket_menu_pilihan_id' => $paketMenu->id,
+                        'master_mata_pelajaran_id' => $mapelId,
+                    ],
+                    ['bobot_persen' => $bobotPersen]
+                );
+            }
+        });
+
+        return back()->with('success', 'Berhasil memperbarui mata pelajaran dan bobot kelas.');
+    }
+
     /**
      * Menentukan/menyimpan bobot mata pelajaran pada paket menu pilihan (Khusus Role Admin).
      * Mendukung simpan single item atau bulk array 'kriteria'.

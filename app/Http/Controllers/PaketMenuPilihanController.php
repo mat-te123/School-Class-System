@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KriteriaBobotMenu;
+use App\Models\MasterMataPelajaran;
 use App\Models\PaketMenuPilihan;
 use App\Models\PendaftaranPilihan;
 use App\Models\PeriodePendaftaran;
@@ -300,6 +301,10 @@ class PaketMenuPilihanController extends Controller
         $kriteriaBobotMenu = KriteriaBobotMenu::with(['masterMataPelajaran'])
             ->where('paket_menu_pilihan_id', $paketMenu?->id)
             ->get();
+        $mapel = $isAdmin
+            ? MasterMataPelajaran::where('is_active', true)->orderBy('nama_mapel')->get()
+            : collect();
+        $bobotByMapel = $kriteriaBobotMenu->keyBy('master_mata_pelajaran_id');
 
         if (! $paketMenu) {
             if ($request->wantsJson() || $request->ajax()) {
@@ -327,7 +332,7 @@ class PaketMenuPilihanController extends Controller
             ]);
         }
 
-        return view('any.kelas.kelas-detail', compact('paketMenu', 'kriteriaBobotMenu', 'isAdmin'));
+        return view('any.kelas.kelas-detail', compact('paketMenu', 'kriteriaBobotMenu', 'isAdmin', 'mapel', 'bobotByMapel'));
     }
 
     /**

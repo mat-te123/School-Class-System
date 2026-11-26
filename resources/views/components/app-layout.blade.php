@@ -13,11 +13,11 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.svg') }}">
 </head>
 
-<body class="relative bg-gray-100 min-h-screen flex">
+<body class="relative flex h-screen overflow-hidden bg-gray-100">
     <x-flash-message />
 
     <x-admin-sidebar :isAdmin=" $type !== 'siswa' " />
-    <main class="flex-1 h-screen flex flex-col overflow-y-auto">
+    <main class="flex h-screen min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
         {{ $slot }}
     </main>
     @stack('scripts')

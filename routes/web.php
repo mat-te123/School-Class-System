@@ -35,24 +35,29 @@ Route::get('/server-clock', [ServerClockController::class, 'index'])->name('serv
 Route::get('/server-time', [ServerClockController::class, 'index'])->name('server.time');
 
 // Route Autentikasi User (Admin / Guru BK)
-Route::get('/login', [UserAuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [UserAuthController::class, 'login']);
-Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
+Route::controller(UserAuthController::class)->group(function () {
+    Route::get('/login/admin', 'showLoginForm')->name('login');
+    Route::post('/login/admin', 'login');
+    Route::post('/logout', 'logout')->name('logout');
+});
 
 Route::middleware(['auth:web'])->group(function () {
     Route::get('/me', [UserAuthController::class, 'me'])->name('user.me');
 });
 
 // Route Registrasi Siswa (2 Tahap: Check NISN & Melengkapi Data)
-Route::get('/register/siswa', [SiswaAuthController::class, 'showRegisterForm'])->name('siswa.register.form');
-Route::post('/register/siswa/check', [SiswaAuthController::class, 'checkNisn'])->name('siswa.register.check');
-Route::post('/register/siswa', [SiswaAuthController::class, 'register'])->name('siswa.register');
+Route::controller(SiswaAuthController::class)->group(function () {
+    Route::get('/register/siswa', 'showRegisterForm')->name('siswa.register.form');
+    Route::post('/register/siswa/check', 'checkNisn')->name('siswa.register.check');
+    Route::post('/register/siswa', 'register')->name('siswa.register');
 
-// Route Login Siswa via NISN
-Route::get('/login/siswa', [SiswaAuthController::class, 'showLoginForm'])->name('siswa.login.form');
-Route::post('/login/siswa', [SiswaAuthController::class, 'login'])->name('siswa.login');
-Route::post('/logout/siswa', [SiswaAuthController::class, 'logout'])->name('siswa.logout');
+    Route::get('/', 'showLoginForm')->name('siswa.login.form');
+    Route::post('/', 'login')->name('siswa.login');
+    Route::redirect('/login', '/');
+    Route::post('/login', 'login');
 
+    Route::post('/logout/siswa', 'logout')->name('siswa.logout');
+});
 // Route Profil Siswa (butuh login)
 Route::middleware(['auth:siswa'])->group(function () {
     Route::get('/siswa/profile', [SiswaAuthController::class, 'profile'])->name('siswa.profile');
@@ -151,6 +156,7 @@ Route::middleware(['auth:web'])->group(function () {
     Route::delete('/paket-menu-pilihan/{identifier}', [PaketMenuPilihanController::class, 'destroy'])->name('paket-menu.destroy');
 
     Route::post('/kriteria-bobot-menu', [KriteriaBobotMenuController::class, 'store'])->name('kriteria-bobot.store');
+    Route::put('/paket-menu-pilihan/{paket}/kriteria-bobot', [KriteriaBobotMenuController::class, 'savePackage'])->name('kriteria-bobot.package.save');
     Route::put('/kriteria-bobot-menu/{id}', [KriteriaBobotMenuController::class, 'update'])->name('kriteria-bobot.update');
     Route::delete('/kriteria-bobot-menu/{id}', [KriteriaBobotMenuController::class, 'destroy'])->name('kriteria-bobot.destroy');
 
