@@ -8,29 +8,6 @@
                 Lihat hasil seleksi dan penempatan kelas Anda
             </span>
         </div>
-
-        <div class="flex flex-row items-center gap-4">
-            <div
-                class="cursor-pointer rounded-lg border border-slate-200 bg-slate-50 p-2 transition-all duration-300 ease-in-out hover:bg-slate-200">
-                <img src="{{ asset('Icon/Bell_light.svg') }}" alt="notification icon" class="h-6 w-6" />
-            </div>
-            @php
-                $siswa = auth('siswa')->user();
-                $initials = collect(explode(' ', $siswa?->nama_lengkap ?? 'Siswa'))
-                    ->map(fn($word) => strtoupper(substr($word, 0, 1)))
-                    ->join('');
-            @endphp
-            <div
-                class="flex flex-row items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 transition-all duration-300 ease-in-out hover:bg-slate-200">
-                <div
-                    class="flex h-7 w-7 items-center justify-center rounded-full bg-black p-1 text-sm font-bold leading-4 text-white">
-                    {{ $initials }}
-                </div>
-                <span class="text-xs font-semibold leading-4">
-                    {{ $siswa?->nama_lengkap ?? 'Siswa' }}
-                </span>
-            </div>
-        </div>
     </div>
 
     <div class="grid grid-cols-2 gap-4 px-8 py-6">

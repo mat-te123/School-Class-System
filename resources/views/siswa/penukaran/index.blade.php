@@ -123,11 +123,7 @@
                         </table>
                     </div>
                 @endif
-                <span class="text-xs text-red-500">
-                    Catatan: Siswa hanya dapat mengajukan penukaran kelas satu kali. jika ingin mengajukan
-                    kembali,
-                    silahkan hapus pengajuan yang sedang diproses*.
-                </span>
+
                 @if ($pengajuan != null)
                     @if ($pengajuan != 'menunggu')
                         <span class="text-xs text-red-500">
@@ -136,6 +132,12 @@
                             *.
                         </span>
                     @endif
+                @else
+                    <span class="text-xs text-red-500">
+                        Catatan: Siswa hanya dapat mengajukan penukaran kelas satu kali. jika ingin mengajukan
+                        kembali,
+                        silahkan hapus pengajuan yang masih menunggu*.
+                    </span>
                 @endif
 
             </div>

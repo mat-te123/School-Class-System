@@ -170,6 +170,8 @@ class PeriodePenjurusanController extends Controller
     private function rules(?PeriodePendaftaran $periode = null): array
     {
         $tanggalBuka = request('tanggal_buka', $periode?->tanggal_buka);
+        $tanggalTutup = request('tanggal_tutup', $periode?->tanggal_tutup);
+        $tanggalMulaiPertukaran = request('tanggal_mulai_pertukaran', $periode?->tanggal_mulai_pertukaran);
 
         return [
             'nama_periode' => [$periode ? 'sometimes' : 'required', 'string', 'max:100'],
@@ -198,16 +200,23 @@ class PeriodePenjurusanController extends Controller
                 'nullable',
                 'date',
                 Rule::when(
-                    request('tanggal_tutup', $periode?->tanggal_tutup),
-                    'after:'.request('tanggal_tutup', $periode?->tanggal_tutup)
+                    $tanggalBuka, 'after_or_equal:'.$tanggalBuka
+                ),
+                Rule::when(
+                    $tanggalTutup, 'before_or_equal:'.$tanggalTutup
                 ),
             ],
             'tanggal_selesai_pertukaran' => [
                 'nullable',
                 'date',
                 Rule::when(
-                    request('tanggal_mulai_pertukaran', $periode?->tanggal_mulai_pertukaran),
-                    'after:'.(request('tanggal_mulai_pertukaran', $periode?->tanggal_mulai_pertukaran) ?? '')
+                    $tanggalMulaiPertukaran, 'after:'.$tanggalMulaiPertukaran
+                ),
+                Rule::when(
+                    $tanggalBuka, 'after_or_equal:'.$tanggalBuka
+                ),
+                Rule::when(
+                    $tanggalTutup, 'before_or_equal:'.$tanggalTutup
                 ),
             ],
             'status_pengumuman' => ['nullable', 'in:AKTIF,NON-AKTIF'],

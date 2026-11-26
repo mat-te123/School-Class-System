@@ -53,9 +53,17 @@
                 <h2 class="mainTitle text-xl">
                     Daftar Mata Pelajaran
                 </h2>
-                <span class="subTitle">
-                    Atur mata pelajaran yang digunakan dan bobot penilaian untuk kelas {{ $paketMenu->nama_menu }}.
-                </span>
+                @if ($isAdmin)
+                    <span class="subTitle">
+                        Atur mata pelajaran yang digunakan dan bobot penilaian untuk kelas {{ $paketMenu->nama_menu }}.
+                    </span>
+                @else
+                    <span class="subTitle">
+                        Lihat mata pelajaran yang digunakan dan bobot penilaian untuk kelas
+                        {{ $paketMenu->nama_menu }}.
+                    </span>
+                @endif
+
             </div>
         </div>
 

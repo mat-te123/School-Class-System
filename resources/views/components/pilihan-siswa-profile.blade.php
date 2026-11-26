@@ -67,9 +67,18 @@
 
             </div>
             @if (!$isSiswaLoggedIn)
-                <a href="{{ route('siswa.pilih-kelas.index') }}" class="primary-button w-fit whitespace-nowrap h-fit">
-                    Perbarui pilihan kelas
-                </a>
+                @if ($HasilPilihanSiswa->isNotEmpty())
+                    <button type="button" disable
+                        class="cursor-not-allowed opacity-50 primary-button w-fit whitespace-nowrap h-fit">
+                        Perbarui pilihan kelas
+                    </button>
+                @else
+                    <a href="{{ route('siswa.pilih-kelas.index') }}"
+                        class="primary-button w-fit whitespace-nowrap h-fit">
+                        Perbarui pilihan kelas
+                    </a>
+                @endif
+
             @endif
 
         </div>

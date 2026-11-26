@@ -70,10 +70,15 @@
                     <a href="{{ route('siswa.profile') }}" class="negative-primary-button w-fit">
                         Cek Pilihan Anda
                     </a>
-                    <a href="{{ route('siswa.pendaftaran-pilihan.index') }}"
-                        class="primary-button w-fit whitespace-nowrap">
-                        Perbarui Pilihan
-                    </a>
+                    @if ($data['Status Pengumuman'] == 'Sudah diumumkan')
+                        <button type="button" disable class="primary-button w-fit cursor-not-allowed opacity-50">
+                            Perbarui Pilihan
+                        </button>
+                    @else
+                        <a href="{{ route('siswa.pendaftaran-pilihan.index') }}" class="primary-button w-fit">
+                            Perbarui Pilihan
+                        </a>
+                    @endif
 
                 </div>
             @else
