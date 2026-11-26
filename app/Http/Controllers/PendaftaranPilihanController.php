@@ -213,7 +213,7 @@ class PendaftaranPilihanController extends Controller
         // Dispatch job untuk kalkulasi ulang klasemen secara background
         RunPlacementJob::dispatch($pendaftaran->periode_pendaftaran_id);
 
-        return redirect()->route('siswa.paket-menu-aktif.show', $pendaftaran->periode_pendaftaran_id)
+        return redirect()->route('siswa.paket-menu-aktif.index', ['id' => $pendaftaran->periode_pendaftaran_id])
             ->with('success', 'Pilihan paket prioritas Anda berhasil disubmit. Silakan tunggu hasil penempatan.');
     }
 

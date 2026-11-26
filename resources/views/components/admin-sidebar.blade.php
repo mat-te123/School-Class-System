@@ -55,6 +55,13 @@
                     'text' => 'Home',
                 ],
             ];
+            $akun = [
+                'Akun' => [
+                    'route' => route('siswa.profile'),
+                    'icon' => asset('Icon/User.svg'),
+                    'text' => 'Akun',
+                ],
+            ];
         @endphp
         <p class="text-sm font-medium leading-6">
             menu
@@ -91,6 +98,17 @@
         <p class="text-sm font-medium leading-6">
             akun
         </p>
+        @if (!$isAdmin)
+            @foreach ($akun as $key => $value)
+                <a href="{{ $value['route'] }}"
+                    class="flex flex-row items-center gap-2 p-2 pl-3 rounded hover:bg-slate-800 opacity-100 transition-all duration-300 ease-in-out text-md leading-4 font-normal"
+                    :class="{ 'bg-slate-800': window.location.href === '{{ $value['route'] }}', 'gap-0': !isSidebarOpen }">
+                    <img src="{{ $value['icon'] }}" alt="{{ $key }}_icon" class="w-6 h-6" />
+                    <span class="text-sm" :class="{ 'hidden': !isSidebarOpen }">{{ $value['text'] }}</span>
+                </a>
+            @endforeach
+
+        @endif
         <form action="{{ route('logout') }}" method="POST">
             @csrf
             <button type="submit"

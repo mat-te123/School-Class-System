@@ -28,6 +28,19 @@
             showConfirmPassword: false,
             togglePasswordVisibility(object) {
                 this[object] = !this[object];
+            },
+            checkPasswordMatch() {
+                const errorMessage = document.getElementById('password-error');
+                const password = document.getElementById('fpassword').value;
+                const confirmInput = document.getElementById('fpassword_confirmation');
+        
+                if (confirmInput.value && password !== confirmInput.value) {
+                    confirmInput.setCustomValidity('Password tidak cocok.');
+                    errorMessage.classList.remove('hidden'); // Tampilkan pesan error
+                } else {
+                    confirmInput.setCustomValidity('');
+                    errorMessage.classList.add('hidden'); // Sembunyikan pesan error
+                }
             }
         }">
 
@@ -132,13 +145,16 @@
                     </label>
                     <div class="relative w-full">
                         <input name="password" id="fpassword" :type="showPassword ? 'text' : 'password'" minlength="8"
-                            placeholder="******" required class="w-full border border-black rounded-lg py-1 px-4 pr-10">
+                            placeholder="******" required class="w-full border border-black rounded-lg py-1 px-4 pr-10"
+                            @input="checkPasswordMatch()">
                         <img :src="showPassword ? '{{ asset('Icon/Eye_fill.svg') }}' :
                             '{{ asset('Icon/Eye_close.svg') }}'"
                             alt="Toggle Password Visibility"
                             class="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
                             @click="togglePasswordVisibility('showPassword')">
                     </div>
+                    <small class="text-gray-500">Password harus minimal 8 karakter.</small>
+
                 </div>
 
                 <div class="flex flex-col gap-1">
@@ -150,13 +166,14 @@
                     <div class="relative w-full">
                         <input name="password_confirmation" id="fpassword_confirmation" minlength="8"
                             :type="showConfirmPassword ? 'text' : 'password'" placeholder="******" required
-                            class="w-full border border-black rounded-lg py-1 px-4">
+                            @input="checkPasswordMatch()" class="w-full border border-black rounded-lg py-1 px-4">
                         <img :src="showConfirmPassword ? '{{ asset('Icon/Eye_fill.svg') }}' :
                             '{{ asset('Icon/Eye_close.svg') }}'"
                             alt="Toggle Password Visibility"
                             class="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
                             @click="togglePasswordVisibility('showConfirmPassword')">
                     </div>
+                    <small id="password-error" class="hidden text-red-500">Password tidak cocok.</small>
                 </div>
             @endif
 

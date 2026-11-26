@@ -336,7 +336,7 @@ class SiswaAuthController extends Controller
             ]);
         }
 
-        return redirect('/login/siswa')->with('success', 'Registrasi berhasil. Silakan login menggunakan NISN dan password Anda.');
+        return redirect('/')->with('success', 'Registrasi berhasil. Silakan login menggunakan NISN dan password Anda.');
     }
 
     /**

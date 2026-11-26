@@ -10,6 +10,13 @@
             <p class="subTitle text-sm">
                 Siswa belum melakukan pemilihan kelas
             </p>
+            @if (!$isSiswaLoggedIn)
+                <a href="{{ route('siswa.pilih-kelas.index') }}"
+                    class="primary-button w-fit whitespace-nowrap h-fit mt-4">
+                    Pilih kelas
+                </a>
+            @endif
+
 
         </div>
     @else
