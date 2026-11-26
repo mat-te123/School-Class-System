@@ -38,8 +38,7 @@
                     ];
                 @endphp
                 @foreach ($items as $key => $value)
-                    <div
-                        class="bg-gray-50 shadow-2xl shadow-black/10 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
+                    <div class="bg-gray-50  flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
                         <div class="flex flex-col border-l border-green-600 px-4">
                             <span class="text-lg font-semibold">{{ $value['title'] }}</span>
                             <span class="text-base font-normal">{{ $value['count'] }} siswa</span>
@@ -47,34 +46,37 @@
                     </div>
                 @endforeach
             </div>
-            <h2 class="text-base font-semibold leading-6">
-                Ringkasan Data Perkelas
-            </h2>
+
 
             @php
                 $detailPaketCollection = collect($summary['detail_paket']);
             @endphp
 
+            @if (!$paketMenu->isEmpty())
+                <h2 class="text-base font-semibold leading-6">
+                    Ringkasan Data Perkelas
+                </h2>
+                <div class="flex flex-row w-full justify-start gap-8">
 
-            <div class="flex flex-row w-full justify-start gap-8">
-
-                @foreach ($paketMenu as $paket)
-                    @php
-                        $detail = $detailPaketCollection->firstWhere('id', $paket->id);
-                        $total = $detail->total ?? 0;
-                    @endphp
+                    @foreach ($paketMenu as $paket)
+                        @php
+                            $detail = $detailPaketCollection->firstWhere('id', $paket->id);
+                            $total = $detail->total ?? 0;
+                        @endphp
 
 
-                    <div
-                        class="shadow-2xl shadow-black/10 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
-                        <div class="flex flex-col border-l border-green-600 px-4">
-                            <span class="text-lg font-semibold">{{ $paket->nama_menu }}</span>
-                            <span class="text-base font-normal">{{ $total }} siswa</span>
+                        <div
+                            class="shadow-2xl shadow-black/10 flex flex-col p-4 border border-gray-300 rounded-lg gap-2 w-fit">
+                            <div class="flex flex-col border-l border-green-600 px-4">
+                                <span class="text-lg font-semibold">{{ $paket->nama_menu }}</span>
+                                <span class="text-base font-normal">{{ $total }} siswa</span>
+                            </div>
                         </div>
-                    </div>
-                @endforeach
+                    @endforeach
 
-            </div>
+                </div>
+            @endif
+
             <div class="flex flex-row w-full justify-between items-end">
                 <div class="flex flex-col w-full ">
                     <h2 class="text-xl font-semibold">
@@ -85,14 +87,13 @@
                     </span>
                 </div>
                 <div class="flex gap-2">
-                    <button type="button" @click="showDownloadModal = true"
-                        class="negative-primary-button w-fit whitespace-nowrap">
-                        Download data
-                    </button>
-                    {{-- <button type="button" @click="showConfirmModal = true"
-                        class="primary-button w-fit whitespace-nowrap">
-                        Proses Data
-                    </button> --}}
+                    @if (!$siswaSudahMemilih->isEmpty())
+                        <button type="button" @click="showDownloadModal = true"
+                            class="negative-primary-button w-fit whitespace-nowrap">
+                            Download data
+                        </button>
+                    @endif
+
                 </div>
             </div>
 
@@ -183,9 +184,18 @@
                         <tbody>
                             @if ($siswaSudahMemilih->isEmpty())
                                 <tr class="h-full">
-                                    <td colspan="6"
-                                        class="h-full border border-gray-200 bg-white py-4 text-center align-middle">
-                                        Belum ada siswa yang memilih.
+                                    <td colspan="6" class="text-center py-6">
+                                        <div class="flex flex-col items-center justify-center py-12 px-2  ">
+                                            <h3 class="mainTitle text-lg">
+                                                Data tidak ditemukan
+
+                                            </h3>
+
+                                            <p class="subTitle text-sm">
+                                                Belum ada siswa yang memilih kelas
+                                            </p>
+
+                                        </div>
                                     </td>
                                 </tr>
                             @else
@@ -217,9 +227,18 @@
                         <tbody>
                             @if ($siswaBelumMemilih->isEmpty())
                                 <tr>
-                                    <td colspan="6"
-                                        class="h-full border border-gray-200 bg-white py-4 text-center align-middle">
-                                        Semua siswa telah memilih kelas.
+                                    <td colspan="6" class="text-center py-6">
+                                        <div class="flex flex-col items-center justify-center py-12 px-2  ">
+                                            <h3 class="mainTitle text-lg">
+                                                Data tidak ditemukan
+
+                                            </h3>
+
+                                            <p class="subTitle text-sm">
+                                                Semua siswa sudah memilih kelas
+                                            </p>
+
+                                        </div>
                                     </td>
                                 </tr>
                             @endif

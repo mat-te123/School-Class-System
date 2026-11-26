@@ -124,7 +124,26 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center w-full py-4">Tidak ada pengajuan pergantian kelas.
+                                <td colspan="8" class="text-center w-full py-8">
+                                    <div class="flex flex-col items-center justify-center py-12 px-2  ">
+                                        <h3 class="mainTitle text-lg">
+                                            Data tidak ditemukan
+
+                                        </h3>
+                                        @if (request()->anyFilled(['search', 'status', 'tanggal']))
+                                            <p class="subTitle text-sm">
+                                                Tidak ada data untuk filter ini
+                                            </p>
+                                        @elseif ($pengajuan->isEmpty())
+                                            <p class="subTitle text-sm">
+                                                Tidak ada data pengajuan yang dibuat
+                                            </p>
+                                        @else
+                                            <p class="subTitle text-sm">
+                                                Data kosong
+                                            </p>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse

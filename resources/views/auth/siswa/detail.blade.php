@@ -51,7 +51,7 @@
                             @click=" 
                         showDeleteModal = true; 
                         confirmationData='{{ $siswa->nama_lengkap }}';
-                        deleteUrl = '{{ route('siswa.destroy', $siswa->id) }}';
+                        deleteUrl = '{{ route('siswa.destroy', ['id' => $siswa->id, 'isProfile' => 1]) }}';
 
                         "
                             class="text-sm bg-red-600 w-fit py-1 px-3 text-white rounded-lg hover:bg-red-500">

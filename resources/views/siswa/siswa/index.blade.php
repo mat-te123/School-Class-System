@@ -16,7 +16,7 @@
         </div>
 
         <div class="flex flex-col pt-6 px-8 gap-4 relative">
-            <a href="{{ route('admin-siswa.index') }}"
+            <a href="{{ route('siswa.dashboard') }}"
                 class="bg-gradient-to-t from-[#273344] to-[#1a202c] text-white text-sm font-semibold py-2 px-4 rounded-lg w-fit">
                 Kembali
             </a>

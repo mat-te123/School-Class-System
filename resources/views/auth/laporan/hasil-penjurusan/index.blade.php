@@ -25,10 +25,12 @@
                 @php
                     $requestData = request()->only(['search', 'periode_id', 'paket_id', 'kelas_asal_id', 'mekanisme']);
                 @endphp
-                <button class="negative-primary-button w-fit whitespace-nowrap h-fit"
-                    @click="showDownloadModal = true;">
-                    Download data hasil
-                </button>
+                @if (!$results->isEmpty())
+                    <button class="negative-primary-button w-fit whitespace-nowrap h-fit"
+                        @click="showDownloadModal = true;">
+                        Download data hasil
+                    </button>
+                @endif
 
             </section>
 
@@ -42,23 +44,27 @@
                     class="w-full py-2 px-4 bg-[#F9FAFB] border border-gray-400 rounded-lg text-sm">
 
 
+                @if (!$results->isEmpty())
+                    <select class="select-primary text-sm" name="periode_id" onchange="this.form.submit()">
+                        @foreach ($periodeList as $periode)
+                            <option value="{{ $periode->id }}"
+                                {{ request('periode_id') == $periode->id ? 'selected' : '' }}>
+                                {{ $periode->nama_periode }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <select class="select-primary text-sm" name="paket_id" onchange="this.form.submit()">
+                        <option value="">semua Paket</option>
+                        @foreach ($periodePaketList as $paket)
+                            <option value="{{ $paket->id }}"
+                                {{ request('paket_id') == $paket->id ? 'selected' : '' }}>
+                                {{ $paket->nama_menu }}
+                            </option>
+                        @endforeach
+                    </select>
+                @else
+                @endif
 
-                <select class="select-primary text-sm" name="periode_id" onchange="this.form.submit()">
-                    @foreach ($periodeList as $periode)
-                        <option value="{{ $periode->id }}"
-                            {{ request('periode_id') == $periode->id ? 'selected' : '' }}>
-                            {{ $periode->nama_periode }}
-                        </option>
-                    @endforeach
-                </select>
-                <select class="select-primary text-sm" name="paket_id" onchange="this.form.submit()">
-                    <option value="">semua Paket</option>
-                    @foreach ($periodePaketList as $paket)
-                        <option value="{{ $paket->id }}" {{ request('paket_id') == $paket->id ? 'selected' : '' }}>
-                            {{ $paket->nama_menu }}
-                        </option>
-                    @endforeach
-                </select>
 
 
             </form>
@@ -100,15 +106,28 @@
                                 <td>{{ $row->mekanisme ?? '-' }}</td>
                             </tr>
                         @empty
-                            @if (request()->hasAny(['search', 'periode_id', 'paket_id']))
-                                <tr>
-                                    <td colspan="8">Tidak ada hasil untuk filter ini.</td>
-                                </tr>
-                            @else
-                                <tr>
-                                    <td colspan="8">Tidak ada data hasil penjurusan.</td>
-                                </tr>
-                            @endif
+                            <td colspan="8" class="text-center w-full py-8">
+
+                                <div class="flex flex-col items-center justify-center py-12 px-2  ">
+                                    <h3 class="mainTitle text-lg">
+                                        Data tidak ditemukan
+
+                                    </h3>
+                                    @if (request()->anyFilled(['search', 'periode_id', 'paket_id']))
+                                        <p class="subTitle text-sm">
+                                            Tidak ada data untuk filter ini
+                                        </p>
+                                    @elseif ($results->isEmpty())
+                                        <p class="subTitle text-sm">
+                                            Tidak ada data hasil yang ditemukan
+                                        </p>
+                                    @else
+                                        <p class="subTitle text-sm">
+                                            Data kosong
+                                        </p>
+                                    @endif
+                                </div>
+                            </td>
                         @endforelse
                     </tbody>
                 </table>

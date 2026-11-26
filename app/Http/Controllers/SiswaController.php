@@ -142,12 +142,27 @@ class SiswaController extends Controller
 
     public function destroy(Request $request, string $id)
     {
+
+        $validated = $request->validate(
+            [
+                'isProfile' => 'nullable|boolean',
+            ]
+        );
+
         $siswa = Siswa::findOrFail($id);
         $siswa->delete();
+
+        if ($request->boolean('isProfile')) {
+            return redirect()
+                ->route('admin-siswa.index')
+                ->with('success', 'berhasil menghapus data siswa');
+
+        }
 
         return $this->handleWriteResponse($request, [
             'success' => true,
             'message' => 'Berhasil menghapus data siswa',
         ]);
+
     }
 }

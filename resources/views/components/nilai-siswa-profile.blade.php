@@ -5,8 +5,15 @@
 
 
     @if ($nilaiData->isEmpty())
-        <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-500 text-sm">
-            Data nilai anda belum terinput pada sistem
+        <div class="bg-gray-50 border border-gray-300 rounded-lg flex flex-col items-center justify-center py-12 px-2  ">
+            <h3 class="mainTitle text-lg">
+                Data tidak tersedia
+
+            </h3>
+            <p class="subTitle text-sm">
+                Nilai siswa belum terinput pada sistem
+            </p>
+
         </div>
     @else
         <div class="flex flex-col p-4 bg-white border border-slate-200 rounded-lg gap-4 w-fit">

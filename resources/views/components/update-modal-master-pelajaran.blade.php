@@ -3,8 +3,7 @@
         $btn_primary = 'bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg py-2 px-4 transition';
     @endphp
 
-    <form :action="updateUrl" method="POST" class="flex flex-col gap-3" novalidate
-        @submit.prevent="if (confirm('Apakah Anda yakin ingin mengubah mata pelajaran ini?')) { $el.submit(); }">
+    <form :action="updateUrl" method="POST" class="flex flex-col gap-3" novalidate>
         @csrf
         @method('PUT')
 

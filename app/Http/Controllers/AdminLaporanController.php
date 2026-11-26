@@ -28,7 +28,13 @@ class AdminLaporanController extends Controller
 
         $request->merge(['periode_id' => $periodeId]);
 
-        $periodePaketList = PaketMenuPilihan::getKelasNameByPeriod($request->input('periode_id', $periodeList->first()?->id ?? null));
+        if ($periodeList->isEmpty()) {
+            $periodePaketList = collect();
+        } else {
+            $periodePaketList = $periodeId
+                ? PaketMenuPilihan::getKelasNameByPeriod($request->input('periode_id', $periodeList->first()?->id ?? null))
+                : collect();
+        }
 
         $validated = $request->validate([
             'periode_id' => 'nullable|uuid|exists:periode_pendaftaran,id',
@@ -100,6 +106,14 @@ class AdminLaporanController extends Controller
 
         $request->merge(['periode_id' => $periodeId]);
 
+        if ($periodeList->isEmpty()) {
+            $periodePaketList = collect();
+        } else {
+            $periodePaketList = $periodeId
+                ? PaketMenuPilihan::getKelasNameByPeriod($request->input('periode_id', $periodeList->first()?->id ?? null))
+                : collect();
+        }
+
         $validated = $request->validate([
             'periode_id' => 'nullable|uuid|exists:periode_pendaftaran,id',
             'paket_id' => 'nullable|uuid|exists:paket_menu_pilihan,id',
@@ -148,9 +162,6 @@ class AdminLaporanController extends Controller
             ]);
         }
 
-        $periodePaketList = PaketMenuPilihan::getKelasNameByPeriod(
-            $validated['periode_id'] ?? $periodeList->first()?->id
-        );
         $kelasAsalList = KelasAsal::orderBy('nama_kelas')->get(['id', 'nama_kelas']);
         $selectedPeriode = $periodeList->firstWhere('id', $validated['periode_id'])
             ?? $periodeList->first();

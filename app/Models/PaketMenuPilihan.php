@@ -76,6 +76,10 @@ class PaketMenuPilihan extends Model
      */
     public static function getKelasNameByPeriod(string $periodeId)
     {
+        if (! $periodeId) {
+            return collect();
+        };
+
         return self::where('periode_id', $periodeId)->select('id', 'nama_menu')->get();
     }
 

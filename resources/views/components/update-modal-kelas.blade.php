@@ -4,7 +4,7 @@
     @endphp
 
     <form :action="updateUrl" method="POST" class="flex flex-col gap-3" novalidate
-        @submit.prevent="if (confirm('Apakah Anda yakin ingin mengubah data Kelas ini?')) { $el.submit(); }">
+        >
         @csrf
         @method('PUT')
 

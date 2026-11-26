@@ -139,41 +139,62 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-6 text-gray-500">
-                                    Tidak ada data siswa ditemukan
+                                <td colspan="8" class="text-center py-6">
+                                    <div class="flex flex-col items-center justify-center py-12 px-2  ">
+                                        <h3 class="mainTitle text-lg">
+                                            Data tidak ditemukan
+
+                                        </h3>
+                                        @if (request()->anyFilled(['search', 'kelas_id', 'jenis_kelamin', 'angkatan']))
+                                            <p class="subTitle text-sm">
+                                                Tidak ada data untuk filter ini
+                                            </p>
+                                        @elseif ($siswa->isEmpty())
+                                            <p class="subTitle text-sm">
+                                                Tidak ada data siswa yang ditemukan
+                                            </p>
+                                        @else
+                                            <p class="subTitle text-sm">
+                                                Data kosong
+                                            </p>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
-                <div class="flex flex-row py-3 px-4 bg-[#f3f4f6] w-full justify-between items-center text-sm">
-                    <p class="text-gray-500 text-sm leading-5">
-                        {{ $siswa->firstItem() ?? 0 }} sampai {{ $siswa->lastItem() ?? 0 }} dari
-                        {{ $siswa->total() }} hasil
-                    </p>
-                    <div class="flex flex-row w-fit gap-3 items-center">
-                        @if ($siswa->onFirstPage())
-                            <span class="text-gray-400 cursor-not-allowed">&lt; sebelum</span>
-                        @else
-                            <a href="{{ $siswa->previousPageUrl() }}" class="text-gray-800  hover:underline">&lt;
-                                sebelum</a>
-                        @endif
-                        <div class="flex flex-row gap-2 ">
-                            @for ($halaman = 1; $halaman <= $siswa->lastPage(); $halaman++)
-                                <a href="{{ $siswa->url($halaman) }}"
-                                    class="rounded {{ $halaman == $siswa->currentPage() ? ' text-gray-800 font-bold' : 'text-gray-500 hover:text-gray-800 font-bold' }}">
-                                    {{ $halaman }}
-                                </a>
-                            @endfor
+                @if (!$siswa->isEmpty())
+                    <div class="flex flex-row py-3 px-4 bg-[#f3f4f6] w-full justify-between items-center text-sm">
+                        <p class="text-gray-500 text-sm leading-5">
+                            {{ $siswa->firstItem() ?? 0 }} sampai {{ $siswa->lastItem() ?? 0 }} dari
+                            {{ $siswa->total() }} hasil
+                        </p>
+                        <div class="flex flex-row w-fit gap-3 items-center">
+                            @if ($siswa->onFirstPage())
+                                <span class="text-gray-400 cursor-not-allowed">&lt; sebelum</span>
+                            @else
+                                <a href="{{ $siswa->previousPageUrl() }}" class="text-gray-800  hover:underline">&lt;
+                                    sebelum</a>
+                            @endif
+                            <div class="flex flex-row gap-2 ">
+                                @for ($halaman = 1; $halaman <= $siswa->lastPage(); $halaman++)
+                                    <a href="{{ $siswa->url($halaman) }}"
+                                        class="rounded {{ $halaman == $siswa->currentPage() ? ' text-gray-800 font-bold' : 'text-gray-500 hover:text-gray-800 font-bold' }}">
+                                        {{ $halaman }}
+                                    </a>
+                                @endfor
+                            </div>
+                            @if ($siswa->hasMorePages())
+                                <a href="{{ $siswa->nextPageUrl() }}" class="text-gray-800 hover:underline">selanjutnya
+                                    &gt;</a>
+                            @else
+                                <span class="text-gray-500 cursor-not-allowed">selanjutnya &gt;</span>
+                            @endif
                         </div>
-                        @if ($siswa->hasMorePages())
-                            <a href="{{ $siswa->nextPageUrl() }}" class="text-gray-800 hover:underline">selanjutnya
-                                &gt;</a>
-                        @else
-                            <span class="text-gray-500 cursor-not-allowed">selanjutnya &gt;</span>
-                        @endif
                     </div>
-                </div>
+                @endif
+
             </div>
         </div>
 

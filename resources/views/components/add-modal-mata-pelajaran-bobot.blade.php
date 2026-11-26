@@ -21,8 +21,7 @@
                     console.error('Error fetching available mata pelajaran:', error);
                 }
             }
-        }" x-effect="console.log('Available Mata Pelajaran:', availableMataPelajaran)"
-        @submit.prevent="if (confirm('Apakah Anda yakin ingin menambahkan data Kelas ini?')) { $el.submit(); }">
+        }" x-effect="console.log('Available Mata Pelajaran:', availableMataPelajaran)">
         @csrf
         @method('POST')
         <input type="hidden" name="paket_menu_pilihan_id" value="{{ $paketMenuId }}">

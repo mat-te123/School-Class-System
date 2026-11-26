@@ -3,8 +3,7 @@
         $btn_primary = 'bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg py-2 px-4 transition';
     @endphp
 
-    <form :action="addUrl" method="POST" class="flex flex-col gap-3" novalidate
-        @submit.prevent="if (confirm('Apakah Anda yakin ingin menambahkan data Kelas ini?')) { $el.submit(); }">
+    <form :action="addUrl" method="POST" class="flex flex-col gap-3" novalidate>
         @csrf
         @method('POST')
 
@@ -28,7 +27,7 @@
 
             <div class="flex flex-col gap-1 w-1/2">
                 <label for="fkuota_kapasitas" class="text-sm leading-4 font-semibold">Kuota Kapasitas</label>
-                <input name="kuota_kapasitas" id="fkuota_kapasitas" type="number" 
+                <input name="kuota_kapasitas" id="fkuota_kapasitas" type="number"
                     class="border border-black rounded-lg py-1 px-4 text-base w-full" min="1" value="32">
             </div>
         </div>

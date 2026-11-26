@@ -75,70 +75,91 @@
 
             </div>
 
-            <table class="w-full text-left text-sm border-collapse">
-                <thead>
-                    <tr
-                        class="bg-[#D1D5DB] text-slate-700 font-semibold border-b border-slate-200 [&_th]:p-3 first:[&_th]:rounded-tl-xl first:[&_th]:w-0 last:[&_th]:rounded-tr-xl">
-                        <th>No</th>
-                        <th>Mata Pelajaran</th>
-                        <th>Bobot ( % )</th>
-                        @if ($isAdmin)
-                            <th>Aksi</th>
-                        @endif
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    @foreach ($kriteriaBobotMenu as $index => $item)
-                        <tr class="hover:bg-slate-50 [&_td]:p-3 [&_td]:border-b border-slate-200 cursor-pointer">
-                            <td class="p-3 font-medium text-slate-800">{{ $index + 1 }}</td>
-                            <td class="p-3 font-medium text-slate-800">
-                                {{ $item->masterMataPelajaran?->nama_mapel ?? 'Mapel Tidak Ditemukan' }}</td>
-                            <td class="p-3 font-medium text-slate-800">{{ $item['bobot_persen'] }}</td>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Mata Pelajaran</th>
+                            <th>Bobot ( % )</th>
                             @if ($isAdmin)
-                                <td class="p-3 font-medium text-slate-800">
-                                    <div class="flex flex-row gap-2">
-                                        <button
-                                            @click="showupdateModal = true; item = {{ json_encode($item) }}; confirmationData = '{{ $item->masterMataPelajaran?->nama_mapel ?? 'Mapel Tidak Ditemukan' }}'; updateUrl = '{{ route('kriteria-bobot.update', ['id' => $item->id]) }}';"
-                                            class="p-1 bg-blue-50 hover:bg-blue-300 rounded-lg transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
-                                            <img src="{{ asset('Icon/Edit.svg') }}" alt="edit icon"></button>
-                                        <button
-                                            @click="showDeleteModal = true; confirmationData = '{{ $item->masterMataPelajaran?->nama_mapel ?? 'Mapel Tidak Ditemukan' }}'; deleteUrl = '{{ route('kriteria-bobot.destroy', ['id' => $item->id]) }}';"
-                                            class="p-1 bg-red-50
-                                            hover:bg-red-300 rounded-lg transition-all duration-100 ease-in-out
-                                            active:scale-110 active:shadow-lg">
-                                            <img src="{{ asset('Icon/Trash.svg') }}" alt="trash icon"></button>
-                                        </form>
-                                    </div>
-                                </td>
+                                <th>Aksi</th>
                             @endif
                         </tr>
-                    @endforeach
-                </tbody>
-                @php
-                    $totalBobot = round($kriteriaBobotMenu->sum('bobot_persen'), 2);
-                @endphp
-                <tfoot
-                    class=" bg-[#D1D5DB] text-slate-700 font-semibold first:[&_td]:rounded-bl-xl last:[&_td]:rounded-br-xl">
-                    <tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($kriteriaBobotMenu as $index => $item)
+                            <tr class="group hover:bg-gray-50">
+                                <td>{{ $index + 1 }}</td>
+                                <td>
+                                    {{ $item->masterMataPelajaran?->nama_mapel ?? 'Mapel Tidak Ditemukan' }}</td>
+                                <td>{{ $item['bobot_persen'] }}</td>
+                                @if ($isAdmin)
+                                    <td>
+                                        <div class="flex flex-row gap-2">
+                                            <button
+                                                @click="showupdateModal = true; item = {{ json_encode($item) }}; confirmationData = '{{ $item->masterMataPelajaran?->nama_mapel ?? 'Mapel Tidak Ditemukan' }}'; updateUrl = '{{ route('kriteria-bobot.update', ['id' => $item->id]) }}';"
+                                                class="p-1 bg-blue-50 hover:bg-blue-300 rounded-lg transition-all duration-100 ease-in-out active:scale-110 active:shadow-lg">
+                                                <img src="{{ asset('Icon/Edit.svg') }}" alt="edit icon"></button>
+                                            <button
+                                                @click="showDeleteModal = true; confirmationData = '{{ $item->masterMataPelajaran?->nama_mapel ?? 'Mapel Tidak Ditemukan' }}'; deleteUrl = '{{ route('kriteria-bobot.destroy', ['id' => $item->id]) }}';"
+                                                class="p-1 bg-red-50
+                                            hover:bg-red-300 rounded-lg transition-all duration-100 ease-in-out
+                                            active:scale-110 active:shadow-lg">
+                                                <img src="{{ asset('Icon/Trash.svg') }}" alt="trash icon"></button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                @endif
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center py-6">
+                                    <div class="flex flex-col items-center justify-center py-12 px-2  ">
+                                        <h3 class="mainTitle text-lg">
+                                            Data tidak ditemukan
 
-                        <td colspan="2" class="p-3 text-left">Total Bobot :</td>
+                                        </h3>
 
-                        <td class="p-3 text-slate-900">{{ $totalBobot }}%</td>
+                                        <p class="subTitle text-sm">
+                                            Tidak ada mata pelajaran yang diinput
+                                        </p>
+
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                    @php
+                        $totalBobot = round($kriteriaBobotMenu->sum('bobot_persen'), 2);
+                    @endphp
+                    @if (!$kriteriaBobotMenu->isEmpty())
+                        <tfoot
+                            class=" bg-[#f3f4f6] text-slate-700 font-semibold first:[&_td]:rounded-bl-xl last:[&_td]:rounded-br-xl">
+                            <tr>
+
+                                <td colspan="2" class="p-3 text-left">Total Bobot :</td>
+
+                                <td class="p-3 text-slate-900">{{ $totalBobot }}%</td>
 
 
-                        @if ($isAdmin)
-                            @if ($totalBobot == 100)
-                                <td class="p-3 text-green-600 font-semibold">Bobot sudah 100%</td>
-                            @elseif ($totalBobot > 100)
-                                <td class="p-3 text-red-600 font-semibold">Bobot melebihi 100%</td>
-                            @else
-                                <td class="p-3 text-yellow-600 font-semibold">Bobot kurang dari 100%</td>
-                            @endif
-                        @endif
+                                @if ($isAdmin)
+                                    @if ($totalBobot == 100)
+                                        <td class="p-3 text-green-600 font-semibold">Bobot sudah 100%</td>
+                                    @elseif ($totalBobot > 100)
+                                        <td class="p-3 text-red-600 font-semibold">Bobot melebihi 100%</td>
+                                    @else
+                                        <td class="p-3 text-yellow-600 font-semibold">Bobot kurang dari 100%</td>
+                                    @endif
+                                @endif
 
-                    </tr>
-                </tfoot>
-            </table>
+                            </tr>
+                        </tfoot>
+
+                    @endif
+
+                </table>
+            </div>
 
 
         </div>

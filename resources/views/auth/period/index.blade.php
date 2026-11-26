@@ -20,7 +20,7 @@
         <div class="flex flex-col ">
 
         </div>
-        <div class="grid grid-cols-3 py-6 px-8 gap-7">
+        <div class="grid grid-cols-3 py-6 px-8 gap-6">
             <div class="h-fit col-span-3 flex flex-row justify-between items-center">
                 <div class="flex flex-col">
                     <h2 class="mainTitle text-lg">
@@ -48,19 +48,32 @@
                     </button>
                 @endif
             </div>
-            @foreach ($periode as $item)
-                @php
-                    $tanggal_buka = new DateTimeImmutable($item->tanggal_buka);
-                    $tanggal_tutup = new DateTimeImmutable($item->tanggal_tutup);
-                    $nama_periode =
-                        strlen($item->nama_periode) > 20
-                            ? substr($item->nama_periode, 0, 20) . '...'
-                            : $item->nama_periode;
-                    $isPublished = $item->status_pengumuman === 'AKTIF' ? true : false;
-                @endphp
-                <x-period-card :nama_periode="$nama_periode" :tahun_ajaran="$item->tahun_ajaran" :tanggal_buka="$tanggal_buka->format('d F Y')" :tanggal_tutup="$tanggal_tutup->format('d F Y')" :is_active="$item->is_active"
-                    :item="$item" :is_published="$isPublished" />
-            @endforeach
+            @if ($periode->isEmpty())
+                <div
+                    class="col-span-3 flex flex-col items-center justify-center py-12 px-2 bg-gray-50 border border-gray-300 rounded-lg">
+                    <h3 class="mainTitle text-lg">
+                        Tidak ada periode yang terdaftar pada sistem
+
+                    </h3>
+                    <p class="subTitle text-sm ">
+                        silahkan tambahkan periode
+                    </p>
+                </div>
+            @else
+                @foreach ($periode as $item)
+                    @php
+                        $tanggal_buka = new DateTimeImmutable($item->tanggal_buka);
+                        $tanggal_tutup = new DateTimeImmutable($item->tanggal_tutup);
+                        $nama_periode =
+                            strlen($item->nama_periode) > 20
+                                ? substr($item->nama_periode, 0, 20) . '...'
+                                : $item->nama_periode;
+                        $isPublished = $item->status_pengumuman === 'AKTIF' ? true : false;
+                    @endphp
+                    <x-period-card :nama_periode="$nama_periode" :tahun_ajaran="$item->tahun_ajaran" :tanggal_buka="$tanggal_buka->format('d F Y')" :tanggal_tutup="$tanggal_tutup->format('d F Y')"
+                        :is_active="$item->is_active" :item="$item" :is_published="$isPublished" />
+                @endforeach
+            @endif
 
         </div>
         @if ($periode->lastPage() > 1)

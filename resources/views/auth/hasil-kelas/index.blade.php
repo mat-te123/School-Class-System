@@ -171,15 +171,22 @@
 
                 </div>
                 @if (!$isFinal)
-                    <button type="button"
-                        @click="
+                    @if (!$results->isEmpty())
+                        <button type="button"
+                            @click="
                         showConfirmModal = true;
                         ModalUrl='{{ route('admin.hasil-penjurusan.lock') }}';
                         mainTitle='Finalisasi Hasil Seleksi Siswa' ;
                         subTitle='Apakah anda yakin ingin memfinalisasi hasil seleksi siswa untuk periode ini? Setelah difinalisasi, data tidak dapat diubah lagi.' "
-                        class="primary-button w-fit whitespace-nowrap">
-                        Finalisasi Hasil Seleksi
-                    </button>
+                            class="primary-button w-fit whitespace-nowrap">
+                            Finalisasi Hasil Seleksi
+                        </button>
+                    @else
+                        <button type="button" disabled
+                            class="primary-button w-fit whitespace-nowrap opacity-50 cursor-not-allowed">
+                            Finalisasi Hasil Seleksi
+                        </button>
+                    @endif
                 @else
                     <div class="flex flex-row gap-2">
                         @if (!$isPublished)
@@ -251,9 +258,18 @@
                     <tbody>
                         @if ($results->isEmpty())
                             <tr class="h-full">
-                                <td colspan="7"
-                                    class="h-full border border-gray-200 bg-white py-4 text-center align-middle last:rounded-bl-xl last:rounded-br-xl">
-                                    Data tidak ditemukan
+                                <td colspan="7" class="text-center py-6">
+                                    <div class="flex flex-col items-center justify-center py-12 px-2  ">
+                                        <h3 class="mainTitle text-lg">
+                                            Data tidak ditemukan
+
+                                        </h3>
+
+                                        <p class="subTitle text-sm">
+                                            Belum ada siswa yang memilih kelas
+                                        </p>
+
+                                    </div>
                                 </td>
                             </tr>
                         @else

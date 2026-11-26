@@ -15,33 +15,43 @@
             Otomatis
         </span>
     </div>
-    <form :action="addUrl" method="POST" class="flex flex-col gap-3" x-show="showmanual">
+    <form :action="addUrl" method="POST" class="flex flex-col gap-3" x-show="showmanual" x-cloak>
         @csrf
         @method('POST')
 
         <div class="flex flex-col gap-1">
-            <label for="fnamalengkap" class="text-sm leading-4 font-semibold">Nama Lengkap</label>
+            <label for="fnamalengkap" class="text-sm leading-4 font-semibold">Nama Lengkap <span class="text-red-500"> *
+                </span> </label>
             <input name="nama_lengkap" id="fnamalengkap" type="text" required
                 class="border border-black rounded-lg py-1 px-4 text-base">
         </div>
 
         <div class="flex flex-row gap-2" id="NisNisnFormGroup">
             <div class="flex flex-col gap-1 w-full ">
-                <label for="fnisn" class="text-sm leading-4 font-semibold">NISN</label>
+                <label for="fnisn" class="text-sm leading-4 font-semibold">NISN <span class="text-red-500"> *
+                    </span></label>
                 <input name="nisn" id="fnisn" type="text"
                     class="border border-black rounded-lg py-1 px-4 text-base w-full" minlength="10" size="10"
                     required>
+                <small>
+                    angka minimal 10 karakter
+                </small>
             </div>
             <div class="flex flex-col gap-1 w-full">
-                <label for="fnis" class="text-sm leading-4 font-semibold">NIS</label>
+                <label for="fnis" class="text-sm leading-4 font-semibold">NIS <span class="text-red-500"> *
+                    </span></label>
                 <input name="nis" id="fnis" type="text"
                     class="border border-black rounded-lg py-1 px-4 text-base w-full" maxlength="10" required>
+                <small>
+                    angka maximal 10 karakter
+                </small>
             </div>
         </div>
 
         <div class="flex flex-row gap-2" id="KelasKelaminFormGroup">
             <div class="flex flex-col gap-1 w-full">
-                <label for="fkelas" class="text-sm leading-4 font-semibold">Kelas Asal</label>
+                <label for="fkelas" class="text-sm leading-4 font-semibold">Kelas Asal <span class="text-red-500"> *
+                    </span></label>
                 <select id="fkelas" name="kelas_asal_id"
                     class="border border-black rounded-lg py-1 px-4 w-full text-base" required>
                     <option value=""> - Pilih Kelas -</option>
@@ -59,7 +69,8 @@
             $currentyear = (int) date('Y');
         @endphp
         <div class="flex flex-col gap-1">
-            <label for="fangkatan" class="text-sm leading-4 font-semibold">Tahun Ajaran</label>
+            <label for="fangkatan" class="text-sm leading-4 font-semibold">Tahun Ajaran <span class="text-red-500"> *
+                </span></label>
             <select name="angkatan" id="fangkatan" class="border border-black rounded-lg py-1 px-4 text-base" required>
                 @for ($year = $currentyear; $year <= $currentyear + 2; $year++)
                     <option @selected($year === $currentyear) value="{{ $year }}">
@@ -81,13 +92,15 @@
     </form>
 
     <form :action="addExcelUrl" method="POST" enctype="multipart/form-data" class="flex flex-col gap-3"
-        x-show="showotomatis">
+        x-show="showotomatis" x-cloak>
         @csrf
         @method('POST')
 
         <div class="flex flex-row gap-2">
             <div class="flex flex-col gap-1 w-full">
-                <label for="fkelas_excel" class="text-sm leading-4 font-semibold">Kelas Asal</label>
+                <label for="fkelas_excel" class="text-sm leading-4 font-semibold">Kelas Asal <span class="text-red-500">
+                        *
+                    </span></label>
                 <select id="fkelas_excel" name="kelas_asal_id"
                     class="border border-black rounded-lg py-1 px-4 w-full text-base" required>
                     <option value=""> - Pilih Kelas -</option>
@@ -100,7 +113,9 @@
             </div>
 
             <div class="flex flex-col gap-1 w-full">
-                <label for="fangkatan" class="text-sm leading-4 font-semibold">Tahun Ajaran</label>
+                <label for="fangkatan" class="text-sm leading-4 font-semibold">Tahun Ajaran <span class="text-red-500">
+                        *
+                    </span></label>
                 <select name="angkatan" id="fangkatan" class="border border-black rounded-lg py-1 px-4 text-base"
                     required>
                     @for ($year = $currentyear; $year <= $currentyear + 2; $year++)
