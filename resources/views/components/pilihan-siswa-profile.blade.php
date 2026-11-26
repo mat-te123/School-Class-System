@@ -14,15 +14,15 @@
 
         </div>
     @else
+        <div class="flex flex-col">
+            <h2 class="mainTitle text-lg">
+                Hasil Pilihan Siswa
+            </h2>
+            <span class="subTitle">
+                Hasil akhir pilihan siswa
+            </span>
+        </div>
         @if ($HasilPilihanSiswa->isNotEmpty())
-            <div class="flex flex-col">
-                <h2 class="mainTitle text-lg">
-                    Hasil Pilihan Siswa
-                </h2>
-                <span class="subTitle">
-                    Hasil pilihan siswa yang telah diinputkan
-                </span>
-            </div>
             <div class="grid grid-cols-2 gap-4">
                 @foreach ($HasilPilihanSiswa as $hasil)
                     <div
@@ -42,8 +42,15 @@
                     </div>
                 @endforeach
             </div>
+        @else
+            <div
+                class="h-40 border border-gray-300 rounded-lg bg-gray-50 justify-center items-center flex text-gray-400">
+                <p class="text-sm">
+                    Hasil seleksi belum diumumkan oleh guru
+                </p>
+            </div>
         @endif
-        <div class="flex flex-row justify-between items-baseline">
+        <div class="flex flex-row justify-between items-end">
             <div class="flex flex-col">
                 <h2 class="mainTitle text-lg">
                     Daftar Pilihan Siswa
@@ -54,8 +61,7 @@
 
             </div>
             @if (!$isSiswaLoggedIn)
-                <a href="{{ route('siswa.pilih-kelas.index') }}"
-                    class="primary-button w-fit whitespace-nowrap h-fit self-baseline">
+                <a href="{{ route('siswa.pilih-kelas.index') }}" class="primary-button w-fit whitespace-nowrap h-fit">
                     Perbarui pilihan kelas
                 </a>
             @endif
