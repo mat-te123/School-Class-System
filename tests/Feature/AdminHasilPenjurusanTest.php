@@ -381,6 +381,8 @@ class AdminHasilPenjurusanTest extends TestCase
 
     public function test_admin_can_publish_hasil(): void
     {
+        $this->periode->update(['tanggal_pengumuman' => now()->addDay()]);
+
         $response = $this->actingAs($this->admin, 'web')
             ->postJson('/admin/hasil-penjurusan/publish', [
                 'periode_id' => $this->periode->id,
@@ -392,6 +394,7 @@ class AdminHasilPenjurusanTest extends TestCase
         $this->assertDatabaseHas('periode_pendaftaran', [
             'id' => $this->periode->id,
             'status_pengumuman' => 'AKTIF',
+            'tanggal_pengumuman' => null,
         ]);
     }
 

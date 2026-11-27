@@ -2,11 +2,13 @@
     <div x-data="{
         showConfirmModal: false,
         showDownloadModal: false,
+        showPublishModal: @js($errors->has('tanggal_pengumuman')),
+        publishMode: @js($errors->has('tanggal_pengumuman') ? 'automatic' : 'manual'),
         downloadFormat: 'pdf',
         ModalUrl: '',
         mainTitle: '',
         subTitle: '',
-    }" @keydown.escape.window="showDownloadModal = false" class="flex flex-1 flex-col">
+    }" @keydown.escape.window="showDownloadModal = false; showPublishModal = false" class="flex flex-1 flex-col">
 
         <div class="flex flex-row justify-between items-end py-6 px-8 border border-b-black">
             <div class="flex flex-col">
@@ -210,9 +212,7 @@
                             </button>
                         @else
                             <button type="button"
-                                @click="showConfirmModal = true; ModalUrl='{{ route('admin.hasil-penjurusan.publish') }}';
-                        mainTitle='Publikasikan Hasil Seleksi Siswa';
-                        subTitle='Apakah anda yakin ingin mempublikasikan hasil seleksi siswa untuk periode ini? Setelah dipublikasikan, data dapat diakses oleh siswa.'"
+                                @click="showPublishModal = true"
                                 class="primary-button whitespace-nowrap w-fit">
                                 Publikasikan Hasil Seleksi
                             </button>
@@ -355,6 +355,91 @@
             </div>
 
         </div>
+        @if ($periode)
+            <div x-show="showPublishModal" x-cloak x-transition.opacity
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+                @click.self="showPublishModal = false">
+                <section role="dialog" aria-modal="true" aria-labelledby="publish-title"
+                    class="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl" @click.stop>
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 id="publish-title" class="text-lg font-semibold">Publikasikan hasil seleksi</h2>
+                            <p class="mt-1 text-sm text-gray-600">Pilih kapan hasil dapat diakses oleh siswa.</p>
+                        </div>
+                        <button type="button" class="text-2xl leading-none text-gray-500" aria-label="Tutup modal"
+                            @click="showPublishModal = false">&times;</button>
+                    </div>
+
+                    <fieldset class="mt-5 grid gap-3">
+                        <legend class="mb-2 text-sm font-medium text-gray-700">Waktu publikasi</legend>
+                        <label class="flex cursor-pointer gap-3 rounded-lg border p-3"
+                            :class="publishMode === 'manual' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'">
+                            <input type="radio" name="publish-mode" value="manual" x-model="publishMode"
+                                class="mt-1 accent-blue-700">
+                            <span>
+                                <span class="block text-sm font-semibold">Manual — publikasikan sekarang</span>
+                                <span class="mt-1 block text-sm text-gray-600">Hasil langsung dapat diakses siswa.</span>
+                            </span>
+                        </label>
+                        <label class="flex cursor-pointer gap-3 rounded-lg border p-3"
+                            :class="publishMode === 'automatic' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'">
+                            <input type="radio" name="publish-mode" value="automatic" x-model="publishMode"
+                                class="mt-1 accent-blue-700">
+                            <span>
+                                <span class="block text-sm font-semibold">Otomatis — jadwalkan publikasi</span>
+                                <span class="mt-1 block text-sm text-gray-600">Pilih tanggal dan waktu publikasi.</span>
+                            </span>
+                        </label>
+                    </fieldset>
+
+                    <div x-show="publishMode === 'automatic'" x-cloak class="mt-4">
+                        <form method="POST" action="{{ route('periode-penjurusan.update', ['id' => $periode->id]) }}"
+                            class="grid gap-2">
+                            @csrf
+                            @method('PUT')
+                            <label for="tanggal_pengumuman" class="text-sm font-medium text-gray-700">
+                                Tanggal dan waktu
+                            </label>
+                            <input id="tanggal_pengumuman" name="tanggal_pengumuman" type="datetime-local" required
+                                min="{{ $periode->tanggal_buka?->format('Y-m-d\TH:i') }}"
+                                max="{{ $periode->tanggal_tutup?->format('Y-m-d\TH:i') }}"
+                                value="{{ old('tanggal_pengumuman', $periode->tanggal_pengumuman?->format('Y-m-d\TH:i')) }}"
+                                aria-describedby="publish-schedule-help"
+                                @error('tanggal_pengumuman') aria-invalid="true" @enderror
+                                class="rounded-lg border border-gray-300 px-3 py-2">
+                            <p id="publish-schedule-help" class="text-sm text-gray-600">
+                                Publikasi akan aktif otomatis pada waktu yang dipilih.
+                            </p>
+                            @error('tanggal_pengumuman')
+                                <p role="alert" class="text-sm text-red-700">{{ $message }}</p>
+                            @enderror
+                            <div class="mt-4 flex justify-end gap-2">
+                                <button type="button"
+                                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                    @click="showPublishModal = false">Batal</button>
+                                <button type="submit" class="primary-button w-fit">Simpan jadwal</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div x-show="publishMode === 'manual'" x-cloak class="mt-4">
+                        <p class="text-sm text-gray-600">
+                            Publikasi otomatis yang tersimpan sebelumnya akan dihapus.
+                        </p>
+                        <div class="mt-6 flex justify-end gap-2">
+                            <button type="button"
+                                class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                @click="showPublishModal = false">Batal</button>
+                            <form method="POST" action="{{ route('admin.hasil-penjurusan.publish') }}">
+                                @csrf
+                                <input type="hidden" name="periode_id" value="{{ $periode->id }}">
+                                <button type="submit" class="primary-button w-fit">Publikasikan sekarang</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        @endif
         <x-hasil-seleksi-confirm-modal />
 
     </div>

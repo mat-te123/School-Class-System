@@ -79,6 +79,7 @@ class PeriodePenjurusanControllerTest extends TestCase
             'nama_periode' => 'Penjurusan Baru',
             'tanggal_buka' => '2026-08-12 08:00:00',
             'tanggal_tutup' => '2026-08-25 23:59:59',
+            'tanggal_pengumuman' => '2026-08-20 09:00:00',
         ]);
 
         $response->assertOk()->assertJsonPath('data.nama_periode', 'Penjurusan Baru');
@@ -87,6 +88,7 @@ class PeriodePenjurusanControllerTest extends TestCase
             'nama_periode' => 'Penjurusan Baru',
             'tanggal_buka' => '2026-08-12 08:00:00',
             'tanggal_tutup' => '2026-08-25 23:59:59',
+            'tanggal_pengumuman' => '2026-08-20 09:00:00',
         ]);
     }
 

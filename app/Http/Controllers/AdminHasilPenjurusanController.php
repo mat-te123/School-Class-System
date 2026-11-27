@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\HasilSeleksi;
 use App\Models\DetailPendaftaranPilihan;
+use App\Models\HasilSeleksi;
 use App\Models\PaketMenuPilihan;
 use App\Models\PendaftaranPilihan;
 use App\Models\PeriodePendaftaran;
@@ -47,8 +47,9 @@ class AdminHasilPenjurusanController extends Controller
         // $periodeId = $request->input('periode_id');
         $periodeId = request()->query('periode_id') ?? request()->input('periode_id');
 
-        $isFinal = PeriodePendaftaran::where('id', $periodeId)->value('is_hasil_final');
-        $isPublished = PeriodePendaftaran::where('id', $periodeId)->value('status_pengumuman') === 'AKTIF';
+        $periode = PeriodePendaftaran::find($periodeId);
+        $isFinal = $periode?->is_hasil_final ?? false;
+        $isPublished = $periode?->status_pengumuman === 'AKTIF';
         $AllKelas = PaketMenuPilihan::select('id', 'nama_menu')->where('is_active', true)->where('periode_id', $periodeId)->get();
 
         $validated = $request->validate([
@@ -109,7 +110,7 @@ class AdminHasilPenjurusanController extends Controller
             ]);
         }
 
-        return view('auth.hasil-kelas.index', compact('results', 'summary', 'isFinal', 'isPublished', 'AllKelas'));
+        return view('auth.hasil-kelas.index', compact('results', 'summary', 'isFinal', 'isPublished', 'AllKelas', 'periode'));
     }
 
     /**
@@ -162,7 +163,6 @@ class AdminHasilPenjurusanController extends Controller
     public function showSiswa(string $siswaId, Request $request)
     {
         $this->ensureAdmin();
-
 
         $hasil = HasilSeleksi::with([
             'siswa.pendaftaranPilihan' => fn ($query) => $query
@@ -313,7 +313,10 @@ class AdminHasilPenjurusanController extends Controller
         ]);
 
         $periode = PeriodePendaftaran::findOrFail($validated['periode_id']);
-        $periode->update(['status_pengumuman' => 'AKTIF']);
+        $periode->update([
+            'status_pengumuman' => 'AKTIF',
+            'tanggal_pengumuman' => null,
+        ]);
 
         return $this->handleWriteResponse($request, [
             'success' => true,
@@ -334,7 +337,7 @@ class AdminHasilPenjurusanController extends Controller
         ]);
 
         $periode = PeriodePendaftaran::findOrFail($validated['periode_id']);
-        $periode->update(['status_pengumuman' => 'NON-AKTIF']);
+        $periode->update(['status_pengumuman' => 'NON-AKTIF', 'tanggal_pengumuman' => null]);
 
         return $this->handleWriteResponse($request, [
             'success' => true,

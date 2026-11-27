@@ -195,6 +195,7 @@ class PeriodePenjurusanController extends Controller
                 'nullable',
                 'date',
                 Rule::when($tanggalBuka, 'after:'.$tanggalBuka),
+                Rule::when($tanggalTutup, 'before_or_equal:'.$tanggalTutup),
             ],
             'tanggal_mulai_pertukaran' => [
                 'nullable',
